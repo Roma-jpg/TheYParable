@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3 uid="uid://bq3np8buadnid"]
+
+[ext_resource type="Script" uid="uid://b72n47ccqvnsw" path="res://player.gd" id="1_4flbx"]
+[ext_resource type="Material" uid="uid://brj2jayoo0l0d" path="res://addons/prototype_mini_bundle/M_prototype_blue.tres" id="2_onrkg"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sh265"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_4flbx"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_4flbx")
+
+[node name="Head" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5837451, -0.54535663)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_sh265")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 16
+text = "•"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+material_override = ExtResource("2_onrkg")
+mesh = SubResource("CapsuleMesh_4flbx")
