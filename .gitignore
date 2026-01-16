@@ -7,7 +7,6 @@ project.godot~
 *.tmp
 *.bak
 /builds/
-/addons/
 =======
 # Godot 4+ specific ignores
 .godot/
