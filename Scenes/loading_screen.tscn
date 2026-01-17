@@ -1,0 +1,87 @@
+[gd_scene load_steps=5 format=3 uid="uid://c4rumq7al8d8v"]
+
+[ext_resource type="Script" uid="uid://dn55ywj35kvrp" path="res://Scripts/LoadingScreen.gd" id="1_0t5xw"]
+[ext_resource type="Texture2D" uid="uid://b3pnlwscu8uhn" path="res://Assets/Pictures/dude.png" id="1_oobaa"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0t5xw"]
+bg_color = Color(0.23137255, 0.28235295, 0.6117647, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nfm0g"]
+bg_color = Color(0.35686275, 0.43137255, 0.88235295, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="LoadingScreen" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0t5xw")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06879827, 0.06879828, 0.06879828, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 33
+theme_override_constants/margin_top = 275
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="LoadingLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Идёт загрузка..."
+
+[node name="Advice" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6052743, 0.6052743, 0.6052743, 1)
+text = "[Advice]"
+
+[node name="MarginContainer2" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -27.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 27
+theme_override_constants/margin_right = 31
+theme_override_constants/margin_bottom = 50
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer2"]
+custom_minimum_size = Vector2(0, 23)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_0t5xw")
+theme_override_styles/fill = SubResource("StyleBoxFlat_nfm0g")
+value = 39.64
+show_percentage = false
+
+[node name="Dude" type="Sprite2D" parent="."]
+self_modulate = Color(1, 1, 1, 0.15686275)
+position = Vector2(474, 225)
+texture = ExtResource("1_oobaa")
