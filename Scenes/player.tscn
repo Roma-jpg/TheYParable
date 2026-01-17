@@ -23,9 +23,9 @@ metadata/_custom_type_script = "uid://bk7o521qvk5po"
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_sh265")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="Crosshair" type="CanvasLayer" parent="."]
 
-[node name="Control" type="Control" parent="CanvasLayer"]
+[node name="Control" type="Control" parent="Crosshair"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,7 +34,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="CanvasLayer/Control"]
+[node name="Label" type="Label" parent="Crosshair/Control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

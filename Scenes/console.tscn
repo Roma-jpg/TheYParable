@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://fqo2swrkx6ae"]
+[gd_scene load_steps=3 format=3 uid="uid://fqo2swrkx6ae"]
 
 [ext_resource type="Script" uid="uid://gy1mnb0o5mt2" path="res://Scripts/ConsoleAnim.gd" id="1_2kium"]
+[ext_resource type="AudioStream" uid="uid://brik504sli5vx" path="res://Assets/Audio/typewriter-trim.wav" id="2_j4mgr"]
 
 [node name="Console" type="Control"]
 visible = false
@@ -18,8 +19,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 269.0
+offset_top = 263.0
 offset_right = -414.0
+offset_bottom = -6.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.17254902)
@@ -83,3 +85,5 @@ scroll_following = true
 vertical_alignment = 1
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_j4mgr")
+volume_db = -5.03

@@ -8,6 +8,11 @@ extends CharacterBody3D
 @export var gravity := 9.8
 
 @onready var camera := $Camera3D
+
+@onready var interaction_ui: Control = $InteractionUI
+@onready var subtitles: CanvasLayer = $Subtitles
+@onready var crosshair: Label = $Crosshair/Control/Label
+
 	
 # Флаги возможностей
 var can_move := true
@@ -15,12 +20,18 @@ var can_jump := true
 var can_sprint := true
 var can_look := true
 
+var controls_locked := false
+
 var pitch := 0.0
 
 func _ready():
+	add_to_group("player")
+
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func _unhandled_input(event):
+	if controls_locked or not can_look:
+		return
 	if not can_look:
 		return
 
@@ -38,11 +49,11 @@ func _physics_process(delta):
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 
-	if can_move:
-		handle_movement(delta)
-	else:
+	if controls_locked or not can_move:
 		velocity.x = 0
 		velocity.z = 0
+	else:
+		handle_movement(delta)
 
 	move_and_slide()
 
@@ -85,3 +96,38 @@ func set_can_sprint(value: bool):
 
 func set_can_look(value: bool):
 	can_look = value
+	
+func lock_controls():
+	controls_locked = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func unlock_controls():
+	controls_locked = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+func _fade_node(node: Node, target_alpha: float, duration := 1.0):
+	if node == null:
+		return
+
+	var tween := create_tween()
+	var track := tween.tween_property(
+		node,
+		"modulate:a",
+		target_alpha,
+		duration
+	)
+
+	if track:
+		track.set_trans(Tween.TRANS_SINE)
+		track.set_ease(Tween.EASE_IN_OUT)
+
+
+func hide_game_ui():
+	_fade_node(interaction_ui, 0.0)
+	_fade_node(subtitles, 0.0)
+	_fade_node(crosshair, 0.0)
+
+func show_game_ui():
+	_fade_node(interaction_ui, 1.0)
+	_fade_node(subtitles, 1.0)
+	_fade_node(crosshair, 1.0)

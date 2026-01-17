@@ -21,6 +21,9 @@ func _ready():
 	z_index = 10_000
 
 func start(duration: float, advice_text: String):
+	_hide_player_ui()
+	_lock_player_controls()
+
 	_estimated_duration = max(duration, 0.1)
 	advice_label.text = advice_text
 	progress_bar.value = 0
@@ -34,6 +37,8 @@ func start(duration: float, advice_text: String):
 	await _fade_in()
 	_prepare_fake_progress()
 	_active = true
+
+
 
 func _process(delta):
 	if not _active:
@@ -54,8 +59,11 @@ func allow_fade_out():
 	if not _can_fade_out:
 		_can_fade_out = true
 		await _fade_out()
+		_show_player_ui()
+		_unlock_player_controls()
 		emit_signal("finished")
 		hide()
+
 
 # -------------------------
 # Internals
@@ -101,3 +109,28 @@ func _fade_out():
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, fade_time)
 	await tween.finished
+
+
+func _lock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("lock_controls"):
+			p.lock_controls()
+
+func _unlock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("unlock_controls"):
+			p.unlock_controls()
+
+func _hide_player_ui():
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("hide_game_ui"):
+			p.hide_game_ui()
+
+func _show_player_ui():
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("show_game_ui"):
+			p.show_game_ui()
