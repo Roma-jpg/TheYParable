@@ -18,6 +18,12 @@ config/icon="res://Assets/Pictures/icon.svg"
 [autoload]
 
 MonologueSystem="*res://Scripts/MonologueSystem.gd"
+Console="*res://Scenes/console.tscn"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
 
 [input]
 

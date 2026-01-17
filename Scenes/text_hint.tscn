@@ -1,8 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://fmucbryt7t4g"]
+[gd_scene load_steps=2 format=3 uid="uid://fmucbryt7t4g"]
 
 [ext_resource type="Script" uid="uid://bfqb7dutln5j8" path="res://Scripts/UIController.gd" id="1_6sdbh"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_6sdbh"]
 
 [node name="TextHint" type="Control"]
 layout_mode = 3
@@ -15,20 +13,19 @@ mouse_filter = 2
 script = ExtResource("1_6sdbh")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
-layout_mode = 0
-offset_left = 514.5
-offset_top = 625.0
-offset_right = 554.5
-offset_bottom = 665.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_top = -75
-theme_override_constants/margin_bottom = 0
+theme_override_constants/margin_bottom = 14
 
 [node name="InteractionLabel" type="Label" parent="MarginContainer"]
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
 theme_override_colors/font_color = Color(0.94494057, 0.92911685, 0.36333898, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 text = "[PLACEHOLDER]"
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="MarginContainer/InteractionLabel"]
-shape = SubResource("BoxShape3D_6sdbh")
