@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://bq3np8buadnid"]
+[gd_scene load_steps=8 format=3 uid="uid://bq3np8buadnid"]
 
 [ext_resource type="Script" uid="uid://b72n47ccqvnsw" path="res://Scripts/player.gd" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://bk7o521qvk5po" path="res://Scripts/InteractionManager.gd" id="2_i3pqv"]
 [ext_resource type="Material" uid="uid://brj2jayoo0l0d" path="res://addons/prototype_mini_bundle/M_prototype_blue.tres" id="2_onrkg"]
 [ext_resource type="PackedScene" uid="uid://fmucbryt7t4g" path="res://Scenes/text_hint.tscn" id="4_hqtel"]
+[ext_resource type="PackedScene" uid="uid://bnrtprgsyyuxi" path="res://Scenes/SubtitleScene.tscn" id="5_fkybt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sh265"]
 
@@ -12,12 +13,10 @@
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_4flbx")
 
-[node name="Head" type="Node3D" parent="."]
-
-[node name="Camera3D" type="Camera3D" parent="Head"]
+[node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5837451, -0.54535663)
 
-[node name="InteractionManager" type="Node" parent="Head/Camera3D"]
+[node name="InteractionManager" type="Node" parent="Camera3D"]
 script = ExtResource("2_i3pqv")
 metadata/_custom_type_script = "uid://bk7o521qvk5po"
 
@@ -53,5 +52,9 @@ mesh = SubResource("CapsuleMesh_4flbx")
 
 [node name="InteractionUI" parent="." instance=ExtResource("4_hqtel")]
 
-[connection signal="interactable_focused" from="Head/Camera3D/InteractionManager" to="InteractionUI" method="show_interaction"]
-[connection signal="interactable_unfocused" from="Head/Camera3D/InteractionManager" to="InteractionUI" method="hide_interaction"]
+[node name="Subtitles" parent="." instance=ExtResource("5_fkybt")]
+
+[node name="Head" type="Node3D" parent="."]
+
+[connection signal="interactable_focused" from="Camera3D/InteractionManager" to="InteractionUI" method="show_interaction"]
+[connection signal="interactable_unfocused" from="Camera3D/InteractionManager" to="InteractionUI" method="hide_interaction"]

@@ -3,11 +3,11 @@ extends CharacterBody3D
 @export var walk_speed := 4.0
 @export var sprint_speed := 7.0
 @export var jump_force := 5.0
-@export var mouse_sensitivity := 0.1
+@export var mouse_sensitivity_horizontal := 0.1
+@export var mouse_sensitivity_vertical := 4.5  # Simplified sensitivity
 @export var gravity := 9.8
 
-@onready var head := $Head
-@onready var camera := $Head/Camera3D
+@onready var camera := $Camera3D
 	
 # Флаги возможностей
 var can_move := true
@@ -25,10 +25,13 @@ func _unhandled_input(event):
 		return
 
 	if event is InputEventMouseMotion:
-		rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
-		pitch -= event.relative.y * mouse_sensitivity
+		# Rotate player horizontally (yaw)
+		rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
+		
+		# Rotate camera vertically (pitch)
+		pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
 		pitch = clamp(pitch, -85.0, 85.0)
-		head.rotation_degrees.x = pitch
+		camera.rotation.x = deg_to_rad(pitch)
 
 func _physics_process(delta):
 	# Гравитация
@@ -44,11 +47,20 @@ func _physics_process(delta):
 	move_and_slide()
 
 func handle_movement(delta):
+	# Get input based on camera direction
+	var camera_forward = camera.global_transform.basis.z
+	var camera_right = camera.global_transform.basis.x
+	
 	var input_dir := Vector2.ZERO
 	input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	input_dir.y = Input.get_action_strength("move_backward") - Input.get_action_strength("move_forward")
-
-	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
+	
+	# Calculate direction relative to camera
+	var direction = Vector3.ZERO
+	direction += camera_forward * input_dir.y
+	direction += camera_right * input_dir.x
+	direction.y = 0
+	direction = direction.normalized()
 
 	var speed := walk_speed
 	if can_sprint and Input.is_action_pressed("sprint"):

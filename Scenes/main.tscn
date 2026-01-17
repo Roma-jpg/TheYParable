@@ -2,7 +2,7 @@
 
 [ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="1_h2yge"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://r705u878a7uv" path="res://Scripts/CubeExample.gd" id="3_5vw27"]
 [ext_resource type="Material" uid="uid://cmu4vfp7y5t6b" path="res://addons/prototype_mini_bundle/M_prototype_purple.tres" id="4_272bh"]
 [ext_resource type="Material" uid="uid://7to3kb1tisdd" path="res://addons/prototype_mini_bundle/M_prototype_orange.tres" id="5_5vw27"]
