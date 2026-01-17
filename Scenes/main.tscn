@@ -1,8 +1,9 @@
-[gd_scene load_steps=17 format=3 uid="uid://cxqhmeq3o61in"]
+[gd_scene load_steps=18 format=3 uid="uid://cxqhmeq3o61in"]
 
 [ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="1_h2yge"]
-[ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://player.tscn" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
+[ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ig7tw"]
+[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
+[ext_resource type="Script" uid="uid://r705u878a7uv" path="res://Scripts/CubeExample.gd" id="3_5vw27"]
 [ext_resource type="Material" uid="uid://cmu4vfp7y5t6b" path="res://addons/prototype_mini_bundle/M_prototype_purple.tres" id="4_272bh"]
 [ext_resource type="Material" uid="uid://7to3kb1tisdd" path="res://addons/prototype_mini_bundle/M_prototype_orange.tres" id="5_5vw27"]
 [ext_resource type="Material" uid="uid://dyx4l6ea0am6f" path="res://addons/prototype_mini_bundle/M_prototype_green.tres" id="6_kek77"]
@@ -59,6 +60,16 @@ material_override = ExtResource("4_272bh")
 mesh = SubResource("BoxMesh_h2yge")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Objs/Cbe"]
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="Area3D" type="Area3D" parent="Objs/Cbe"]
+collision_layer = 2
+script = ExtResource("3_5vw27")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Objs/Cbe/Area3D"]
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Objs/Cbe"]
 shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Cbe2" type="RigidBody3D" parent="Objs"]

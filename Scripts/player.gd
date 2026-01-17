@@ -8,7 +8,7 @@ extends CharacterBody3D
 
 @onready var head := $Head
 @onready var camera := $Head/Camera3D
-
+	
 # Флаги возможностей
 var can_move := true
 var can_jump := true
