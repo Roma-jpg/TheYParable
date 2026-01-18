@@ -37,7 +37,7 @@ var audio_config = {
 	"volume_db": -5.0,
 	"pitch_scale": 1.0,
 	"bus": "Master"
-}
+}	
 
 func _ready():
 	setup_audio_player()

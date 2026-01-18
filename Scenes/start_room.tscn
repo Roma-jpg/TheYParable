@@ -1,11 +1,74 @@
-[gd_scene load_steps=10 format=3 uid="uid://usyxiym0q1g8"]
+[gd_scene load_steps=17 format=3 uid="uid://usyxiym0q1g8"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
+[ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
 [ext_resource type="PackedScene" uid="uid://0dyufbh2dug" path="res://Assets/3DModels/room.glb" id="2_qwpf4"]
 [ext_resource type="PackedScene" uid="uid://daggepgs1p08w" path="res://Assets/3DModels/Y_bed.glb" id="3_gefdw"]
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
 [ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="5_n4xud"]
+
+[sub_resource type="Animation" id="Animation_7gtko"]
+resource_name = "walk_up"
+length = 2.0
+step = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 0.49999997),
+"update": 0,
+"values": [Vector3(4.1842957, 0.9603636, -3.3936381), Vector3(4.667872, 0.9603636, -1.6998149)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 0.49999997),
+"update": 0,
+"values": [Vector3(0, 3.1415925, 0), Vector3(0, 3.3510323, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_qjx48"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(4.1842957, 0.9603636, -3.3936381)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 3.1415925, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ixl8n"]
+_data = {
+&"RESET": SubResource("Animation_qjx48"),
+&"walk_up": SubResource("Animation_7gtko")
+}
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_vxrej"]
 data = PackedVector3Array(11.9298, -0.08, -9.1543, 11.9298, 0.08, 9.1543, 11.9298, 0.08, -9.1543, 11.9298, -0.08, -9.1543, 11.9298, -0.08, 9.1543, 11.9298, 0.08, 9.1543, 11.9298, -0.08, 9.1543, -11.9298, 0.08, 9.1543, 11.9298, 0.08, 9.1543, 11.9298, -0.08, 9.1543, -11.9298, -0.08, 9.1543, -11.9298, 0.08, 9.1543, -11.9298, -0.08, 9.1543, -11.9298, 0.08, -9.1543, -11.9298, 0.08, 9.1543, -11.9298, -0.08, 9.1543, -11.9298, -0.08, -9.1543, -11.9298, 0.08, -9.1543, -11.9298, -0.08, -9.1543, 11.9298, 0.08, -9.1543, -11.9298, 0.08, -9.1543, -11.9298, -0.08, -9.1543, 11.9298, -0.08, -9.1543, 11.9298, 0.08, -9.1543, 11.9298, -0.08, 9.1543, -11.9298, -0.08, -9.1543, -11.9298, -0.08, 9.1543, 11.9298, -0.08, 9.1543, 11.9298, -0.08, -9.1543, -11.9298, -0.08, -9.1543, -11.5497, 0.08, 8.8624, 11.549299, 0.08, -8.8626995, 11.549299, 0.08, 8.8624, -11.5497, 0.08, 8.8624, -11.5497, 0.08, -8.8626995, 11.549299, 0.08, -8.8626995)
@@ -16,10 +79,119 @@ data = PackedVector3Array(11.549299, 0.08, -8.8626995, 11.549299, 9.9298, 8.8624
 [sub_resource type="BoxShape3D" id="BoxShape3D_7gtko"]
 size = Vector3(2.0170288, 2.1055298, 3.7138672)
 
+[sub_resource type="Animation" id="Animation_dua0g"]
+resource_name = "CameraPickup"
+length = 5.0
+step = 0.02
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.74, 1.76, 2.56),
+"transitions": PackedFloat32Array(1, 1, 0.43527538, 0.43527538),
+"update": 0,
+"values": [Vector3(4.8834686, 1.2719685, -0.7344129), Vector3(4.8834686, 1.2719685, -0.7344129), Vector3(4.8834686, 1.2719685, -0.7344129), Vector3(4.790129, 1.677, -1.0452619)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.74, 1.06, 2.56, 3.42, 4.515, 4.595),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 0.43527555, 0.4829685, 0.4829685),
+"update": 0,
+"values": [Vector3(0.07213104, 0.36974552, -0.18384963), Vector3(0.07213104, 0.36974552, -0.18384963), Vector3(0.027925268, 0.37524578, 0), Vector3(0.027925268, 0.37524578, 0), Vector3(0.027925268, 0.37524578, 0), Vector3(0.027925268, 3.5255651, 0), Vector3(0.027925268, 3.3335788, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:current")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 4.98, 5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [true, true, false]
+}
+
+[sub_resource type="Animation" id="Animation_n4xud"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(4.8834686, 1.2719685, -0.7344129)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.028312348, 0.37538204, -0.07171358)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:current")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_7gtko"]
+_data = {
+&"CameraPickup": SubResource("Animation_dua0g"),
+&"RESET": SubResource("Animation_n4xud")
+}
+
 [node name="StartRoom" type="Node3D"]
+script = ExtResource("1_n4xud")
 
 [node name="Player" parent="." instance=ExtResource("1_ecy7y")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+transform = Transform3D(-1, 0, 1.509958e-07, 0, 1, 0, -1.509958e-07, 0, -1, 4.1842957, 0.9603636, -3.3936381)
+
+[node name="Skeleton3D" parent="Player/Y/metarig" index="0"]
+bones/0/position = Vector3(0.0139953345, 1.833467, -0.14342877)
+bones/2/rotation = Quaternion(-0.03754322, -1.0843716e-07, 6.5049206e-09, 0.9992951)
+bones/7/rotation = Quaternion(-0.26327285, 0.643848, -0.5498261, 0.46242675)
+bones/8/rotation = Quaternion(-0.028558215, 0.039745294, 0.011291574, 0.9987378)
+bones/10/rotation = Quaternion(-0.26327297, -0.64384806, 0.54982615, 0.46242645)
+bones/12/rotation = Quaternion(-0.2495842, -0.75026864, -0.33357227, 0.5133559)
+bones/15/rotation = Quaternion(0.035769995, -1.01843325e-08, -2.7353644e-09, 0.9993601)
+bones/17/rotation = Quaternion(5.1804844e-10, 0.99997646, -0.006865056, -7.549611e-08)
+bones/20/rotation = Quaternion(0.035769995, -2.932393e-08, -1.1273042e-09, 0.9993601)
+bones/21/rotation = Quaternion(-0.71857136, 1.0926127e-07, 8.511561e-08, 0.6954533)
+bones/23/rotation = Quaternion(-0.70709014, 0.7070902, -0.0048539843, -0.004853984)
+bones/24/position = Vector3(1.6189862, 5.744085, 0.49365187)
+
+[node name="spine_005" parent="Player/Y/metarig/Skeleton3D" index="0"]
+transform = Transform3D(1, -3.4008235e-07, 2.1128021e-06, 3.693675e-07, 0.9999033, -0.013876408, -2.1078786e-06, 0.013876408, 0.9999033, 0.013995358, 4.402644, 0.026173003)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Player"]
+libraries = {
+&"": SubResource("AnimationLibrary_ixl8n")
+}
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08773804, 0, -0.16060352)
@@ -37,7 +209,7 @@ transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 shape = SubResource("ConcavePolygonShape3D_ecy7y")
 
 [node name="Y_bed" parent="." instance=ExtResource("3_gefdw")]
-transform = Transform3D(0.75954676, 0, 0.026245235, 0, 0.7600001, 0, -0.026245235, 0, 0.75954676, 3.4199545, 0.4714223, -3.6294897)
+transform = Transform3D(0.54976076, 0, 0.016220484, 0, 0.55, 0, -0.016220484, 0, 0.54976076, 4.245365, 0.05442071, -3.9673607)
 
 [node name="Y_tumbochka" parent="." instance=ExtResource("4_dua0g")]
 transform = Transform3D(-0.49992386, 0, 0.008726197, 0, 0.5, 0, -0.008726197, 0, -0.49992386, 5.1653156, 0.56068957, -0.10639584)
@@ -58,6 +230,7 @@ transform = Transform3D(0.19425596, 0, -0.047588035, 0, 0.2, 0, 0.047588035, 0, 
 
 [node name="OmniLight3D" type="OmniLight3D" parent="Y_lamp_nocover2"]
 transform = Transform3D(5, 0, -2.3841858e-07, 0, 5, 0, 2.3841858e-07, 0, 5, 0, 0, 0)
+light_energy = 4.0
 light_indirect_energy = 1.3
 light_bake_mode = 1
 shadow_enabled = true
@@ -67,9 +240,22 @@ omni_shadow_mode = 0
 
 [node name="OmniLight3D2" type="OmniLight3D" parent="Y_lamp_nocover2"]
 transform = Transform3D(5, 0, -4.7683716e-07, 0, 5, 0, 4.7683716e-07, 0, 5, 26.871605, 0, -3.9181275)
+light_energy = 4.0
 light_indirect_energy = 1.3
 light_bake_mode = 1
 shadow_enabled = true
 shadow_blur = 10.0
 omni_range = 10.0
 omni_shadow_mode = 0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.9272328, 0.07701487, 0.36648107, -0.07162342, 0.99703, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+current = true
+
+[node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
+libraries = {
+&"": SubResource("AnimationLibrary_7gtko")
+}
+
+[editable path="Player"]
+[editable path="Player/Y"]

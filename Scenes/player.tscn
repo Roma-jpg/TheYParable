@@ -1,14 +1,13 @@
-[gd_scene load_steps=8 format=3 uid="uid://bq3np8buadnid"]
+[gd_scene load_steps=7 format=3 uid="uid://bq3np8buadnid"]
 
 [ext_resource type="Script" uid="uid://b72n47ccqvnsw" path="res://Scripts/player.gd" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://bk7o521qvk5po" path="res://Scripts/InteractionManager.gd" id="2_i3pqv"]
-[ext_resource type="Material" uid="uid://brj2jayoo0l0d" path="res://addons/prototype_mini_bundle/M_prototype_blue.tres" id="2_onrkg"]
 [ext_resource type="PackedScene" uid="uid://fmucbryt7t4g" path="res://Scenes/text_hint.tscn" id="4_hqtel"]
 [ext_resource type="PackedScene" uid="uid://bnrtprgsyyuxi" path="res://Scenes/SubtitleScene.tscn" id="5_fkybt"]
+[ext_resource type="PackedScene" uid="uid://buq1tixcpcrjo" path="res://Scenes/y.tscn" id="5_x3wgy"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sh265"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_4flbx"]
+radius = 0.30908203
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_4flbx")
@@ -46,15 +45,27 @@ text = "•"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-material_override = ExtResource("2_onrkg")
-mesh = SubResource("CapsuleMesh_4flbx")
-
 [node name="InteractionUI" parent="." instance=ExtResource("4_hqtel")]
 
 [node name="Subtitles" parent="." instance=ExtResource("5_fkybt")]
 
 [node name="Head" type="Node3D" parent="."]
 
+[node name="Y" parent="." instance=ExtResource("5_x3wgy")]
+transform = Transform3D(-0.28, 0, -2.4478377e-08, 0, 0.28, 0, 2.4478377e-08, 0, -0.28, 0, -0.90727353, 0.08950585)
+
+[node name="Skeleton3D" parent="Y/metarig" index="0"]
+bones/5/rotation = Quaternion(-0.18090993, 1.073319e-06, -2.034062e-08, 0.98349965)
+bones/7/rotation = Quaternion(-0.25886387, 0.645409, -0.5470596, 0.466007)
+bones/8/rotation = Quaternion(-0.02850832, 0.039727114, 0.011290559, 0.99874)
+bones/10/rotation = Quaternion(-0.25886396, -0.64540905, 0.5470596, 0.46600688)
+bones/11/rotation = Quaternion(-0.028508203, -0.039727043, -0.011290759, 0.99874)
+bones/24/position = Vector3(1.6189862, 5.5867276, 0.49365187)
+
+[node name="spine_005" parent="Y/metarig/Skeleton3D" index="0"]
+transform = Transform3D(1, -3.4008235e-07, 2.1128021e-06, 3.693675e-07, 0.9999033, -0.013876408, -2.1078786e-06, 0.013876408, 0.9999033, 0.013995358, 4.402644, 0.3663957)
+
 [connection signal="interactable_focused" from="Camera3D/InteractionManager" to="InteractionUI" method="show_interaction"]
 [connection signal="interactable_unfocused" from="Camera3D/InteractionManager" to="InteractionUI" method="hide_interaction"]
+
+[editable path="Y"]

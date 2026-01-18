@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://buq1tixcpcrjo"]
+
+[ext_resource type="PackedScene" uid="uid://cu8imxgkv680a" path="res://Assets/3DModels/Y.glb" id="1_7e4l1"]
+
+[node name="Y" instance=ExtResource("1_7e4l1")]
+
+[node name="Skeleton3D" parent="metarig" index="0"]
+bones/0/position = Vector3(0.0139953345, 1.833467, 0.19679394)
+bones/0/rotation = Quaternion(0.12581971, 1.16841875e-07, 1.357878e-08, 0.99205315)
+bones/1/rotation = Quaternion(-0.09939111, -1.1479275e-08, -3.233906e-08, 0.99504846)
+bones/2/rotation = Quaternion(-0.03754322, -1.0843718e-07, 6.504925e-09, 0.9992951)
+bones/5/rotation = Quaternion(-0.18093695, 3.5867254e-09, 3.5374936e-09, 0.9834947)
+bones/7/rotation = Quaternion(-0.25885916, 0.64539236, -0.5470733, 0.46601665)
+bones/8/rotation = Quaternion(-0.028558211, 0.039745297, 0.011291596, 0.9987378)
+bones/10/rotation = Quaternion(-0.25885934, -0.6453924, 0.5470733, 0.46601647)
+bones/11/rotation = Quaternion(-0.028558094, -0.039745227, -0.011291797, 0.9987378)
+bones/12/rotation = Quaternion(-0.24958415, -0.75026864, -0.3335722, 0.5133559)
+bones/13/rotation = Quaternion(-0.24958427, 0.75026864, 0.33357215, 0.513356)
+bones/14/rotation = Quaternion(0.99039394, -8.684513e-09, 2.4653562e-07, 0.1382745)
+bones/15/rotation = Quaternion(0.03576999, -1.018434e-08, -2.735361e-09, 0.9993601)
+bones/16/rotation = Quaternion(-0.7185714, -8.328125e-08, -8.602219e-08, 0.69545317)
+bones/17/rotation = Quaternion(5.180484e-10, 0.99997646, -0.006865056, -7.549611e-08)
+bones/19/rotation = Quaternion(0.99039394, -4.165182e-08, 1.0406935e-08, 0.13827454)
+bones/20/rotation = Quaternion(0.035769995, -2.9323926e-08, -1.1273089e-09, 0.9993601)
+bones/21/rotation = Quaternion(-0.71857136, 1.0926126e-07, 8.51156e-08, 0.6954533)
+bones/23/rotation = Quaternion(-0.7070902, 0.70709014, -0.004853984, -0.0048539843)
+bones/24/position = Vector3(1.6189862, 5.586692, 0.49365187)
+
+[node name="spine_005" parent="metarig/Skeleton3D" index="0"]
+transform = Transform3D(1, -8.21565e-15, -8.7929664e-14, -3.1086245e-15, 0.99990416, -0.013821483, 3.996803e-14, 0.013821483, 0.99990416, 0.013995358, 4.402644, 0.3663957)

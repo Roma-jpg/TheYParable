@@ -101,9 +101,13 @@ func _animate_progress(target: float):
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _fade_in():
+	if fade_time <= 0.0:
+		modulate.a = 1.0
+		return
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, fade_time)
 	await tween.finished
+
 
 func _fade_out():
 	var tween = create_tween()
