@@ -14,6 +14,11 @@ func _ready():
 	MonologueSystem.subtitle_changed.connect(_on_subtitle_changed)
 	hide_subtitle()
 	
+	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	
 	# Настраиваем начальный размер
 	subtitle_panel.custom_minimum_size = Vector2(min_width, 50)
 
@@ -42,45 +47,37 @@ func show_subtitle(text: String):
 	tween.tween_property(subtitle_panel, "modulate", Color.WHITE, 0.3).from(Color.TRANSPARENT)
 
 func adjust_panel_size():
-	"""Автоматически подгоняет размер панели под текст"""
-	
-	# Получаем размер текста в Label
-	var font = subtitle_label.get_theme_font("font")
-	var font_size = subtitle_label.get_theme_font_size("font_size")
-	var text_width = font.get_string_size(subtitle_label.text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size).x
-	var text_height = font.get_string_size(subtitle_label.text, HORIZONTAL_ALIGNMENT_CENTER, max_width, font_size).y
-	
-	# Добавляем отступы MarginContainer
+	# Clamp panel width so wrapping can happen
+	subtitle_panel.custom_minimum_size.x = min_width
+
+	var label_size = subtitle_label.get_minimum_size()
+
 	var margin_left = margin_container.get_theme_constant("margin_left")
 	var margin_right = margin_container.get_theme_constant("margin_right")
 	var margin_top = margin_container.get_theme_constant("margin_top")
 	var margin_bottom = margin_container.get_theme_constant("margin_bottom")
-	
-	# Рассчитываем конечный размер
+
 	var final_width = clamp(
-		text_width + margin_left + margin_right + padding.x * 2,
+		label_size.x + margin_left + margin_right + padding.x * 2,
 		min_width,
 		max_width
 	)
-	
-	var final_height = text_height + margin_top + margin_bottom + padding.y * 2
-	
-	# Устанавливаем размер панели
+
+	var final_height = label_size.y + margin_top + margin_bottom + padding.y * 2
+
 	subtitle_panel.custom_minimum_size = Vector2(final_width, final_height)
-	
-	# Также устанавливаем текущий размер
-	subtitle_panel.size = Vector2(final_width, final_height)
+
+
 
 func center_panel():
-	"""Центрирует панель внизу экрана"""
 	var viewport_size = get_viewport().get_visible_rect().size
 	var panel_size = subtitle_panel.size
-	
-	# Позиция внизу с отступом
-	var pos_x = (viewport_size.x - panel_size.x) / 2
-	var pos_y = viewport_size.y - panel_size.y - 20  # 20px от низа
-	
-	subtitle_panel.position = Vector2(pos_x, pos_y)
+
+	subtitle_panel.global_position = Vector2(
+		(viewport_size.x - panel_size.x) / 2,
+		viewport_size.y - panel_size.y - 20
+	)
+
 
 func hide_subtitle():
 	# Анимация исчезновения

@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://usyxiym0q1g8"]
+[gd_scene load_steps=22 format=3 uid="uid://usyxiym0q1g8"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
 [ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="5_n4xud"]
+[ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="8_qjx48"]
+[ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="9_ixl8n"]
 
 [sub_resource type="Animation" id="Animation_7gtko"]
 resource_name = "walk_up"
@@ -165,6 +167,12 @@ _data = {
 &"RESET": SubResource("Animation_n4xud")
 }
 
+[sub_resource type="SphereMesh" id="SphereMesh_7o5gw"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_a2wcv"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kntqd"]
+
 [node name="StartRoom" type="Node3D"]
 script = ExtResource("1_n4xud")
 
@@ -256,6 +264,22 @@ current = true
 libraries = {
 &"": SubResource("AnimationLibrary_7gtko")
 }
+
+[node name="Sphr" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.898881, 0.58725405, -3.1310008)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Sphr"]
+material_override = ExtResource("8_qjx48")
+mesh = SubResource("SphereMesh_7o5gw")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sphr"]
+shape = SubResource("SphereShape3D_a2wcv")
+
+[node name="Area3D" type="Area3D" parent="Sphr"]
+script = ExtResource("9_ixl8n")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sphr/Area3D"]
+shape = SubResource("BoxShape3D_kntqd")
 
 [editable path="Player"]
 [editable path="Player/Y"]

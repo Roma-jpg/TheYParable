@@ -10,6 +10,7 @@ func _ready() -> void:
 	LoadingScreen.fade_time = 0
 	LoadingScreen.start(4, "Совет: чтобы прыгать, прыгните")
 	
+	MaterialManager.make_objects_white()
 	camera_animation_player.play("CameraPickup")
 	camera_animation_player.stop()          # stop at current frame
 	camera_animation_player.seek(0.0, true)
@@ -53,6 +54,9 @@ func _ready() -> void:
 	await camera_animation_player.animation_finished
 	print("done")
 	_unlock_player_controls()
+	
+	await get_tree().create_timer(2.0).timeout
+	
 
 func _lock_player_controls():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

@@ -1,6 +1,6 @@
 extends Interactable
 
-@export var interaction_count: int = 0
+@export var switch := false
 
 func _ready():
 	super._ready()
@@ -10,9 +10,9 @@ func update_interaction_text():
 	interaction_text = interaction_text
 
 func perform_interaction():
-	LoadingScreen.start(
-	4.0,
-	"Совет: Чтобы идти вперёд, идите вперёд."
-	)
-	await get_tree().create_timer(5.2).timeout
-	LoadingScreen.allow_fade_out()
+	if !switch:
+		MaterialManager.make_objects_white()
+		switch = true
+	else:
+		MaterialManager.revert_objects()
+		switch = false
