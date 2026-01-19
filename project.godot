@@ -21,6 +21,7 @@ MonologueSystem="*res://Scripts/MonologueSystem.gd"
 Console="*res://Scenes/console.tscn"
 LoadingScreen="*res://Scenes/loading_screen.tscn"
 MaterialManager="*res://Scripts/MaterialManager.gd"
+VisualisationDirector="*res://Scenes/OverlaySystem/VisualisationDirector.gd"
 
 [display]
 
