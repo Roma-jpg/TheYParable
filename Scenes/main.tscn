@@ -2,14 +2,14 @@
 
 [ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="1_h2yge"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://r705u878a7uv" path="res://Scripts/CubeExample.gd" id="3_5vw27"]
 [ext_resource type="Material" uid="uid://cmu4vfp7y5t6b" path="res://addons/prototype_mini_bundle/M_prototype_purple.tres" id="4_272bh"]
 [ext_resource type="Material" uid="uid://7to3kb1tisdd" path="res://addons/prototype_mini_bundle/M_prototype_orange.tres" id="5_5vw27"]
-[ext_resource type="Script" uid="uid://0d0fmlxsop6" path="res://Scripts/CubeExample2.gd" id="6_d1ilt"]
+[ext_resource type="Script" path="res://Scripts/CubeExample2.gd" id="6_d1ilt"]
 [ext_resource type="Material" uid="uid://dyx4l6ea0am6f" path="res://addons/prototype_mini_bundle/M_prototype_green.tres" id="6_kek77"]
 [ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="7_4c57u"]
-[ext_resource type="Script" uid="uid://cqfcnk44dde5f" path="res://Scripts/CubeExample3.gd" id="8_6iyac"]
+[ext_resource type="Script" path="res://Scripts/CubeExample3.gd" id="8_6iyac"]
 [ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="10_fdnlq"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]

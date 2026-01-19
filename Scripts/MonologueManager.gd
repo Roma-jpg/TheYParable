@@ -11,7 +11,7 @@ signal audio_progress(progress, duration)
 
 # Настройки
 var subtitle_prefix: String = "Диктор: "
-var audio_folder: String = "res://Assets/Audio/Monologues/"
+var audio_folder: String = "res://audio/monologues/"
 var subtitles_enabled: bool = true
 var auto_advance: bool = true
 
@@ -34,16 +34,14 @@ var subtitle_settings = {
 
 # Конфигурация аудио
 var audio_config = {
-	"volume_db": -5.0,
+	"volume_db": 0.0,
 	"pitch_scale": 1.0,
 	"bus": "Master"
-}	
+}
 
 func _ready():
 	setup_audio_player()
 	load_monologues()
-	# Load additional monologues from JSON
-	load_monologues_from_json("res://data/monologues.json")
 	
 func setup_audio_player():
 	"""Настройка аудиоплеера"""
@@ -54,38 +52,15 @@ func setup_audio_player():
 	add_child(current_audio)
 
 func load_monologues():
-	"""Загрузка базовых монологов"""
+	"""Загрузка монологов (можно переопределить)"""
+	# Пример заполнения - можно загружать из JSON или других источников
 	monologues = {
-		"1a_now_you_can_move": "Вот, теперь ты можешь двигаться.",
-		"1a_no_anim": "А, точно, у тебя же еще нету анимации. Секунду.",
-		"1a_Y_wake_up": "Игрик, просыпайся. У нас сегодня много дел. Игрик, просыпайся. У нас сегодня много дел. Игрик, просыпайся. У нас сегодня много дел.",
-		"1a_see_that_camera": "Видишь вон ту камеру на тумбочке? Подойди к ней и надень ее на голову."
 	}
-	print("Базовые монологи загружены: ", monologues.size(), " записей")
-
-func load_monologues_from_json(path: String):
-	"""Загрузка монологов из JSON файла"""
-	var file = FileAccess.open(path, FileAccess.READ)
-	if file:
-		var json = JSON.new()
-		var error = json.parse(file.get_as_text())
-		if error == OK:
-			var data = json.data
-			if data.has("monologues"):
-				var count_before = monologues.size()
-				for key in data["monologues"]:
-					monologues[key] = data["monologues"][key]
-				print("Загружено монологов из JSON: ", monologues.size() - count_before)
-				print_all_monologues()  # Debug print
-		else:
-			push_error("Ошибка парсинга JSON: ", json.get_error_message())
-	else:
-		push_warning("Не удалось открыть файл: ", path)
+	print("Монологи загружены: ", monologues.size(), " записей")
 
 func add_monologue(key: String, text: String):
 	"""Добавить монолог вручную"""
 	monologues[key] = text
-	print("Добавлен монолог: ", key)
 
 func remove_monologue(key: String):
 	"""Удалить монолог"""
@@ -93,8 +68,6 @@ func remove_monologue(key: String):
 
 func play_monologue(key: String, force: bool = false) -> bool:
 	"""Воспроизвести монолог по ключу"""
-	
-	print("Попытка воспроизвести монолог: ", key)  # Debug
 	
 	if not monologues.has(key):
 		push_error("Монолог с ключом '%s' не найден!" % key)
@@ -114,20 +87,16 @@ func play_monologue(key: String, force: bool = false) -> bool:
 	var audio_path = audio_folder + key
 	
 	# Поиск аудиофайла с различными расширениями
-	var audio_extensions = [".wav", ".mp3", ".ogg", ".opus"]
+	var audio_extensions = [".wav", ".mp3", ".ogg"]
 	var audio_stream = null
-	var has_audio_file = false
 	
 	for ext in audio_extensions:
 		var full_path = audio_path + ext
 		if ResourceLoader.exists(full_path):
 			audio_stream = load(full_path)
-			has_audio_file = true
-			print("Найден аудиофайл: ", full_path)
 			break
 	
-	if has_audio_file and audio_stream:
-		# Случай с существующим аудиофайлом
+	if audio_stream:
 		current_audio.stream = audio_stream
 		current_audio.volume_db = audio_config["volume_db"]
 		current_audio.pitch_scale = audio_config["pitch_scale"]
@@ -139,32 +108,21 @@ func play_monologue(key: String, force: bool = false) -> bool:
 			show_subtitle(text)
 		
 		monologue_started.emit(key)
-		print("Воспроизведение (с аудио): ", key)
+		print("Воспроизведение: ", key)
 		return true
 	else:
-		# Случай без аудиофайла - используем таймер на основе текста
-		print("Аудиофайл не найден, воспроизводим только текст: ", key)
-		
+		push_warning("Аудиофайл не найден для ключа: %s" % key)
+		# Воспроизводим только текст, если нет аудио
 		if subtitles_enabled:
 			show_subtitle(text)
-		
 		monologue_started.emit(key)
-		is_playing = true
-		
-		# Создаем таймер для имитации длительности монолога
-		var duration = calculate_subtitle_duration(text)
-		print("Длительность субтитров: ", duration, " секунд")
-		var timer = create_timer(duration)
-		timer.timeout.connect(_on_non_audio_finished.bind(key), CONNECT_ONE_SHOT)
-		
-		print("Воспроизведение (без аудио): ", key)
+		monologue_finished.emit(key)
 		return true
 
 func show_subtitle(text: String):
 	"""Показать субтитры с префиксом"""
 	var full_text = subtitle_prefix + text
 	subtitle_changed.emit(full_text)
-	print("Показаны субтитры: ", full_text)
 	
 	# Автоматическое скрытие через время (если нет аудио)
 	if not current_audio.playing:
@@ -173,12 +131,10 @@ func show_subtitle(text: String):
 
 func calculate_subtitle_duration(text: String) -> float:
 	"""Рассчитать длительность показа субтитра на основе текста"""
-	var char_count = text.length()
-	# 0.12 секунд на символ (включая пробелы)
-	var duration = char_count * 0.1
-	# Минимальная и максимальная длительность для комфортного чтения
-	return clamp(duration, 1.5, 15.0)
-	
+	var words = text.split(" ").size()
+	var base_time = words * 0.5  # 0.5 секунды на слово
+	return clamp(base_time * subtitle_settings["duration_multiplier"], 2.0, 10.0)
+
 func create_timer(duration: float) -> Timer:
 	"""Создать одноразовый таймер"""
 	var timer = Timer.new()
@@ -226,24 +182,9 @@ func _on_audio_finished():
 			await get_tree().create_timer(0.5).timeout
 			play_monologue(next_key)
 
-func _on_non_audio_finished(key: String):
-	"""Обработчик завершения монолога без аудио"""
-	if is_playing:
-		is_playing = false
-		_hide_subtitle()
-		monologue_finished.emit(key)
-		print("Монолог без аудио завершен: ", key)
-		
-		# Воспроизвести следующий из очереди
-		if audio_queue.size() > 0:
-			var next_key = audio_queue.pop_front()
-			await get_tree().create_timer(0.5).timeout
-			play_monologue(next_key)
-
 func _hide_subtitle():
 	"""Скрыть субтитры"""
 	subtitle_changed.emit("")
-	print("Субтитры скрыты")
 
 func play_sequence(keys: Array):
 	"""Воспроизвести последовательность монологов"""

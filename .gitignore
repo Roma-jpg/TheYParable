@@ -5,6 +5,7 @@
 # Ignore all .import files
 *.import
 *.tmp
+*.uid
 
 # Optional but safe editor configs
 export.cfg
