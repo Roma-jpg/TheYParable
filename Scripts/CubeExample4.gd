@@ -8,4 +8,4 @@ func update_interaction_text():
 	interaction_text = interaction_text
 
 func perform_interaction():
-	VisualisationDirector.show_slide("materials")
+	VisualisationDirector.show_slide("materials", true)
