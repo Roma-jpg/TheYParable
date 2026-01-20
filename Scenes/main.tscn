@@ -55,11 +55,13 @@ shape = SubResource("BoxShape3D_h2yge")
 
 [node name="Player" parent="." instance=ExtResource("1_ig7tw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+collision_mask = 33
 
 [node name="Objs" type="Node3D" parent="."]
 
 [node name="Cbe" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.137869, 0.58725405, 4.0522947)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Cbe"]
 material_override = ExtResource("4_272bh")
@@ -77,6 +79,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Cbe4" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.7100754, 0.58725405, 3.1393633)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Cbe4"]
 material_override = ExtResource("4_272bh")
@@ -94,6 +97,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Cbe5" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.0668306, 0.58725405, 0.45607758)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Cbe5"]
 material_override = ExtResource("4_272bh")
@@ -111,6 +115,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Cbe6" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.631881, 0.58725405, -2.278316)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Cbe6"]
 material_override = ExtResource("4_272bh")
@@ -128,6 +133,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Cbe2" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8834743, 0.58725405, 1.5815625)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Cbe2"]
 material_override = ExtResource("5_5vw27")
@@ -144,6 +150,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Cbe3" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5871587, 0.58725405, 3.5988405)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Cbe3"]
 material_override = ExtResource("6_kek77")
@@ -160,6 +167,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="Sphr" type="RigidBody3D" parent="Objs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0062232018, 0.58725405, -6.3053837)
+collision_layer = 33
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Objs/Sphr"]
 material_override = ExtResource("7_4c57u")

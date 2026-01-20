@@ -13,6 +13,10 @@ extends CharacterBody3D
 @onready var subtitles: CanvasLayer = $Subtitles
 @onready var crosshair: Label = $Crosshair/Control/Label
 
+@export var push_force: float = 150.0           # Tune: higher = stronger push (try 100-300)
+@export var push_layers: int = 1 << 5           # Layer 6 (bitshift: 1<<5 = 32 = layer 6)
+@export var max_push_distance: float = 1.5      # How far player can push (raycast limit)
+@export var player_mass: float = 60.0           # "Player weight" for heavy box resistance
 	
 # Флаги возможностей
 var can_move := true
@@ -54,7 +58,7 @@ func _physics_process(delta):
 		velocity.z = 0
 	else:
 		handle_movement(delta)
-
+	_push_rigidbodies(delta)
 	move_and_slide()
 
 func handle_movement(delta):
@@ -82,6 +86,42 @@ func handle_movement(delta):
 
 	if can_jump and Input.is_action_just_pressed("jump") and is_on_floor():
 		velocity.y = jump_force
+
+# Add this function to your player.gd
+func _push_rigidbodies(delta: float) -> void:
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		if collider is RigidBody3D:
+			var normal = collision.get_normal()
+			
+			# Skip pushing if mostly standing on top (prevents downward torque on landing)
+			if normal.y > 0.65:	# ← tune 0.6–0.8; higher = more strict
+				continue
+			
+			# Also skip if almost vertical (side hits only)
+			if abs(normal.y) > 0.9:
+				continue
+			
+			var push_dir = -normal
+			push_dir.y = 0.0
+			if push_dir.length_squared() < 0.01:
+				continue
+			push_dir = push_dir.normalized()
+			
+			var mass_ratio = min(player_mass / collider.mass, 1.0)
+			if mass_ratio < 0.25:
+				continue
+			
+			var contact_pos_local = collision.get_position() - collider.global_position
+			var impulse = push_dir * push_force * mass_ratio * delta
+			
+			collider.apply_impulse(impulse, contact_pos_local)
+			
+			# Optional: tiny slowdown only when actually pushing side
+			velocity.x *= 0.9
+			velocity.z *= 0.9
 
 # ===== Методы управления возможностями =====
 
