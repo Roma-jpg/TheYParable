@@ -1,11 +1,11 @@
 [gd_scene load_steps=22 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
-[ext_resource type="Script" path="res://Scripts/start_room.gd" id="1_n4xud"]
+[ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
 [ext_resource type="PackedScene" uid="uid://0dyufbh2dug" path="res://Assets/3DModels/room.glb" id="2_qwpf4"]
 [ext_resource type="PackedScene" uid="uid://daggepgs1p08w" path="res://Assets/3DModels/Y_bed.glb" id="3_gefdw"]
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
-[ext_resource type="Script" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
+[ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="5_n4xud"]
 [ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="8_qjx48"]
 [ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="9_ixl8n"]
@@ -257,7 +257,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.07701486, 0.36648107, -0.07162342, 0.9970299, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.077014856, 0.36648107, -0.07162342, 0.99702984, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]

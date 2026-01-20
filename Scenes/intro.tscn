@@ -1,0 +1,152 @@
+[gd_scene load_steps=11 format=3 uid="uid://cc1fk0kauj01k"]
+
+[ext_resource type="Script" uid="uid://deo4m5abixkm7" path="res://Scripts/intro.gd" id="1_alxvg"]
+[ext_resource type="FontFile" uid="uid://bae4oxwum24pt" path="res://Assets/Fonts/119-font.otf" id="1_duh1u"]
+[ext_resource type="FontFile" uid="uid://bjmmuekct6o21" path="res://Assets/Fonts/1704-font.otf" id="2_alxvg"]
+[ext_resource type="Texture2D" uid="uid://dxc46yge88hbp" path="res://Assets/Pictures/0901ee09f3cc9dc8f4608f82f7cf8bd996a28f6f-1200x630.png" id="4_3bmuq"]
+[ext_resource type="Texture2D" uid="uid://ds54sa3m4y8l2" path="res://Assets/Pictures/image-5-1024x620.png" id="5_nn7w8"]
+[ext_resource type="Texture2D" uid="uid://c542meg71jvx" path="res://Assets/Pictures/5347688_efdd_2.jpg" id="6_b26wi"]
+[ext_resource type="Texture2D" uid="uid://lwgyjuncslci" path="res://Assets/Pictures/wZX3kfcBTyyq3uhQdQFFcb.jpg" id="7_ewknp"]
+[ext_resource type="Texture2D" uid="uid://dv41f8e4ifh25" path="res://Assets/Pictures/icon.svg" id="8_nn7w8"]
+[ext_resource type="Texture2D" uid="uid://dl2wmdgsqy42m" path="res://Assets/Pictures/photo_2026-01-18_15-33-38.jpg" id="9_ewknp"]
+[ext_resource type="Texture2D" uid="uid://622et7hd3m1x" path="res://Assets/Pictures/photo_2026-01-18_15-34-42.jpg" id="10_a7jvs"]
+
+[node name="Intro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_alxvg")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.103743516, 0.10374353, 0.103743516, 1)
+
+[node name="Slide1" type="MarginContainer" parent="CanvasLayer/ColorRect"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 34
+
+[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/ColorRect/Slide1"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="CanvasLayer/ColorRect/Slide1/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_duh1u")
+theme_override_font_sizes/font_size = 101
+text = "Притча об Игрике"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/ColorRect/Slide1/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_alxvg")
+theme_override_font_sizes/font_size = 19
+text = "Создано Кошелевым Романом в рамках итогового проекта."
+horizontal_alignment = 1
+
+[node name="Copyright" type="Label" parent="CanvasLayer/ColorRect/Slide1/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_alxvg")
+theme_override_font_sizes/font_size = 13
+text = "Romeo558 ©"
+horizontal_alignment = 1
+
+[node name="Slide2" type="MarginContainer" parent="CanvasLayer/ColorRect"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 35
+
+[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/ColorRect/Slide2"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="CanvasLayer/ColorRect/Slide2/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_fonts/font = ExtResource("1_duh1u")
+theme_override_font_sizes/font_size = 81
+text = "Движок:"
+horizontal_alignment = 1
+
+[node name="0901Ee09f3Cc9Dc8f4608f82f7Cf8Bd996a28f6f1200x630" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide2"]
+position = Vector2(216, 199)
+scale = Vector2(0.20904204, 0.21904764)
+texture = ExtResource("4_3bmuq")
+
+[node name="Image51024x620" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide2"]
+position = Vector2(229, 398)
+scale = Vector2(0.39257818, 0.38225818)
+texture = ExtResource("5_nn7w8")
+
+[node name="5347688Efdd2" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide2"]
+position = Vector2(700, 199)
+scale = Vector2(0.32701424, 0.3270142)
+texture = ExtResource("6_b26wi")
+
+[node name="WZx3KfcBTyyq3UhQdQfFcb" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide2"]
+position = Vector2(723, 396.00003)
+scale = Vector2(0.2, 0.19999997)
+texture = ExtResource("7_ewknp")
+
+[node name="Slide3" type="MarginContainer" parent="CanvasLayer/ColorRect"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 35
+
+[node name="HBoxContainer" type="VBoxContainer" parent="CanvasLayer/ColorRect/Slide3"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="CanvasLayer/ColorRect/Slide3/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_fonts/font = ExtResource("1_duh1u")
+theme_override_font_sizes/font_size = 81
+text = "Мой выбор движка:"
+horizontal_alignment = 1
+
+[node name="Icon" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide3"]
+position = Vector2(731, 69)
+texture = ExtResource("8_nn7w8")
+
+[node name="Photo20260118153338" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide3"]
+position = Vector2(313, 289)
+scale = Vector2(0.43641633, 0.43641618)
+texture = ExtResource("9_ewknp")
+
+[node name="Photo20260118153442" type="Sprite2D" parent="CanvasLayer/ColorRect/Slide3"]
+position = Vector2(771.99994, 313.99997)
+scale = Vector2(0.60674155, 0.6067416)
+texture = ExtResource("10_a7jvs")

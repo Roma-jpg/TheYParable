@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://bdbkcd83cyl5h"]
 
-[ext_resource type="Script" uid="uid://sta8vyflxguc" path="res://Scenes/OverlaySystem/overlay_slide.gd" id="1_jc1mg"]
+[ext_resource type="Script" uid="uid://drdnc6a3wlb10" path="res://Scenes/OverlaySystem/overlay_slide.gd" id="1_jc1mg"]
 
 [sub_resource type="Animation" id="Animation_jc1mg"]
 length = 0.001

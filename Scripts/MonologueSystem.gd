@@ -1,295 +1,218 @@
 extends Node
 
-## Система управления монологами с аудио и субтитрами
-## Использование: MonologueSystem.play_monologue("intro_1a")
+# Signals
+signal monologue_started(key: String)
+signal monologue_finished(key: String)
+signal subtitle_changed(text: String)
 
-# Сигналы системы
-signal monologue_started(key)
-signal monologue_finished(key)
-signal subtitle_changed(text)
-signal audio_progress(progress, duration)
-
-# Настройки
+# Settings
 var subtitle_prefix: String = "Диктор: "
 var audio_folder: String = "res://Assets/Audio/Monologues/"
 var subtitles_enabled: bool = true
 var auto_advance: bool = true
 
-# Текущий монолог
-var current_key: String = ""
+# Data
+var monologues: Dictionary = {}
+var audio_queue: Array[String] = []
+
+# Audio player
 var current_audio: AudioStreamPlayer
+var current_key: String = ""
 var is_playing: bool = false
 
-# Словари для данных
-var monologues: Dictionary = {}
-var audio_queue: Array = []
-
-# Настройки формата субтитров
+# Subtitle settings
 var subtitle_settings = {
-	"font_size": 24,
-	"font_color": Color.WHITE,
-	"background_color": Color(0, 0, 0, 0.7),
-	"duration_multiplier": 1.2, # Множитель длительности для текста
+	"duration_multiplier": 1.2,
 }
 
-# Конфигурация аудио
+# Audio config
 var audio_config = {
 	"volume_db": -5.0,
 	"pitch_scale": 1.0,
 	"bus": "Master"
-}	
+}
 
-func _ready():
+func _ready() -> void:
 	setup_audio_player()
-	load_monologues()
-	# Load additional monologues from JSON
+	load_base_monologues()
 	load_monologues_from_json("res://data/monologues.json")
-	
-func setup_audio_player():
-	"""Настройка аудиоплеера"""
+
+func setup_audio_player() -> void:
 	current_audio = AudioStreamPlayer.new()
 	current_audio.name = "MonologueAudioPlayer"
 	current_audio.bus = audio_config["bus"]
 	current_audio.finished.connect(_on_audio_finished)
 	add_child(current_audio)
 
-func load_monologues():
-	"""Загрузка базовых монологов"""
+func load_base_monologues() -> void:
 	monologues = {
 		"1a_now_you_can_move": "Вот, теперь ты можешь двигаться.",
 		"1a_no_anim": "А, точно, у тебя же еще нету анимации. Секунду.",
 		"1a_Y_wake_up": "Игрик, просыпайся. У нас сегодня много дел. Игрик, просыпайся. У нас сегодня много дел. Игрик, просыпайся. У нас сегодня много дел.",
 		"1a_see_that_camera": "Видишь вон ту камеру на тумбочке? Подойди к ней и надень ее на голову."
 	}
-	print("Базовые монологи загружены: ", monologues.size(), " записей")
 
-func load_monologues_from_json(path: String):
-	"""Загрузка монологов из JSON файла"""
+func load_monologues_from_json(path: String) -> void:
+	if not FileAccess.file_exists(path):
+		create_default_json(path)
+		return
+	
 	var file = FileAccess.open(path, FileAccess.READ)
+	if not file:
+		push_error("Could not open monologues JSON: ", path)
+		return
+	
+	var json_text = file.get_as_text()
+	file.close()
+	
+	var json = JSON.new()
+	var error = json.parse(json_text)
+	if error != OK:
+		push_error("JSON parse error in monologues: ", json.get_error_message())
+		return
+	
+	var data = json.data
+	if data is Dictionary and data.has("monologues"):
+		for key in data["monologues"]:
+			monologues[key] = data["monologues"][key]
+
+func create_default_json(path: String) -> void:
+	var dir = path.get_base_dir()
+	if not DirAccess.dir_exists_absolute(dir):
+		DirAccess.make_dir_recursive_absolute(dir)
+	
+	var default_data = {
+		"monologues": {
+			"example_1": "Это пример монолога без аудио файла.",
+			"example_2": "Второй пример с более длинным текстом для тестирования длительности субтитров."
+		}
+	}
+	
+	var file = FileAccess.open(path, FileAccess.WRITE)
 	if file:
-		var json = JSON.new()
-		var error = json.parse(file.get_as_text())
-		if error == OK:
-			var data = json.data
-			if data.has("monologues"):
-				var count_before = monologues.size()
-				for key in data["monologues"]:
-					monologues[key] = data["monologues"][key]
-				print("Загружено монологов из JSON: ", monologues.size() - count_before)
-				print_all_monologues()  # Debug print
-		else:
-			push_error("Ошибка парсинга JSON: ", json.get_error_message())
+		file.store_string(JSON.stringify(default_data, "\t"))
+		file.close()
+		print("Created default monologues.json at: ", path)
+		load_monologues_from_json(path)  # Reload with defaults
 	else:
-		push_warning("Не удалось открыть файл: ", path)
-
-func add_monologue(key: String, text: String):
-	"""Добавить монолог вручную"""
-	monologues[key] = text
-	print("Добавлен монолог: ", key)
-
-func remove_monologue(key: String):
-	"""Удалить монолог"""
-	monologues.erase(key)
+		push_error("Failed to create default monologues.json")
 
 func play_monologue(key: String, force: bool = false) -> bool:
-	"""Воспроизвести монолог по ключу"""
-	
-	print("Попытка воспроизвести монолог: ", key)  # Debug
-	
 	if not monologues.has(key):
-		push_error("Монолог с ключом '%s' не найден!" % key)
+		push_error("Monologue not found: ", key)
 		return false
 	
 	if is_playing and not force:
-		# Добавляем в очередь или прерываем в зависимости от настроек
 		if auto_advance:
 			audio_queue.append(key)
-			print("Добавлено в очередь: ", key)
 			return true
 		else:
-			stop_monologue()
+			return false
 	
+	stop_monologue()  # Clear any previous
 	current_key = key
 	var text = monologues[key]
-	var audio_path = audio_folder + key
 	
-	# Поиск аудиофайла с различными расширениями
-	var audio_extensions = [".wav", ".mp3", ".ogg", ".opus"]
+	# Try to load audio (priority: ogg > wav > mp3)
 	var audio_stream = null
-	var has_audio_file = false
-	
-	for ext in audio_extensions:
-		var full_path = audio_path + ext
+	var extensions = [".ogg", ".wav", ".mp3"]
+	for ext in extensions:
+		var full_path = audio_folder + key + ext
 		if ResourceLoader.exists(full_path):
 			audio_stream = load(full_path)
-			has_audio_file = true
-			print("Найден аудиофайл: ", full_path)
 			break
 	
-	if has_audio_file and audio_stream:
-		# Случай с существующим аудиофайлом
+	if audio_stream:
 		current_audio.stream = audio_stream
 		current_audio.volume_db = audio_config["volume_db"]
 		current_audio.pitch_scale = audio_config["pitch_scale"]
 		current_audio.play()
 		is_playing = true
-		
-		# Показываем субтитры
 		if subtitles_enabled:
 			show_subtitle(text)
-		
 		monologue_started.emit(key)
-		print("Воспроизведение (с аудио): ", key)
 		return true
 	else:
-		# Случай без аудиофайла - используем таймер на основе текста
-		print("Аудиофайл не найден, воспроизводим только текст: ", key)
-		
+		# Text-only mode
 		if subtitles_enabled:
 			show_subtitle(text)
-		
 		monologue_started.emit(key)
 		is_playing = true
 		
-		# Создаем таймер для имитации длительности монолога
 		var duration = calculate_subtitle_duration(text)
-		print("Длительность субтитров: ", duration, " секунд")
-		var timer = create_timer(duration)
-		timer.timeout.connect(_on_non_audio_finished.bind(key), CONNECT_ONE_SHOT)
-		
-		print("Воспроизведение (без аудио): ", key)
+		var timer = Timer.new()
+		timer.wait_time = duration
+		timer.one_shot = true
+		timer.timeout.connect(_on_text_only_finished.bind(key))
+		add_child(timer)
+		timer.start()
 		return true
 
-func show_subtitle(text: String):
-	"""Показать субтитры с префиксом"""
+func show_subtitle(text: String) -> void:
 	var full_text = subtitle_prefix + text
 	subtitle_changed.emit(full_text)
-	print("Показаны субтитры: ", full_text)
 	
-	# Автоматическое скрытие через время (если нет аудио)
+	# Auto-hide if no audio playing
 	if not current_audio.playing:
 		var duration = calculate_subtitle_duration(text)
-		create_timer(duration).timeout.connect(_hide_subtitle, CONNECT_ONE_SHOT)
+		var timer = Timer.new()
+		timer.wait_time = duration
+		timer.one_shot = true
+		timer.timeout.connect(_hide_subtitle)
+		add_child(timer)
+		timer.start()
 
 func calculate_subtitle_duration(text: String) -> float:
-	"""Рассчитать длительность показа субтитра на основе текста"""
 	var char_count = text.length()
-	# 0.12 секунд на символ (включая пробелы)
 	var duration = char_count * 0.1
-	# Минимальная и максимальная длительность для комфортного чтения
 	return clamp(duration, 1.5, 15.0)
-	
-func create_timer(duration: float) -> Timer:
-	"""Создать одноразовый таймер"""
-	var timer = Timer.new()
-	timer.wait_time = duration
-	timer.one_shot = true
-	add_child(timer)
-	timer.start()
-	return timer
 
-func stop_monologue():
-	"""Остановить текущий монолог"""
+func _hide_subtitle() -> void:
+	subtitle_changed.emit("")
+
+func stop_monologue() -> void:
 	if is_playing:
 		current_audio.stop()
 		is_playing = false
 		_hide_subtitle()
-		print("Монолог остановлен: ", current_key)
 
-func skip_monologue():
-	"""Пропустить текущий монолог"""
+func skip_monologue() -> void:
 	if is_playing:
 		current_audio.stop()
 		_on_audio_finished()
 
-func pause_monologue():
-	"""Приостановить монолог"""
-	if current_audio.playing:
-		current_audio.stream_paused = true
-
-func resume_monologue():
-	"""Возобновить монолог"""
-	if is_playing and current_audio.stream_paused:
-		current_audio.stream_paused = false
-
-func _on_audio_finished():
-	"""Обработчик завершения аудио"""
+func _on_audio_finished() -> void:
 	if is_playing:
 		is_playing = false
 		_hide_subtitle()
 		monologue_finished.emit(current_key)
-		print("Монолог завершен: ", current_key)
-		
-		# Воспроизвести следующий из очереди
-		if audio_queue.size() > 0:
-			var next_key = audio_queue.pop_front()
-			await get_tree().create_timer(0.5).timeout
-			play_monologue(next_key)
+		_play_next_in_queue()
 
-func _on_non_audio_finished(key: String):
-	"""Обработчик завершения монолога без аудио"""
-	if is_playing:
+func _on_text_only_finished(key: String) -> void:
+	if is_playing and current_key == key:
 		is_playing = false
 		_hide_subtitle()
 		monologue_finished.emit(key)
-		print("Монолог без аудио завершен: ", key)
-		
-		# Воспроизвести следующий из очереди
-		if audio_queue.size() > 0:
-			var next_key = audio_queue.pop_front()
-			await get_tree().create_timer(0.5).timeout
-			play_monologue(next_key)
+		_play_next_in_queue()
 
-func _hide_subtitle():
-	"""Скрыть субтитры"""
-	subtitle_changed.emit("")
-	print("Субтитры скрыты")
+func _play_next_in_queue() -> void:
+	if audio_queue.size() > 0:
+		var next_key = audio_queue.pop_front()
+		await get_tree().create_timer(0.5).timeout
+		play_monologue(next_key)
 
-func play_sequence(keys: Array):
-	"""Воспроизвести последовательность монологов"""
-	if keys.size() == 0:
+func play_sequence(keys: Array[String]) -> void:
+	if keys.is_empty():
 		return
-	
 	audio_queue.clear()
-	
-	# Добавляем все, кроме первого, в очередь
 	for i in range(1, keys.size()):
 		audio_queue.append(keys[i])
-	
-	# Запускаем первый
 	play_monologue(keys[0])
 
-func get_remaining_time() -> float:
-	"""Получить оставшееся время текущего монолога"""
-	if not is_playing or not current_audio.stream:
-		return 0.0
-	return current_audio.stream.get_length() - current_audio.get_playback_position()
+func clear_queue() -> void:
+	audio_queue.clear()
 
-func set_volume(volume_db: float):
-	"""Установить громкость"""
+func set_volume(volume_db: float) -> void:
 	audio_config["volume_db"] = volume_db
 	if current_audio:
 		current_audio.volume_db = volume_db
-
-func is_monologue_available(key: String) -> bool:
-	"""Проверить, доступен ли монолог"""
-	return monologues.has(key)
-
-func clear_queue():
-	"""Очистить очередь воспроизведения"""
-	audio_queue.clear()
-
-# Функции для дебага
-func print_all_monologues():
-	"""Вывести все доступные монологи"""
-	print("=== Доступные монологи ===")
-	for key in monologues.keys():
-		print("%s: %s" % [key, monologues[key]])
-	print("==========================")
-
-func _process(_delta):
-	"""Отслеживание прогресса воспроизведения"""
-	if is_playing and current_audio.stream:
-		var progress = current_audio.get_playback_position()
-		var duration = current_audio.stream.get_length()
-		audio_progress.emit(progress, duration)

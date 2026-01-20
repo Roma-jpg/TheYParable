@@ -1,101 +1,65 @@
 extends CanvasLayer
 
-@onready var animation_player = $AnimationPlayer
 @onready var dismiss_button = $BGDimmer/DismissButton
 
-# Signals this slide can emit
-signal slide_closed(closed_by_next)
-signal next_requested()
+signal slide_closed
 
-# Configuration - set from outside
 var closable: bool = true
 var allow_next: bool = false
-var is_sequence_slide: bool = false
+var is_closing: bool = false
 
-var is_closing = false
-
-func _ready():
-	# Connect the dismiss button
-	if dismiss_button:
-		dismiss_button.pressed.connect(_on_dismiss_pressed)
-		dismiss_button.visible = closable and not is_sequence_slide
-	
-	# Start fade in animation
-	if animation_player:
-		animation_player.play("fade_in")
-	
-	# Make sure our UI processes even when game is paused
+func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Connect animation finished signal
-	if animation_player:
-		animation_player.animation_finished.connect(_on_animation_finished)
-
-func configure_slide(is_closable: bool, can_go_next: bool = false, in_sequence: bool = false):
-	closable = is_closable
-	allow_next = can_go_next
-	is_sequence_slide = in_sequence
+	# Ensure high layer so new overlays appear on top
+	layer = 1000
+	
+	# Set all CanvasItem children to transparent initially
+	for child in get_children():
+		if child is CanvasItem:
+			child.modulate.a = 0.0
+	
+	# Fade in all children in parallel
+	_fade_children(1.0, 0.3)
 	
 	if dismiss_button:
-		dismiss_button.visible = closable and not is_sequence_slide
+		dismiss_button.pressed.connect(close_slide)
 
-func _on_dismiss_pressed():
-	# Prevent multiple calls
+func configure_slide(is_closable: bool, can_go_next: bool) -> void:
+	closable = is_closable
+	allow_next = can_go_next
+	
+	if dismiss_button:
+		dismiss_button.visible = closable
+
+func close_slide() -> void:
+	if is_closing:
+		return
+	is_closing = true
+	
+	slide_closed.emit()
+	
+	# Fade out all children and free when done
+	_fade_children(0.0, 0.3).finished.connect(queue_free)
+
+func _fade_children(target_alpha: float, duration: float) -> Tween:
+	var tween = create_tween()
+	tween.set_parallel(true)
+	for child in get_children():
+		if child is CanvasItem:
+			tween.tween_property(child, "modulate:a", target_alpha, duration)
+	return tween
+
+func _input(event: InputEvent) -> void:
 	if is_closing:
 		return
 	
-	if not closable:
-		return
-	
-	is_closing = true
-	
-	# Play fade out animation
-	if animation_player:
-		animation_player.play("fade_out")
-	slide_closed.emit(false)  # false = not closed by next button
-
-func close_slide(by_next: bool = false):
-	if is_closing:
-		return
-	
-	is_closing = true
-	
-	# Play fade out animation
-	if animation_player:
-		animation_player.play("fade_out")
-	slide_closed.emit(by_next)
-
-func _on_animation_finished(anim_name):
-	if anim_name == "fade_out":
-		# Remove the slide after fade out
-		queue_free()
-
-func _input(event):
-	# Check for Escape key press (close)
-	if event.is_action_pressed("ui_cancel") and not is_closing:
+	if event.is_action_pressed("ui_cancel"):
 		if closable:
-			_on_dismiss_pressed()
+			close_slide()
 			get_viewport().set_input_as_handled()
 	
-	# Check for Next action (space/enter/gamepad button)
-	if allow_next and event.is_action_pressed("ui_accept") and not is_closing:
-		if is_sequence_slide:
-			close_slide(true)  # true = closed by next button
-			next_requested.emit()
-		elif closable:
-			close_slide(true)
-
-# Also handle gamepad and other inputs
-func _process(delta):
-	# Check for Escape key
-	if Input.is_action_just_pressed("ui_cancel") and not is_closing:
-		if closable:
-			_on_dismiss_pressed()
-	
-	# Check for Next action
-	if allow_next and Input.is_action_just_pressed("ui_accept") and not is_closing:
-		if is_sequence_slide:
-			close_slide(true)
-			next_requested.emit()
-		elif closable:
-			close_slide(true)
+	if event.is_action_pressed("ui_accept"):
+		if allow_next:
+			close_slide()
+			get_viewport().set_input_as_handled()

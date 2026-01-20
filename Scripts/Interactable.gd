@@ -14,20 +14,17 @@ func on_gained_focus():
 	if is_focused:
 		return
 	is_focused = true
-	print("[INTERACTABLE] Focus gained: ", name)
 
 func on_lost_focus():
 	if not is_focused:
 		return
 	is_focused = false
-	print("[INTERACTABLE] Focus lost: ", name)
 
 func interact():
-	print("[INTERACTABLE] Interact called: ", name)
 	perform_interaction()
 
 func perform_interaction():
-	print("[INTERACTABLE] Default interaction")
+	pass  # Subclasses must override
 
 func get_interaction_text() -> String:
 	return interaction_text
