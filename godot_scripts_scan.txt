@@ -1,0 +1,1937 @@
+Scanning for .gd files in: C:\Users\annak\OneDrive\Документы\the-y-parable
+Ignoring folders: addons, .git, node_modules, __pycache__, .venv, venv
+--------------------------------------------------
+
+
+[============================================================]
+[Scenes\OverlaySystem\VisualisationDirector.gd]
+[============================================================]
+
+extends Node
+
+# Dictionary to store your overlay scenes
+var slide_library = {}
+
+# Reference to the current slide being shown
+var current_slide = null
+
+# Sequence management
+var current_sequence: Array = []
+var sequence_index: int = -1
+var sequence_closable: bool = true
+
+func _ready():
+	# Preload your slides here, or register them from elsewhere
+	register_slide("materials", preload("res://Scenes/Overlays/how_materials_work.tscn"))
+	#register_slide("textures", preload("res://Scenes/Overlays/texture_tutorial.tscn"))
+	#register_slide("importance-of-both", preload("res://Scenes/Overlays/importance_of_both.tscn"))
+	# Add all your slides here
+
+# Public function to register slides dynamically
+func register_slide(slide_name: String, slide_scene: PackedScene):
+	slide_library[slide_name] = slide_scene
+
+# Main function to show a slide - now supports both single slide and sequence
+func show_slide(slide_name, closable: bool = true, allow_next: bool = false):
+	# Check if it's a sequence (array) or single slide
+	if slide_name is Array:
+		_show_sequence(slide_name, closable)
+	else:
+		_show_single_slide(slide_name, closable, allow_next)
+
+# Show a single slide
+func _show_single_slide(slide_name: String, closable: bool = true, allow_next: bool = false):
+	# Check if slide exists
+	if not slide_name in slide_library:
+		push_error("Slide not found: ", slide_name)
+		return
+	
+	# Don't show if already showing one (unless it's part of a sequence)
+	if current_slide != null and sequence_index == -1:
+		return
+	
+	# Pause the game
+	get_tree().paused = true
+	
+	# Instantiate the slide
+	var slide_scene = slide_library[slide_name]
+	var slide_instance = slide_scene.instantiate()
+	
+	# Configure the slide
+	slide_instance.configure_slide(closable, allow_next, false)
+	
+	# Add to scene tree
+	get_tree().root.add_child(slide_instance)
+	current_slide = slide_instance
+	
+	# Connect to its closed signal
+	slide_instance.slide_closed.connect(_on_slide_closed.bind(slide_instance))
+
+# Show a sequence of slides
+func _show_sequence(slide_names: Array, closable: bool = true):
+	if slide_names.is_empty():
+		return
+	
+	# Initialize sequence
+	current_sequence = slide_names
+	sequence_index = 0
+	sequence_closable = closable
+	
+	# Show first slide in sequence
+	var first_slide = slide_names[0]
+	_show_sequence_slide(first_slide, 0 == slide_names.size() - 1)
+
+func _show_sequence_slide(slide_name: String, is_last: bool):
+	if not slide_name in slide_library:
+		push_error("Slide not found in sequence: ", slide_name)
+		_advance_sequence()
+		return
+	
+	# Instantiate the slide
+	var slide_scene = slide_library[slide_name]
+	var slide_instance = slide_scene.instantiate()
+	
+	# Configure slide for sequence:
+	# - If it's the last slide, respect the original closable setting
+	# - Otherwise, only closable if sequence_closable is true
+	# - Allow next button unless it's the last slide with closable=false
+	var slide_closable = sequence_closable
+	var allow_next = true
+	
+	if is_last:
+		slide_closable = sequence_closable
+		allow_next = sequence_closable  # Only allow next if closable
+	
+	slide_instance.configure_slide(slide_closable, allow_next, not is_last)
+	
+	# Add to scene tree
+	get_tree().root.add_child(slide_instance)
+	current_slide = slide_instance
+	
+	# Connect signals
+	slide_instance.slide_closed.connect(_on_slide_closed.bind(slide_instance))
+	
+	# If not last slide, also connect next_requested
+	if not is_last:
+		slide_instance.next_requested.connect(_advance_sequence)
+
+# When slide is closed
+func _on_slide_closed(closed_by_next: bool, slide_instance):
+	# If this was a sequence slide and we closed by next button, advance
+	if sequence_index >= 0 and closed_by_next:
+		_advance_sequence()
+	else:
+		# Otherwise, just clean up
+		_cleanup_slide(slide_instance)
+
+func _advance_sequence():
+	if sequence_index >= 0:
+		sequence_index += 1
+		
+		if sequence_index < current_sequence.size():
+			# Show next slide in sequence
+			var next_slide_name = current_sequence[sequence_index]
+			var is_last = (sequence_index == current_sequence.size() - 1)
+			_show_sequence_slide(next_slide_name, is_last)
+		else:
+			# End of sequence
+			_cleanup_sequence()
+
+func _cleanup_slide(slide_instance):
+	# Unpause the game
+	get_tree().paused = false
+	
+	# Remove reference
+	if current_slide == slide_instance:
+		current_slide = null
+
+func _cleanup_sequence():
+	sequence_index = -1
+	current_sequence = []
+	get_tree().paused = false
+	current_slide = null
+
+# Helper function to check if a slide is showing
+func is_showing() -> bool:
+	return current_slide != null
+
+# Force close current slide (emergency)
+func close_current_slide():
+	if current_slide:
+		current_slide.close_slide()
+		_cleanup_sequence()
+
+# Skip to next slide in sequence
+func next_in_sequence():
+	if sequence_index >= 0 and current_slide:
+		current_slide.close_slide(true)
+
+# Jump to specific slide in current sequence
+func jump_to_sequence_index(index: int):
+	if sequence_index >= 0 and index >= 0 and index < current_sequence.size():
+		# Close current slide without advancing
+		if current_slide:
+			current_slide.queue_free()
+			current_slide = null
+		
+		sequence_index = index
+		var is_last = (sequence_index == current_sequence.size() - 1)
+		_show_sequence_slide(current_sequence[sequence_index], is_last)
+
+
+================================================================================
+
+
+[============================================================]
+[Scenes\OverlaySystem\overlay_slide.gd]
+[============================================================]
+
+extends CanvasLayer
+
+@onready var animation_player = $AnimationPlayer
+@onready var dismiss_button = $BGDimmer/DismissButton
+
+# Signals this slide can emit
+signal slide_closed(closed_by_next)
+signal next_requested()
+
+# Configuration - set from outside
+var closable: bool = true
+var allow_next: bool = false
+var is_sequence_slide: bool = false
+
+var is_closing = false
+
+func _ready():
+	# Connect the dismiss button
+	if dismiss_button:
+		dismiss_button.pressed.connect(_on_dismiss_pressed)
+		dismiss_button.visible = closable and not is_sequence_slide
+	
+	# Start fade in animation
+	if animation_player:
+		animation_player.play("fade_in")
+	
+	# Make sure our UI processes even when game is paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Connect animation finished signal
+	if animation_player:
+		animation_player.animation_finished.connect(_on_animation_finished)
+
+func configure_slide(is_closable: bool, can_go_next: bool = false, in_sequence: bool = false):
+	closable = is_closable
+	allow_next = can_go_next
+	is_sequence_slide = in_sequence
+	
+	if dismiss_button:
+		dismiss_button.visible = closable and not is_sequence_slide
+
+func _on_dismiss_pressed():
+	# Prevent multiple calls
+	if is_closing:
+		return
+	
+	if not closable:
+		return
+	
+	is_closing = true
+	
+	# Play fade out animation
+	if animation_player:
+		animation_player.play("fade_out")
+	slide_closed.emit(false)  # false = not closed by next button
+
+func close_slide(by_next: bool = false):
+	if is_closing:
+		return
+	
+	is_closing = true
+	
+	# Play fade out animation
+	if animation_player:
+		animation_player.play("fade_out")
+	slide_closed.emit(by_next)
+
+func _on_animation_finished(anim_name):
+	if anim_name == "fade_out":
+		# Remove the slide after fade out
+		queue_free()
+
+func _input(event):
+	# Check for Escape key press (close)
+	if event.is_action_pressed("ui_cancel") and not is_closing:
+		if closable:
+			_on_dismiss_pressed()
+			get_viewport().set_input_as_handled()
+	
+	# Check for Next action (space/enter/gamepad button)
+	if allow_next and event.is_action_pressed("ui_accept") and not is_closing:
+		if is_sequence_slide:
+			close_slide(true)  # true = closed by next button
+			next_requested.emit()
+		elif closable:
+			close_slide(true)
+
+# Also handle gamepad and other inputs
+func _process(delta):
+	# Check for Escape key
+	if Input.is_action_just_pressed("ui_cancel") and not is_closing:
+		if closable:
+			_on_dismiss_pressed()
+	
+	# Check for Next action
+	if allow_next and Input.is_action_just_pressed("ui_accept") and not is_closing:
+		if is_sequence_slide:
+			close_slide(true)
+			next_requested.emit()
+		elif closable:
+			close_slide(true)
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\ConsoleAnim.gd]
+[============================================================]
+
+extends Control
+
+@export var typing_speed: float = 0.05     # Seconds per character (can be overridden per call)
+@export var command_prefix: String = "> "   # Shown before commands
+@export var enter_delay: float = 0.5        # Small pause after typing before "enter"
+
+@onready var output: RichTextLabel = $ColorRect/HBoxContainer2/ColorRect/ScrollContainer/MarginContainer/OutputLabel
+@onready var prefix_label: Label = $ColorRect/HBoxContainer2/HBoxContainer/PrefixLabel
+@onready var current_line: RichTextLabel = $ColorRect/HBoxContainer2/HBoxContainer/CommandLabel
+@onready var type_sound: AudioStreamPlayer2D = $AudioStreamPlayer2D
+
+@onready var tween = get_tree().create_tween()
+
+var start_pos: Vector2
+
+@export var pop_distance: float = 30.0
+@export var pop_duration: float = 0.25
+@export var fade_duration: float = 0.2
+
+
+var is_typing: bool = false
+
+
+func _ready() -> void:
+	start_pos = position
+	output.text = ""
+	current_line.text = ""
+	output.scroll_following = true  # Auto-scrolls to bottom
+
+
+## Types a single message with character-by-character animation
+## use_prefix = true → shows command_prefix before the text
+## Supports basic BBCode
+func type_message(text: String, use_prefix: bool = true, custom_speed: float = -1) -> void:
+	if is_typing:
+		await typing_completed
+
+	is_typing = true
+
+	var speed = custom_speed if custom_speed > 0 else typing_speed
+	var prefix = command_prefix if use_prefix else ""
+
+	current_line.text = text
+	current_line.visible_characters = 0
+
+	await get_tree().create_timer(0.7).timeout
+
+	for i in text.length():
+		current_line.visible_characters = i + 1
+
+		if type_sound.stream:
+			type_sound.play()
+
+		await get_tree().create_timer(speed).timeout
+
+	await get_tree().create_timer(enter_delay).timeout
+
+	var line = prefix + text
+	output.text += line + "\n"
+	await get_tree().process_frame
+	output.scroll_to_line(output.get_line_count() - 1)
+
+	current_line.text = ""
+	current_line.visible_characters = 0
+
+	is_typing = false
+	typing_completed.emit()
+
+
+
+## Instantly prints text to output (no animation, no prefix, no sound)
+## Supports BBCode. Great for logs, errors, or bulk output.
+func print_instant(text: String) -> void:
+	output.text += text + "\n"
+	# scroll_following handles auto-scroll
+
+
+## Convenience function: command + optional output (Minecraft style)
+## Example: await play_command("/gamemode survival", "You are now in Survival Mode")
+func play_command(command: String, output_text: String = "", output_color: String = "white") -> void:
+	await type_message(command, true)
+
+	if output_text != "":
+		await type_message("[color=" + output_color + "]" + output_text + "[/color]", false)
+
+
+func open_console() -> void:
+	visible = true
+	modulate.a = 0
+	position = start_pos + Vector2(0, pop_distance)
+
+	if tween:
+		tween.kill()
+
+	tween = get_tree().create_tween()
+	tween.tween_property(self, "modulate:a", 1.0, fade_duration)
+	tween.tween_property(self, "position:y", start_pos.y, pop_duration)
+
+	await tween.finished
+
+func close() -> void:
+	if tween:
+		tween.kill()
+
+	tween = get_tree().create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, fade_duration)
+	tween.tween_property(self, "position:y", start_pos.y + pop_distance, pop_duration)
+
+	await tween.finished
+	visible = false
+
+
+func _on_close_complete() -> void:
+	visible = false
+
+
+signal typing_completed
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\CubeExample.gd]
+[============================================================]
+
+extends Interactable
+
+@export var interaction_count: int = 0
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	LoadingScreen.start(
+	4.0,
+	"Совет: Чтобы идти вперёд, идите вперёд."
+	)
+	await get_tree().create_timer(5.2).timeout
+	LoadingScreen.allow_fade_out()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\CubeExample2.gd]
+[============================================================]
+
+extends Interactable
+
+@export var interaction_count: int = 0
+
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	await Console.open_console()
+	await get_tree().create_timer(1.5).timeout
+	await Console.type_message("engine.TheYParable.Core.collision_processing = true;")
+	await get_tree().create_timer(2).timeout
+	Console.print_instant("[color=green]Variable `engine.TheYParable.Core.collision_processing` is set to `true`.[/color]")
+	await get_tree().create_timer(2.5).timeout
+	Console.close()
+	
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\CubeExample3.gd]
+[============================================================]
+
+extends Interactable
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	MonologueSystem.play_monologue("1a_see_that_camera")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\CubeExample4.gd]
+[============================================================]
+
+extends Interactable
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	VisualisationDirector.show_slide("materials", true)
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\Interactable.gd]
+[============================================================]
+
+class_name Interactable
+extends Area3D
+
+@export var interaction_text: String = "Interact [E]"
+
+var is_focused: bool = false
+
+func _ready():
+	collision_layer = 2
+	collision_mask = 0
+	input_ray_pickable = true
+
+func on_gained_focus():
+	if is_focused:
+		return
+	is_focused = true
+	print("[INTERACTABLE] Focus gained: ", name)
+
+func on_lost_focus():
+	if not is_focused:
+		return
+	is_focused = false
+	print("[INTERACTABLE] Focus lost: ", name)
+
+func interact():
+	print("[INTERACTABLE] Interact called: ", name)
+	perform_interaction()
+
+func perform_interaction():
+	print("[INTERACTABLE] Default interaction")
+
+func get_interaction_text() -> String:
+	return interaction_text
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\InteractionManager.gd]
+[============================================================]
+
+extends Node
+class_name InteractionManager
+
+# Configuration
+@export var max_interaction_distance: float = 5.0
+@export var interaction_key: String = "interact"  # Set up in Input Map
+@export var show_debug_ray: bool = false
+@export var ray_color: Color = Color.YELLOW
+@export var ray_width: float = 0.02
+
+@export var ui_controller: Control
+
+signal interactable_focused(text: String)  # Now sends String
+signal interactable_unfocused()
+
+# Node references
+@onready var camera: Camera3D = get_parent() if get_parent() is Camera3D else null
+@onready var raycast: RayCast3D = $RayCast3D if has_node("RayCast3D") else null
+
+# State variables
+var current_interactable: Interactable = null
+var can_interact: bool = true
+
+
+func _ready():
+	# Initialize raycast if not already in scene
+	if not raycast:
+		raycast = RayCast3D.new()
+		raycast.name = "RayCast3D"
+		raycast.enabled = true
+		raycast.collide_with_areas = true
+		raycast.collide_with_bodies = false
+		raycast.collision_mask = 2
+		add_child(raycast)
+	
+	if show_debug_ray:
+		setup_debug_ray()
+
+func _process(_delta):
+	if not can_interact or not camera:
+		return
+	
+	# Update raycast position and direction
+	update_raycast()
+	update_ui()
+	
+	# Check for interactables
+	check_for_interactable()
+
+func update_raycast():
+	# Position raycast at camera
+	if camera:
+		raycast.global_transform.origin = camera.global_transform.origin
+		raycast.target_position = camera.global_transform.basis * Vector3(0, 0, -max_interaction_distance)
+		
+		# Update debug ray if enabled
+		if show_debug_ray:
+			update_debug_ray()
+
+# In check_for_interactable() function, add these prints:
+func check_for_interactable():
+	var previous_interactable = current_interactable
+	
+	if raycast.is_colliding():
+		var collider = raycast.get_collider()
+		
+		# Check for Interactable (Area3D)
+		current_interactable = collider.get_parent() as Interactable
+		
+		# If collider itself is Interactable (for Area3D)
+		if not current_interactable and collider is Interactable:
+			current_interactable = collider
+		
+		# Check distance
+		if current_interactable:
+			var distance = camera.global_transform.origin.distance_to(current_interactable.global_transform.origin)
+			if distance > max_interaction_distance:
+				current_interactable = null
+	else:
+		current_interactable = null
+	
+	# Handle focus changes
+	if previous_interactable != current_interactable:
+		if previous_interactable:
+			previous_interactable.on_lost_focus()
+			interactable_unfocused.emit()  # ← Changed: no parameter
+		if current_interactable:
+			current_interactable.on_gained_focus()
+			interactable_focused.emit(current_interactable.get_interaction_text())
+
+func _input(event):
+	if not can_interact:
+		return
+	
+	if event.is_action_pressed(interaction_key) and current_interactable:
+		current_interactable.interact()
+		# Optional: Disable interaction briefly to prevent spamming
+		# can_interact = false
+		# await get_tree().create_timer(0.2).timeout
+		# can_interact = true
+
+func setup_debug_ray():
+	# Create a CylinderMesh for visualization
+	var mesh_instance = MeshInstance3D.new()
+	mesh_instance.name = "DebugRay"
+	
+	var cylinder = CylinderMesh.new()
+	cylinder.top_radius = ray_width / 2
+	cylinder.bottom_radius = ray_width / 2
+	cylinder.height = max_interaction_distance
+	
+	mesh_instance.mesh = cylinder
+	mesh_instance.material_override = StandardMaterial3D.new()
+	mesh_instance.material_override.albedo_color = ray_color
+	
+	# Position and rotate the cylinder
+	mesh_instance.position = Vector3(0, 0, -max_interaction_distance / 2)
+	mesh_instance.rotation_degrees = Vector3(90, 0, 0)
+	
+	add_child(mesh_instance)
+
+func update_ui():
+	if not ui_controller:
+		return
+	
+	if current_interactable:
+		# Tell UI to show text
+		if ui_controller.has_method("show_interaction"):
+			ui_controller.show_interaction(current_interactable.get_interaction_text())
+	else:
+		# Tell UI to hide
+		if ui_controller.has_method("hide_interaction"):
+			ui_controller.hide_interaction()
+
+func update_debug_ray():
+	var debug_ray = get_node_or_null("DebugRay")
+	if debug_ray:
+		debug_ray.visible = current_interactable != null
+
+# Public methods for external control
+func enable_interaction():
+	can_interact = true
+
+func disable_interaction():
+	can_interact = false
+	if current_interactable:
+		current_interactable.on_lost_focus()
+		current_interactable = null
+
+func get_current_interactable() -> Interactable:
+	return current_interactable
+
+func is_looking_at_interactable() -> bool:
+	return current_interactable != null
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\LoadingScreen.gd]
+[============================================================]
+
+extends Control
+
+signal finished
+
+@export var fade_time := 1.0
+
+@onready var progress_bar: ProgressBar = $MarginContainer2/ProgressBar
+@onready var advice_label = $MarginContainer/VBoxContainer/Advice
+
+var _estimated_duration := 0.0
+var _steps := []
+var _current_step := 0
+var _active := false
+var _can_fade_out := false
+
+func _ready():
+	hide()
+	modulate.a = 0.0
+	progress_bar.value = 0
+	top_level = true
+	z_index = 10_000
+
+func start(duration: float, advice_text: String):
+	_hide_player_ui()
+	_lock_player_controls()
+
+	_estimated_duration = max(duration, 0.1)
+	advice_label.text = advice_text
+	progress_bar.value = 0
+
+	_active = false
+	_can_fade_out = false
+	_steps.clear()
+	_current_step = 0
+
+	show()
+	await _fade_in()
+	_prepare_fake_progress()
+	_active = true
+
+
+
+func _process(delta):
+	if not _active:
+		return
+
+	if _current_step >= _steps.size():
+		return
+
+	var step = _steps[_current_step]
+	step.time_left -= delta
+	_steps[_current_step] = step
+
+	if step.time_left <= 0.0:
+		_animate_progress(step.target_value)
+		_current_step += 1
+
+func allow_fade_out():
+	if not _can_fade_out:
+		_can_fade_out = true
+		await _fade_out()
+		_show_player_ui()
+		_unlock_player_controls()
+		emit_signal("finished")
+		hide()
+
+
+# -------------------------
+# Internals
+# -------------------------
+
+func _prepare_fake_progress():
+	var remaining_time = _estimated_duration
+	var current_value = 0.0
+
+	for i in 5:
+		var steps_left = 5 - i
+		var max_wait = remaining_time - (steps_left * 0.2)
+		var wait = randf_range(0.2, max_wait / steps_left)
+
+		var target = lerp(current_value, 100.0, randf_range(0.12, 0.28))
+		target = min(target, 100.0)
+
+		_steps.append({
+			"time_left": wait,
+			"target_value": target
+		})
+
+		remaining_time -= wait
+		current_value = target
+
+	_steps[-1].target_value = 100.0
+
+func _animate_progress(target: float):
+	var tween = create_tween()
+	tween.tween_property(
+		progress_bar,
+		"value",
+		target,
+		0.4
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+func _fade_in():
+	if fade_time <= 0.0:
+		modulate.a = 1.0
+		return
+	var tween = create_tween()
+	tween.tween_property(self, "modulate:a", 1.0, fade_time)
+	await tween.finished
+
+
+func _fade_out():
+	var tween = create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, fade_time)
+	await tween.finished
+
+
+func _lock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("lock_controls"):
+			p.lock_controls()
+
+func _unlock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("unlock_controls"):
+			p.unlock_controls()
+
+func _hide_player_ui():
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("hide_game_ui"):
+			p.hide_game_ui()
+
+func _show_player_ui():
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("show_game_ui"):
+			p.show_game_ui()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\MaterialManager.gd]
+[============================================================]
+
+extends Node
+
+# Preload or instance the white material
+var white_material: StandardMaterial3D = null
+var original_materials: Dictionary = {}  # MeshInstance3D -> original Material
+
+func _ready():
+	white_material = StandardMaterial3D.new()
+	white_material.albedo_color = Color.WHITE
+	white_material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL	# ← this is what you want for pure flat color
+	white_material.vertex_color_use_as_albedo = false
+	# Optional: disable all maps/textures just in case
+	white_material.albedo_texture = null
+	white_material.normal_enabled = false
+	white_material.roughness = 1.0
+	white_material.metallic = 0.0
+
+# Function to apply white override to all non-player meshes
+func make_objects_white():
+	print("making objects white.")
+	if not original_materials.is_empty():
+		return	# Already applied; call revert first if needed
+	
+	var player_nodes = get_tree().get_nodes_in_group("player")
+	if player_nodes.is_empty():
+		printerr("No player found in group 'player'")
+		return
+	
+	var player = player_nodes[0]	# Assuming one player
+	
+	var scene_root = get_tree().current_scene
+	if not scene_root:
+		printerr("No current scene yet!")
+		return
+
+	var all_meshes = scene_root.find_children("*", "MeshInstance3D", true, true)
+	
+	print("Found %d MeshInstance3D nodes" % all_meshes.size())
+	
+	for mesh in all_meshes:
+		# Skip anything that is part of the player (player itself + descendants)
+		if player.is_ancestor_of(mesh) or mesh == player:
+			print("Skipping player mesh: ", mesh.get_path())
+			continue
+		
+		# Optional: extra safety if player has weird setup
+		# if mesh.is_descendant_of(player):	# same as player.is_ancestor_of(mesh)
+		#	 continue
+		
+		original_materials[mesh] = mesh.material_override
+		mesh.material_override = white_material
+		print("Whitened: ", mesh.get_path())
+
+# Function to revert to originals
+func revert_objects():
+	for mesh in original_materials.keys():
+		mesh.material_override = original_materials[mesh]
+	original_materials.clear()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\MonologueManager.gd]
+[============================================================]
+
+extends Node
+
+## Система управления монологами с аудио и субтитрами
+## Использование: MonologueSystem.play_monologue("intro_1a")
+
+# Сигналы системы
+signal monologue_started(key)
+signal monologue_finished(key)
+signal subtitle_changed(text)
+signal audio_progress(progress, duration)
+
+# Настройки
+var subtitle_prefix: String = "Диктор: "
+var audio_folder: String = "res://audio/monologues/"
+var subtitles_enabled: bool = true
+var auto_advance: bool = true
+
+# Текущий монолог
+var current_key: String = ""
+var current_audio: AudioStreamPlayer
+var is_playing: bool = false
+
+# Словари для данных
+var monologues: Dictionary = {}
+var audio_queue: Array = []
+
+# Настройки формата субтитров
+var subtitle_settings = {
+	"font_size": 24,
+	"font_color": Color.WHITE,
+	"background_color": Color(0, 0, 0, 0.7),
+	"duration_multiplier": 1.2, # Множитель длительности для текста
+}
+
+# Конфигурация аудио
+var audio_config = {
+	"volume_db": 0.0,
+	"pitch_scale": 1.0,
+	"bus": "Master"
+}
+
+func _ready():
+	setup_audio_player()
+	load_monologues()
+	
+func setup_audio_player():
+	"""Настройка аудиоплеера"""
+	current_audio = AudioStreamPlayer.new()
+	current_audio.name = "MonologueAudioPlayer"
+	current_audio.bus = audio_config["bus"]
+	current_audio.finished.connect(_on_audio_finished)
+	add_child(current_audio)
+
+func load_monologues():
+	"""Загрузка монологов (можно переопределить)"""
+	# Пример заполнения - можно загружать из JSON или других источников
+	monologues = {
+	}
+	print("Монологи загружены: ", monologues.size(), " записей")
+
+func add_monologue(key: String, text: String):
+	"""Добавить монолог вручную"""
+	monologues[key] = text
+
+func remove_monologue(key: String):
+	"""Удалить монолог"""
+	monologues.erase(key)
+
+func play_monologue(key: String, force: bool = false) -> bool:
+	"""Воспроизвести монолог по ключу"""
+	
+	if not monologues.has(key):
+		push_error("Монолог с ключом '%s' не найден!" % key)
+		return false
+	
+	if is_playing and not force:
+		# Добавляем в очередь или прерываем в зависимости от настроек
+		if auto_advance:
+			audio_queue.append(key)
+			print("Добавлено в очередь: ", key)
+			return true
+		else:
+			stop_monologue()
+	
+	current_key = key
+	var text = monologues[key]
+	var audio_path = audio_folder + key
+	
+	# Поиск аудиофайла с различными расширениями
+	var audio_extensions = [".wav", ".mp3", ".ogg"]
+	var audio_stream = null
+	
+	for ext in audio_extensions:
+		var full_path = audio_path + ext
+		if ResourceLoader.exists(full_path):
+			audio_stream = load(full_path)
+			break
+	
+	if audio_stream:
+		current_audio.stream = audio_stream
+		current_audio.volume_db = audio_config["volume_db"]
+		current_audio.pitch_scale = audio_config["pitch_scale"]
+		current_audio.play()
+		is_playing = true
+		
+		# Показываем субтитры
+		if subtitles_enabled:
+			show_subtitle(text)
+		
+		monologue_started.emit(key)
+		print("Воспроизведение: ", key)
+		return true
+	else:
+		push_warning("Аудиофайл не найден для ключа: %s" % key)
+		# Воспроизводим только текст, если нет аудио
+		if subtitles_enabled:
+			show_subtitle(text)
+		monologue_started.emit(key)
+		monologue_finished.emit(key)
+		return true
+
+func show_subtitle(text: String):
+	"""Показать субтитры с префиксом"""
+	var full_text = subtitle_prefix + text
+	subtitle_changed.emit(full_text)
+	
+	# Автоматическое скрытие через время (если нет аудио)
+	if not current_audio.playing:
+		var duration = calculate_subtitle_duration(text)
+		create_timer(duration).timeout.connect(_hide_subtitle, CONNECT_ONE_SHOT)
+
+func calculate_subtitle_duration(text: String) -> float:
+	"""Рассчитать длительность показа субтитра на основе текста"""
+	var words = text.split(" ").size()
+	var base_time = words * 0.5  # 0.5 секунды на слово
+	return clamp(base_time * subtitle_settings["duration_multiplier"], 2.0, 10.0)
+
+func create_timer(duration: float) -> Timer:
+	"""Создать одноразовый таймер"""
+	var timer = Timer.new()
+	timer.wait_time = duration
+	timer.one_shot = true
+	add_child(timer)
+	timer.start()
+	return timer
+
+func stop_monologue():
+	"""Остановить текущий монолог"""
+	if is_playing:
+		current_audio.stop()
+		is_playing = false
+		_hide_subtitle()
+		print("Монолог остановлен: ", current_key)
+
+func skip_monologue():
+	"""Пропустить текущий монолог"""
+	if is_playing:
+		current_audio.stop()
+		_on_audio_finished()
+
+func pause_monologue():
+	"""Приостановить монолог"""
+	if current_audio.playing:
+		current_audio.stream_paused = true
+
+func resume_monologue():
+	"""Возобновить монолог"""
+	if is_playing and current_audio.stream_paused:
+		current_audio.stream_paused = false
+
+func _on_audio_finished():
+	"""Обработчик завершения аудио"""
+	if is_playing:
+		is_playing = false
+		_hide_subtitle()
+		monologue_finished.emit(current_key)
+		print("Монолог завершен: ", current_key)
+		
+		# Воспроизвести следующий из очереди
+		if audio_queue.size() > 0:
+			var next_key = audio_queue.pop_front()
+			await get_tree().create_timer(0.5).timeout
+			play_monologue(next_key)
+
+func _hide_subtitle():
+	"""Скрыть субтитры"""
+	subtitle_changed.emit("")
+
+func play_sequence(keys: Array):
+	"""Воспроизвести последовательность монологов"""
+	if keys.size() == 0:
+		return
+	
+	audio_queue.clear()
+	
+	# Добавляем все, кроме первого, в очередь
+	for i in range(1, keys.size()):
+		audio_queue.append(keys[i])
+	
+	# Запускаем первый
+	play_monologue(keys[0])
+
+func get_remaining_time() -> float:
+	"""Получить оставшееся время текущего монолога"""
+	if not is_playing or not current_audio.stream:
+		return 0.0
+	return current_audio.stream.get_length() - current_audio.get_playback_position()
+
+func set_volume(volume_db: float):
+	"""Установить громкость"""
+	audio_config["volume_db"] = volume_db
+	if current_audio:
+		current_audio.volume_db = volume_db
+
+func is_monologue_available(key: String) -> bool:
+	"""Проверить, доступен ли монолог"""
+	return monologues.has(key)
+
+func clear_queue():
+	"""Очистить очередь воспроизведения"""
+	audio_queue.clear()
+
+# Функции для дебага
+func print_all_monologues():
+	"""Вывести все доступные монологи"""
+	print("=== Доступные монологи ===")
+	for key in monologues.keys():
+		print("%s: %s" % [key, monologues[key]])
+	print("==========================")
+
+func _process(_delta):
+	"""Отслеживание прогресса воспроизведения"""
+	if is_playing and current_audio.stream:
+		var progress = current_audio.get_playback_position()
+		var duration = current_audio.stream.get_length()
+		audio_progress.emit(progress, duration)
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\MonologueSystem.gd]
+[============================================================]
+
+extends Node
+
+## Система управления монологами с аудио и субтитрами
+## Использование: MonologueSystem.play_monologue("intro_1a")
+
+# Сигналы системы
+signal monologue_started(key)
+signal monologue_finished(key)
+signal subtitle_changed(text)
+signal audio_progress(progress, duration)
+
+# Настройки
+var subtitle_prefix: String = "Диктор: "
+var audio_folder: String = "res://Assets/Audio/Monologues/"
+var subtitles_enabled: bool = true
+var auto_advance: bool = true
+
+# Текущий монолог
+var current_key: String = ""
+var current_audio: AudioStreamPlayer
+var is_playing: bool = false
+
+# Словари для данных
+var monologues: Dictionary = {}
+var audio_queue: Array = []
+
+# Настройки формата субтитров
+var subtitle_settings = {
+	"font_size": 24,
+	"font_color": Color.WHITE,
+	"background_color": Color(0, 0, 0, 0.7),
+	"duration_multiplier": 1.2, # Множитель длительности для текста
+}
+
+# Конфигурация аудио
+var audio_config = {
+	"volume_db": -5.0,
+	"pitch_scale": 1.0,
+	"bus": "Master"
+}	
+
+func _ready():
+	setup_audio_player()
+	load_monologues()
+	# Load additional monologues from JSON
+	load_monologues_from_json("res://data/monologues.json")
+	
+func setup_audio_player():
+	"""Настройка аудиоплеера"""
+	current_audio = AudioStreamPlayer.new()
+	current_audio.name = "MonologueAudioPlayer"
+	current_audio.bus = audio_config["bus"]
+	current_audio.finished.connect(_on_audio_finished)
+	add_child(current_audio)
+
+func load_monologues():
+	"""Загрузка базовых монологов"""
+	monologues = {
+		"1a_now_you_can_move": "Вот, теперь ты можешь двигаться.",
+		"1a_no_anim": "А, точно, у тебя же еще нету анимации. Секунду.",
+		"1a_Y_wake_up": "Игрик, просыпайся. У нас сегодня много дел. Игрик, просыпайся. У нас сегодня много дел. Игрик, просыпайся. У нас сегодня много дел.",
+		"1a_see_that_camera": "Видишь вон ту камеру на тумбочке? Подойди к ней и надень ее на голову."
+	}
+	print("Базовые монологи загружены: ", monologues.size(), " записей")
+
+func load_monologues_from_json(path: String):
+	"""Загрузка монологов из JSON файла"""
+	var file = FileAccess.open(path, FileAccess.READ)
+	if file:
+		var json = JSON.new()
+		var error = json.parse(file.get_as_text())
+		if error == OK:
+			var data = json.data
+			if data.has("monologues"):
+				var count_before = monologues.size()
+				for key in data["monologues"]:
+					monologues[key] = data["monologues"][key]
+				print("Загружено монологов из JSON: ", monologues.size() - count_before)
+				print_all_monologues()  # Debug print
+		else:
+			push_error("Ошибка парсинга JSON: ", json.get_error_message())
+	else:
+		push_warning("Не удалось открыть файл: ", path)
+
+func add_monologue(key: String, text: String):
+	"""Добавить монолог вручную"""
+	monologues[key] = text
+	print("Добавлен монолог: ", key)
+
+func remove_monologue(key: String):
+	"""Удалить монолог"""
+	monologues.erase(key)
+
+func play_monologue(key: String, force: bool = false) -> bool:
+	"""Воспроизвести монолог по ключу"""
+	
+	print("Попытка воспроизвести монолог: ", key)  # Debug
+	
+	if not monologues.has(key):
+		push_error("Монолог с ключом '%s' не найден!" % key)
+		return false
+	
+	if is_playing and not force:
+		# Добавляем в очередь или прерываем в зависимости от настроек
+		if auto_advance:
+			audio_queue.append(key)
+			print("Добавлено в очередь: ", key)
+			return true
+		else:
+			stop_monologue()
+	
+	current_key = key
+	var text = monologues[key]
+	var audio_path = audio_folder + key
+	
+	# Поиск аудиофайла с различными расширениями
+	var audio_extensions = [".wav", ".mp3", ".ogg", ".opus"]
+	var audio_stream = null
+	var has_audio_file = false
+	
+	for ext in audio_extensions:
+		var full_path = audio_path + ext
+		if ResourceLoader.exists(full_path):
+			audio_stream = load(full_path)
+			has_audio_file = true
+			print("Найден аудиофайл: ", full_path)
+			break
+	
+	if has_audio_file and audio_stream:
+		# Случай с существующим аудиофайлом
+		current_audio.stream = audio_stream
+		current_audio.volume_db = audio_config["volume_db"]
+		current_audio.pitch_scale = audio_config["pitch_scale"]
+		current_audio.play()
+		is_playing = true
+		
+		# Показываем субтитры
+		if subtitles_enabled:
+			show_subtitle(text)
+		
+		monologue_started.emit(key)
+		print("Воспроизведение (с аудио): ", key)
+		return true
+	else:
+		# Случай без аудиофайла - используем таймер на основе текста
+		print("Аудиофайл не найден, воспроизводим только текст: ", key)
+		
+		if subtitles_enabled:
+			show_subtitle(text)
+		
+		monologue_started.emit(key)
+		is_playing = true
+		
+		# Создаем таймер для имитации длительности монолога
+		var duration = calculate_subtitle_duration(text)
+		print("Длительность субтитров: ", duration, " секунд")
+		var timer = create_timer(duration)
+		timer.timeout.connect(_on_non_audio_finished.bind(key), CONNECT_ONE_SHOT)
+		
+		print("Воспроизведение (без аудио): ", key)
+		return true
+
+func show_subtitle(text: String):
+	"""Показать субтитры с префиксом"""
+	var full_text = subtitle_prefix + text
+	subtitle_changed.emit(full_text)
+	print("Показаны субтитры: ", full_text)
+	
+	# Автоматическое скрытие через время (если нет аудио)
+	if not current_audio.playing:
+		var duration = calculate_subtitle_duration(text)
+		create_timer(duration).timeout.connect(_hide_subtitle, CONNECT_ONE_SHOT)
+
+func calculate_subtitle_duration(text: String) -> float:
+	"""Рассчитать длительность показа субтитра на основе текста"""
+	var char_count = text.length()
+	# 0.12 секунд на символ (включая пробелы)
+	var duration = char_count * 0.1
+	# Минимальная и максимальная длительность для комфортного чтения
+	return clamp(duration, 1.5, 15.0)
+	
+func create_timer(duration: float) -> Timer:
+	"""Создать одноразовый таймер"""
+	var timer = Timer.new()
+	timer.wait_time = duration
+	timer.one_shot = true
+	add_child(timer)
+	timer.start()
+	return timer
+
+func stop_monologue():
+	"""Остановить текущий монолог"""
+	if is_playing:
+		current_audio.stop()
+		is_playing = false
+		_hide_subtitle()
+		print("Монолог остановлен: ", current_key)
+
+func skip_monologue():
+	"""Пропустить текущий монолог"""
+	if is_playing:
+		current_audio.stop()
+		_on_audio_finished()
+
+func pause_monologue():
+	"""Приостановить монолог"""
+	if current_audio.playing:
+		current_audio.stream_paused = true
+
+func resume_monologue():
+	"""Возобновить монолог"""
+	if is_playing and current_audio.stream_paused:
+		current_audio.stream_paused = false
+
+func _on_audio_finished():
+	"""Обработчик завершения аудио"""
+	if is_playing:
+		is_playing = false
+		_hide_subtitle()
+		monologue_finished.emit(current_key)
+		print("Монолог завершен: ", current_key)
+		
+		# Воспроизвести следующий из очереди
+		if audio_queue.size() > 0:
+			var next_key = audio_queue.pop_front()
+			await get_tree().create_timer(0.5).timeout
+			play_monologue(next_key)
+
+func _on_non_audio_finished(key: String):
+	"""Обработчик завершения монолога без аудио"""
+	if is_playing:
+		is_playing = false
+		_hide_subtitle()
+		monologue_finished.emit(key)
+		print("Монолог без аудио завершен: ", key)
+		
+		# Воспроизвести следующий из очереди
+		if audio_queue.size() > 0:
+			var next_key = audio_queue.pop_front()
+			await get_tree().create_timer(0.5).timeout
+			play_monologue(next_key)
+
+func _hide_subtitle():
+	"""Скрыть субтитры"""
+	subtitle_changed.emit("")
+	print("Субтитры скрыты")
+
+func play_sequence(keys: Array):
+	"""Воспроизвести последовательность монологов"""
+	if keys.size() == 0:
+		return
+	
+	audio_queue.clear()
+	
+	# Добавляем все, кроме первого, в очередь
+	for i in range(1, keys.size()):
+		audio_queue.append(keys[i])
+	
+	# Запускаем первый
+	play_monologue(keys[0])
+
+func get_remaining_time() -> float:
+	"""Получить оставшееся время текущего монолога"""
+	if not is_playing or not current_audio.stream:
+		return 0.0
+	return current_audio.stream.get_length() - current_audio.get_playback_position()
+
+func set_volume(volume_db: float):
+	"""Установить громкость"""
+	audio_config["volume_db"] = volume_db
+	if current_audio:
+		current_audio.volume_db = volume_db
+
+func is_monologue_available(key: String) -> bool:
+	"""Проверить, доступен ли монолог"""
+	return monologues.has(key)
+
+func clear_queue():
+	"""Очистить очередь воспроизведения"""
+	audio_queue.clear()
+
+# Функции для дебага
+func print_all_monologues():
+	"""Вывести все доступные монологи"""
+	print("=== Доступные монологи ===")
+	for key in monologues.keys():
+		print("%s: %s" % [key, monologues[key]])
+	print("==========================")
+
+func _process(_delta):
+	"""Отслеживание прогресса воспроизведения"""
+	if is_playing and current_audio.stream:
+		var progress = current_audio.get_playback_position()
+		var duration = current_audio.stream.get_length()
+		audio_progress.emit(progress, duration)
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\MonologueSystemJSON.gd]
+[============================================================]
+
+extends Node
+
+# Наследуем от основной системы
+var MonologueSystem = preload("res://Scripts/MonologueSystem.gd")
+var system: MonologueSystem
+
+func _ready():
+	system = MonologueSystem.new()
+	add_child(system)
+	load_monologues_from_json("res://data/monologues.json")
+	
+	# Подключаем сигналы для отладки
+	system.monologue_started.connect(_on_monologue_started)
+	system.monologue_finished.connect(_on_monologue_finished)
+	system.subtitle_changed.connect(_on_subtitle_changed)
+
+func load_monologues_from_json(path: String):
+	"""Загрузка монологов из JSON файла"""
+	var file = FileAccess.open(path, FileAccess.READ)
+	if file:
+		var json = JSON.new()
+		var error = json.parse(file.get_as_text())
+		if error == OK:
+			var data = json.data
+			if data.has("monologues"):
+				for key in data["monologues"]:
+					system.add_monologue(key, data["monologues"][key])
+				print("Загружено монологов: ", system.monologues.size())
+				system.print_all_monologues() # Показать все загруженные монологи
+		else:
+			push_error("Ошибка парсинга JSON: ", json.get_error_message())
+	else:
+		push_error("Не удалось открыть файл: ", path)
+		# Создаем дефолтный файл если не существует
+		create_default_json(path)
+
+func create_default_json(path: String):
+	"""Создание дефолтного JSON файла если он не существует"""
+	var dir = path.get_base_dir()
+	if not DirAccess.dir_exists_absolute(dir):
+		DirAccess.make_dir_recursive_absolute(dir)
+	
+	var default_data = {
+		"monologues": {
+			"example_1": "Это пример монолога без аудио файла.",
+			"example_2": "Второй пример с более длинным текстом для тестирования длительности субтитров."
+		}
+	}
+	
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(default_data, "\t"))
+		print("Создан дефолтный JSON файл: ", path)
+		load_monologues_from_json(path) # Перезагружаем данные
+	else:
+		push_error("Не удалось создать дефолтный JSON файл: ", path)
+
+# Прокси-методы для удобства
+func play_monologue(key: String):
+	return system.play_monlogue(key)
+
+func play_sequence(keys: Array):
+	system.play_sequence(keys)
+
+# Сигналы для отладки
+func _on_monologue_started(key: String):
+	print("Монолог начался: ", key)
+
+func _on_monologue_finished(key: String):
+	print("Монолог завершился: ", key)
+
+func _on_subtitle_changed(text: String):
+	if text != "":
+		print("Субтитры: ", text)
+	else:
+		print("Субтитры скрыты")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\SubtitleDisplay.gd]
+[============================================================]
+
+extends CanvasLayer
+
+@onready var subtitle_panel = $Control/Panel
+@onready var margin_container = $Control/Panel/CenterContainer
+@onready var subtitle_label = $Control/Panel/CenterContainer/Label
+
+# Настройки субтитров
+var max_width: float = 600.0
+var min_width: float = 200.0
+var padding: Vector2 = Vector2(20, 10)  # Дополнительные отступы
+
+func _ready():
+	# Подключаемся к системе монологов
+	MonologueSystem.subtitle_changed.connect(_on_subtitle_changed)
+	hide_subtitle()
+	
+	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	
+	# Настраиваем начальный размер
+	subtitle_panel.custom_minimum_size = Vector2(min_width, 50)
+
+func _on_subtitle_changed(text: String):
+	if text == "" or text == null:
+		hide_subtitle()
+	else:
+		show_subtitle(text)
+
+func show_subtitle(text: String):
+	subtitle_label.text = text
+	subtitle_panel.show()
+	
+	# Ждем обновления размера
+	await get_tree().process_frame
+	await get_tree().process_frame  # Двойное ожидание для гарантии
+	
+	# Автоматически подгоняем размер панели
+	adjust_panel_size()
+	
+	# Центрируем панель
+	center_panel()
+	
+	# Анимация появления
+	var tween = create_tween()
+	tween.tween_property(subtitle_panel, "modulate", Color.WHITE, 0.3).from(Color.TRANSPARENT)
+
+func adjust_panel_size():
+	# Clamp panel width so wrapping can happen
+	subtitle_panel.custom_minimum_size.x = min_width
+
+	var label_size = subtitle_label.get_minimum_size()
+
+	var margin_left = margin_container.get_theme_constant("margin_left")
+	var margin_right = margin_container.get_theme_constant("margin_right")
+	var margin_top = margin_container.get_theme_constant("margin_top")
+	var margin_bottom = margin_container.get_theme_constant("margin_bottom")
+
+	var final_width = clamp(
+		label_size.x + margin_left + margin_right + padding.x * 2,
+		min_width,
+		max_width
+	)
+
+	var final_height = label_size.y + margin_top + margin_bottom + padding.y * 2
+
+	subtitle_panel.custom_minimum_size = Vector2(final_width, final_height)
+
+
+
+func center_panel():
+	var viewport_size = get_viewport().get_visible_rect().size
+	var panel_size = subtitle_panel.size
+
+	subtitle_panel.global_position = Vector2(
+		(viewport_size.x - panel_size.x) / 2,
+		viewport_size.y - panel_size.y - 20
+	)
+
+
+func hide_subtitle():
+	# Анимация исчезновения
+	var tween = create_tween()
+	tween.tween_property(subtitle_panel, "modulate", Color.TRANSPARENT, 0.3)
+	await tween.finished
+	subtitle_panel.hide()
+	subtitle_label.text = ""
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\UIController.gd]
+[============================================================]
+
+extends Control
+
+@onready var interaction_label: Label = $MarginContainer/InteractionLabel
+
+func _ready():
+	hide()  # Start hidden
+
+func show_interaction(text: String):
+	print("[UI] Showing: ", text)
+	interaction_label.text = text
+	show()
+
+func hide_interaction():
+	print("[UI] Hiding")
+	interaction_label.text = ""
+	hide()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\player.gd]
+[============================================================]
+
+extends CharacterBody3D
+
+@export var walk_speed := 4.0
+@export var sprint_speed := 7.0
+@export var jump_force := 5.0
+@export var mouse_sensitivity_horizontal := 0.1
+@export var mouse_sensitivity_vertical := 4.5  # Simplified sensitivity
+@export var gravity := 9.8
+
+@onready var camera := $Camera3D
+
+@onready var interaction_ui: Control = $InteractionUI
+@onready var subtitles: CanvasLayer = $Subtitles
+@onready var crosshair: Label = $Crosshair/Control/Label
+
+	
+# Флаги возможностей
+var can_move := true
+var can_jump := true
+var can_sprint := true
+var can_look := true
+
+var controls_locked := false
+
+var pitch := 0.0
+
+func _ready():
+	add_to_group("player")
+
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func _unhandled_input(event):
+	if controls_locked or not can_look:
+		return
+	if not can_look:
+		return
+
+	if event is InputEventMouseMotion:
+		# Rotate player horizontally (yaw)
+		rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
+		
+		# Rotate camera vertically (pitch)
+		pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
+
+func _physics_process(delta):
+	# Гравитация
+	if not is_on_floor():
+		velocity.y -= gravity * delta
+
+	if controls_locked or not can_move:
+		velocity.x = 0
+		velocity.z = 0
+	else:
+		handle_movement(delta)
+
+	move_and_slide()
+
+func handle_movement(delta):
+	# Get input based on camera direction
+	var camera_forward = camera.global_transform.basis.z
+	var camera_right = camera.global_transform.basis.x
+	
+	var input_dir := Vector2.ZERO
+	input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
+	input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
+	
+	# Calculate direction relative to camera
+	var direction = Vector3.ZERO
+	direction += camera_forward * input_dir.y
+	direction += camera_right * input_dir.x
+	direction.y = 0
+	direction = direction.normalized()
+
+	var speed := walk_speed
+	if can_sprint and Input.is_action_pressed("sprint"):
+		speed = sprint_speed
+
+	velocity.x = direction.x * speed
+	velocity.z = direction.z * speed
+
+	if can_jump and Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = jump_force
+
+# ===== Методы управления возможностями =====
+
+func set_can_move(value: bool):
+	can_move = value
+
+func set_can_jump(value: bool):
+	can_jump = value
+
+func set_can_sprint(value: bool):
+	can_sprint = value
+
+func set_can_look(value: bool):
+	can_look = value
+	
+func lock_controls():
+	controls_locked = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func unlock_controls():
+	controls_locked = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+func _fade_node(node: Node, target_alpha: float, duration := 1.0):
+	if node == null:
+		return
+
+	var tween := create_tween()
+	var track := tween.tween_property(
+		node,
+		"modulate:a",
+		target_alpha,
+		duration
+	)
+
+	if track:
+		track.set_trans(Tween.TRANS_SINE)
+		track.set_ease(Tween.EASE_IN_OUT)
+
+
+func hide_game_ui():
+	_fade_node(interaction_ui, 0.0)
+	_fade_node(subtitles, 0.0)
+	_fade_node(crosshair, 0.0)
+
+func show_game_ui():
+	_fade_node(interaction_ui, 1.0)
+	_fade_node(subtitles, 1.0)
+	_fade_node(crosshair, 1.0)
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\start_room.gd]
+[============================================================]
+
+extends Node3D
+
+@onready var player_animation_player: AnimationPlayer = $Player/AnimationPlayer
+@onready var animation_player: AnimationPlayer = $Player/Y/AnimationPlayer
+@onready var camera_animation_player: AnimationPlayer = $Camera3D/CameraAnimationPlayer
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	_lock_player_controls()
+	LoadingScreen.fade_time = 0
+	LoadingScreen.start(4, "Совет: чтобы прыгать, прыгните")
+	
+	MaterialManager.make_objects_white()
+	camera_animation_player.play("CameraPickup")
+	camera_animation_player.stop()          # stop at current frame
+	camera_animation_player.seek(0.0, true)
+	animation_player.play("wakeup")
+	animation_player.stop()
+	animation_player.seek(0.0, true)
+	
+	await get_tree().create_timer(5.2).timeout
+	LoadingScreen.fade_time = 1
+	LoadingScreen.allow_fade_out()
+	await get_tree().create_timer(1).timeout
+	_lock_player_controls()
+	await get_tree().create_timer(1.5).timeout
+	MonologueSystem.play_monologue("1a_Y_wake_up")
+	await MonologueSystem.monologue_finished
+	await get_tree().create_timer(1.0).timeout
+	MonologueSystem.play_monologue("1a_no_anim")
+	await MonologueSystem.monologue_finished
+	await get_tree().create_timer(1.0).timeout
+	Console.open_console()
+	Console.type_message("engine.TheYParable.Characters.Y.animated = true;")
+	await Console.typing_completed
+	await get_tree().create_timer(1.0).timeout
+	Console.print_instant("[color=green]Variable `engine.TheYParable.Characters.Y.animated` changed to `true`.[/color]")
+	await get_tree().create_timer(1.0).timeout
+	
+	Console.close()
+	MonologueSystem.play_monologue("1a_now_you_can_move")
+	await MonologueSystem.monologue_finished
+	animation_player.play("wakeup")
+	await animation_player.animation_finished
+	player_animation_player.play("walk_up")
+	player_animation_player.stop()          # stop at current frame
+	player_animation_player.seek(0.0, true) # go to first frame (0 seconds)
+	MonologueSystem.play_monologue("1a_see_that_camera")
+	await MonologueSystem.monologue_finished
+	await get_tree().create_timer(1.0).timeout
+	player_animation_player.play("walk_up")
+	await player_animation_player.animation_finished
+	camera_animation_player.play("CameraPickup")
+	await camera_animation_player.animation_finished
+	print("done")
+	_unlock_player_controls()
+	
+	await get_tree().create_timer(2.0).timeout
+	
+
+func _lock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("lock_controls"):
+			p.lock_controls()
+
+func _unlock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("unlock_controls"):
+			p.unlock_controls()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\y_tumbochka.gd]
+[============================================================]
+
+extends Interactable
+
+@export var interaction_count: int = 0
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	MonologueSystem.play_monologue("1a_no_anim")
+
+
+==================================================
+Total .gd files found: 19
