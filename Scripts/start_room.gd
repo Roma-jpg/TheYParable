@@ -1,18 +1,31 @@
 extends Node3D
 
+@export var enable_intro_sequence: bool = false  # hardcoded switch
+
 @onready var player_animation_player: AnimationPlayer = $Player/AnimationPlayer
 @onready var animation_player: AnimationPlayer = $Player/Y/AnimationPlayer
 @onready var camera_animation_player: AnimationPlayer = $Camera3D/CameraAnimationPlayer
+@onready var camera_3d: Camera3D = $Camera3D
 
-# Called when the node enters the scene tree for the first time.
+
 func _ready() -> void:
+	if enable_intro_sequence:
+		await _play_intro_sequence()
+	else:
+		# Skip everything, unlock player immediately
+		_unlock_player_controls()
+		# Make sure the main camera is active if intro is skipped
+		camera_3d.current = false
+
+
+func _play_intro_sequence() -> void:
 	_lock_player_controls()
 	LoadingScreen.fade_time = 0
 	LoadingScreen.start(4, "Совет: чтобы прыгать, прыгните")
 	
 	MaterialManager.make_objects_white()
 	camera_animation_player.play("CameraPickup")
-	camera_animation_player.stop()          # stop at current frame
+	camera_animation_player.stop()
 	camera_animation_player.seek(0.0, true)
 	animation_player.play("wakeup")
 	animation_player.stop()
@@ -43,8 +56,8 @@ func _ready() -> void:
 	animation_player.play("wakeup")
 	await animation_player.animation_finished
 	player_animation_player.play("walk_up")
-	player_animation_player.stop()          # stop at current frame
-	player_animation_player.seek(0.0, true) # go to first frame (0 seconds)
+	player_animation_player.stop()
+	player_animation_player.seek(0.0, true)
 	MonologueSystem.play_monologue("1a_see_that_camera")
 	await MonologueSystem.monologue_finished
 	await get_tree().create_timer(1.0).timeout
@@ -56,7 +69,7 @@ func _ready() -> void:
 	_unlock_player_controls()
 	
 	await get_tree().create_timer(2.0).timeout
-	
+
 
 func _lock_player_controls():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

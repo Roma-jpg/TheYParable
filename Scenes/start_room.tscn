@@ -1,14 +1,22 @@
-[gd_scene load_steps=22 format=3 uid="uid://c6a301a8ogf56"]
+[gd_scene load_steps=36 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
 [ext_resource type="PackedScene" uid="uid://0dyufbh2dug" path="res://Assets/3DModels/room.glb" id="2_qwpf4"]
+[ext_resource type="AudioStream" uid="uid://c1ihcgh0daepv" path="res://Assets/Audio/minecraft-totem-sound.wav" id="3_f1u1d"]
 [ext_resource type="PackedScene" uid="uid://daggepgs1p08w" path="res://Assets/3DModels/Y_bed.glb" id="3_gefdw"]
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
 [ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="5_n4xud"]
 [ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="8_qjx48"]
 [ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="9_ixl8n"]
+[ext_resource type="PackedScene" uid="uid://b53i525y3ibmg" path="res://Assets/3DModels/Y_corridor1.glb" id="10_ixl8n"]
+[ext_resource type="Texture2D" uid="uid://dste80nr8hb20" path="res://Assets/3DModels/statue_ganesha_4_texture_BaseColor.jpg" id="11_kntqd"]
+[ext_resource type="PackedScene" uid="uid://doq7rquq1q5tg" path="res://Assets/3DModels/potted_plant.glb" id="12_x7n1t"]
+[ext_resource type="PackedScene" uid="uid://dfvgqmuwdht3g" path="res://Assets/3DModels/statue.glb" id="13_8785c"]
+[ext_resource type="Script" uid="uid://br7a3ynb3275r" path="res://Scripts/statue.gd" id="14_x7n1t"]
+[ext_resource type="AudioStream" uid="uid://bd3fqm7porkj8" path="res://Assets/Audio/stone-sliding.wav" id="15_8785c"]
+[ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="16_8irpl"]
 
 [sub_resource type="Animation" id="Animation_qjx48"]
 length = 0.001
@@ -173,11 +181,30 @@ _data = {
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kntqd"]
 
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_8irpl"]
+data = PackedVector3Array(5.9252, 7.9357, -32.313698, -5.9252, 7.9357, 32.313698, -5.9252, 7.9357, -32.313698, 5.9252, 7.9357, -32.313698, 5.9252, 7.9357, 32.313698, -5.9252, 7.9357, 32.313698, -5.9252, -7.9357, 32.313698, -5.9252, 7.9357, -32.313698, -5.9252, 7.9357, 32.313698, -5.9252, -7.9357, 32.313698, -5.9252, -7.9357, -32.313698, -5.9252, 7.9357, -32.313698, -5.9252, -7.9357, -32.313698, 5.9252, -7.9357, 32.313698, 5.9252, -7.9357, -32.313698, -5.9252, -7.9357, -32.313698, -5.9252, -7.9357, 32.313698, 5.9252, -7.9357, 32.313698, 5.9252, -7.9357, -32.313698, 5.9252, 7.9357, 32.313698, 5.9252, 7.9357, -32.313698, 5.9252, -7.9357, -32.313698, 5.9252, -7.9357, 32.313698, 5.9252, 7.9357, 32.313698, -5.6085, -7.5116, 32.313698, -5.6085, 7.5113997, -32.313698, -5.6085, -7.5116, -32.313698, -5.6085, -7.5116, 32.313698, -5.6085, 7.5113997, 32.313698, -5.6085, 7.5113997, -32.313698, 5.6084, -7.5116, -32.313698, 5.6084, 7.5113997, 32.313698, 5.6084, -7.5116, 32.313698, 5.6084, -7.5116, -32.313698, 5.6084, 7.5113997, -32.313698, 5.6084, 7.5113997, 32.313698, 5.9252, -7.9357, -32.313698, -5.6085, -7.5116, -32.313698, -5.9252, -7.9357, -32.313698, -5.9252, -7.9357, -32.313698, -5.6085, -7.5116, -32.313698, -5.6085, 7.5113997, -32.313698, 5.9252, -7.9357, -32.313698, 5.6084, -7.5116, -32.313698, -5.6085, -7.5116, -32.313698, -5.9252, -7.9357, -32.313698, -5.6085, 7.5113997, -32.313698, -5.9252, 7.9357, -32.313698, 5.9252, 7.9357, -32.313698, 5.6084, -7.5116, -32.313698, 5.9252, -7.9357, -32.313698, -5.9252, 7.9357, -32.313698, -5.6085, 7.5113997, -32.313698, 5.6084, 7.5113997, -32.313698, 5.9252, 7.9357, -32.313698, 5.6084, 7.5113997, -32.313698, 5.6084, -7.5116, -32.313698, -5.9252, 7.9357, -32.313698, 5.6084, 7.5113997, -32.313698, 5.9252, 7.9357, -32.313698, -5.9252, 7.9357, 32.313698, -5.6085, -7.5116, 32.313698, -5.9252, -7.9357, 32.313698, -5.9252, -7.9357, 32.313698, -5.6085, -7.5116, 32.313698, 5.6084, -7.5116, 32.313698, -5.9252, 7.9357, 32.313698, -5.6085, 7.5113997, 32.313698, -5.6085, -7.5116, 32.313698, -5.9252, -7.9357, 32.313698, 5.6084, -7.5116, 32.313698, 5.9252, -7.9357, 32.313698, 5.9252, 7.9357, 32.313698, -5.6085, 7.5113997, 32.313698, -5.9252, 7.9357, 32.313698, 5.9252, -7.9357, 32.313698, 5.6084, -7.5116, 32.313698, 5.6084, 7.5113997, 32.313698, 5.9252, 7.9357, 32.313698, 5.6084, 7.5113997, 32.313698, -5.6085, 7.5113997, 32.313698, 5.9252, -7.9357, 32.313698, 5.6084, 7.5113997, 32.313698, 5.9252, 7.9357, 32.313698, 5.6084, 7.5113997, -32.313698, -5.6084, 7.5113997, 32.313698, 5.6084, 7.5113997, 32.313698, 5.6084, 7.5113997, -32.313698, -5.6084, 7.5113997, -32.313698, -5.6084, 7.5113997, 32.313698, -5.6084, -7.5113997, -32.313698, 5.6084, -7.5113997, 32.313698, -5.6084, -7.5113997, 32.313698, -5.6084, -7.5113997, -32.313698, 5.6084, -7.5113997, -32.313698, 5.6084, -7.5113997, 32.313698)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8irpl"]
+size = Vector3(63.390015, 0.11279297, 12.1188965)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f1u1d"]
+size = Vector3(48.24121, 15.109375, 0.25024414)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ham4c"]
+size = Vector3(23.876465, 15.109375, 0.25024414)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8qgfj"]
+size = Vector3(27.505615, 15.109375, 0.25024414)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x7n1t"]
+size = Vector3(2.0510254, 6.665161, 1.7341309)
+
 [node name="StartRoom" type="Node3D"]
 script = ExtResource("1_n4xud")
 
 [node name="Player" parent="." instance=ExtResource("1_ecy7y")]
 transform = Transform3D(-1, 0, 1.509958e-07, 0, 1, 0, -1.509958e-07, 0, -1, 4.1842957, 0.9603636, -3.3936381)
+respawn_sound = ExtResource("3_f1u1d")
 
 [node name="Skeleton3D" parent="Player/Y/metarig" index="0"]
 bones/0/position = Vector3(0.0139953345, 1.833467, -0.14342877)
@@ -246,6 +273,46 @@ shadow_blur = 10.0
 omni_range = 10.0
 omni_shadow_mode = 0
 
+[node name="OmniLight3D3" type="OmniLight3D" parent="Y_lamp_nocover2"]
+transform = Transform3D(5, 0, -4.7683716e-07, 0, 5, 0, 4.7683716e-07, 0, 5, -38.97674, -1.5341396, 11.5769615)
+light_energy = 4.0
+light_indirect_energy = 1.3
+light_bake_mode = 1
+shadow_enabled = true
+shadow_blur = 10.0
+omni_range = 10.0
+omni_shadow_mode = 0
+
+[node name="OmniLight3D4" type="OmniLight3D" parent="Y_lamp_nocover2"]
+transform = Transform3D(5, 0, -4.7683716e-07, 0, 5, 0, 4.7683716e-07, 0, 5, -73.77972, -1.5341396, 20.10285)
+light_energy = 4.0
+light_indirect_energy = 1.3
+light_bake_mode = 1
+shadow_enabled = true
+shadow_blur = 10.0
+omni_range = 10.0
+omni_shadow_mode = 0
+
+[node name="OmniLight3D5" type="OmniLight3D" parent="Y_lamp_nocover2"]
+transform = Transform3D(5, 0, -4.7683716e-07, 0, 5, 0, 4.7683716e-07, 0, 5, -108.81918, -1.5341396, -1.4772866)
+light_energy = 4.0
+light_indirect_energy = 1.3
+light_bake_mode = 1
+shadow_enabled = true
+shadow_blur = 10.0
+omni_range = 10.0
+omni_shadow_mode = 0
+
+[node name="OmniLight3D6" type="OmniLight3D" parent="Y_lamp_nocover2"]
+transform = Transform3D(5, 0, -4.7683716e-07, 0, 5, 0, 4.7683716e-07, 0, 5, -96.770355, -1.5341396, 47.706455)
+light_energy = 4.0
+light_indirect_energy = 1.3
+light_bake_mode = 1
+shadow_enabled = true
+shadow_blur = 10.0
+omni_range = 10.0
+omni_shadow_mode = 0
+
 [node name="OmniLight3D2" type="OmniLight3D" parent="Y_lamp_nocover2"]
 transform = Transform3D(5, 0, -4.7683716e-07, 0, 5, 0, 4.7683716e-07, 0, 5, 26.871605, 0, -3.9181275)
 light_energy = 4.0
@@ -257,7 +324,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.077014856, 0.36648107, -0.07162342, 0.99702984, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.07701484, 0.36648107, -0.07162342, 0.9970296, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
@@ -281,5 +348,60 @@ script = ExtResource("9_ixl8n")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sphr/Area3D"]
 shape = SubResource("BoxShape3D_kntqd")
 
+[node name="Y_corridor1" parent="." instance=ExtResource("10_ixl8n")]
+transform = Transform3D(-1.1146404e-08, 0, 0.255, 0, 0.255, 0, -0.255, 0, -1.1146404e-08, -14.313264, -0.41982818, -0.2614324)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Y_corridor1/Cube" index="0"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Y_corridor1/Cube/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_8irpl")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Y_corridor1/Cube_001" index="0"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Y_corridor1/Cube_001/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.444519, -0.44360352, -5.3564453)
+shape = SubResource("BoxShape3D_8irpl")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Y_corridor1/Cube_001/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.135498, 6.9769726, -11.285835)
+shape = SubResource("BoxShape3D_f1u1d")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="Y_corridor1/Cube_001/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.317877, 6.9769726, 0.74620056)
+shape = SubResource("BoxShape3D_ham4c")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="Y_corridor1/Cube_001/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.194183, 6.9769726, 0.74620056)
+shape = SubResource("BoxShape3D_8qgfj")
+
+[node name="Label3D" type="Label3D" parent="Y_corridor1"]
+transform = Transform3D(0, 4.1482615, 2.3949997, 3.6265257e-07, 2.3949997, -4.1482615, -4.79, 1.8132627e-07, -3.140663e-07, 31.372541, 0, -39.215683)
+text = "Привет! Похоже вы вывалился за карту. 
+Извини за это, скоро тебя должно телепортировать обратно.
+Или нет"
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(0.10117991, 0, 0, 0, 0.10117991, 0, 0, 0, 1, -2.9280236, 2.3434353, -4.514644)
+texture = ExtResource("11_kntqd")
+
+[node name="potted_plant" parent="." instance=ExtResource("12_x7n1t")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.281357, 0.040395334, 2.8396893)
+
+[node name="statue" parent="." instance=ExtResource("13_8785c")]
+transform = Transform3D(-0.64, 0, -5.5950576e-08, 0, 0.64, 0, 5.5950576e-08, 0, -0.64, -4.3787413, 0.039999843, 2.706318)
+
+[node name="Area3D" type="Area3D" parent="statue"]
+script = ExtResource("14_x7n1t")
+sound_effect = ExtResource("15_8785c")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="statue/Area3D"]
+transform = Transform3D(1, 0, 7.1054274e-15, 0, 1, 0, -7.1054274e-15, 0, 1, 0, 2.8414915, 0)
+shape = SubResource("BoxShape3D_x7n1t")
+
+[node name="door" parent="." instance=ExtResource("16_8irpl")]
+transform = Transform3D(-2.0325796e-08, 0, 0.465, 0, 0.465, 0, -0.465, 0, -2.0325796e-08, -6.010289, 0.088177204, -0.15183356)
+
 [editable path="Player"]
 [editable path="Player/Y"]
+[editable path="Y_corridor1"]
+[editable path="door"]

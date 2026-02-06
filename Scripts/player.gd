@@ -12,12 +12,27 @@ extends CharacterBody3D
 @onready var interaction_ui: Control = $InteractionUI
 @onready var subtitles: CanvasLayer = $Subtitles
 @onready var crosshair: Label = $Crosshair/Control/Label
+@onready var respawn_anim: AnimatedSprite2D = $AnimatedSprite2D
+
 
 @export var push_force: float = 150.0           # Tune: higher = stronger push (try 100-300)
 @export var push_layers: int = 1 << 5           # Layer 6 (bitshift: 1<<5 = 32 = layer 6)
 @export var max_push_distance: float = 1.5      # How far player can push (raycast limit)
 @export var player_mass: float = 60.0           # "Player weight" for heavy box resistance
 	
+	
+@export var save_interval := 10.0
+@export var fall_limit_y := -50.0
+@export var respawn_sound: AudioStream
+
+var save_timer := 0.0
+var saved_position: Vector3
+var saved_rotation: Vector3
+var has_saved := false
+
+@onready var sfx_player := AudioStreamPlayer3D.new()
+
+
 # Флаги возможностей
 var can_move := true
 var can_jump := true
@@ -30,8 +45,20 @@ var pitch := 0.0
 
 func _ready():
 	add_to_group("player")
-
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	respawn_anim.visible = false
+	
+	sfx_player.stream = respawn_sound
+	add_child(sfx_player)
+
+	# Initial checkpoint save on game start
+	saved_position = global_position
+	saved_rotation = rotation
+	has_saved = true
+	print("Checkpoint saved on game start at: ", saved_position)
+
+
 
 func _unhandled_input(event):
 	if controls_locked or not can_look:
@@ -60,6 +87,22 @@ func _physics_process(delta):
 		handle_movement(delta)
 	_push_rigidbodies(delta)
 	move_and_slide()
+	save_timer += delta
+	if save_timer >= save_interval:
+		save_timer = 0.0
+		
+		if velocity.y >= 0.0:
+			saved_position = global_position
+			saved_rotation = rotation
+			has_saved = true
+			print("Checkpoint updated at: ", saved_position, " | velocity.y = ", velocity.y)
+		else:
+			print("Checkpoint skipped - falling | velocity.y = ", velocity.y)
+
+
+	# Teleport if fallen too low
+	if has_saved and global_position.y <= fall_limit_y:
+		_teleport_to_saved()
 
 func handle_movement(delta):
 	# Get input based on camera direction
@@ -171,3 +214,23 @@ func show_game_ui():
 	_fade_node(interaction_ui, 1.0)
 	_fade_node(subtitles, 1.0)
 	_fade_node(crosshair, 1.0)
+
+func _teleport_to_saved():
+	global_position = saved_position
+	rotation = saved_rotation
+	velocity = Vector3.ZERO
+	
+	sfx_player.global_position = global_position
+	
+	respawn_anim.visible = true
+	respawn_anim.frame = 0
+	respawn_anim.play()
+	
+	if sfx_player.stream:
+		print("Playing respawn sound")
+		sfx_player.play()
+	else:
+		print("ERROR: No audio stream assigned")
+	
+	await respawn_anim.animation_finished
+	respawn_anim.visible = false
