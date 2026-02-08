@@ -19,6 +19,7 @@ corner_radius_bottom_left = 12
 
 [node name="LoadingScreen" type="Control"]
 visible = false
+top_level = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

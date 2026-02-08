@@ -1,9 +1,8 @@
-[gd_scene load_steps=36 format=3 uid="uid://c6a301a8ogf56"]
+[gd_scene load_steps=39 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
 [ext_resource type="PackedScene" uid="uid://0dyufbh2dug" path="res://Assets/3DModels/room.glb" id="2_qwpf4"]
-[ext_resource type="AudioStream" uid="uid://c1ihcgh0daepv" path="res://Assets/Audio/minecraft-totem-sound.wav" id="3_f1u1d"]
 [ext_resource type="PackedScene" uid="uid://daggepgs1p08w" path="res://Assets/3DModels/Y_bed.glb" id="3_gefdw"]
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
 [ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
@@ -17,6 +16,7 @@
 [ext_resource type="Script" uid="uid://br7a3ynb3275r" path="res://Scripts/statue.gd" id="14_x7n1t"]
 [ext_resource type="AudioStream" uid="uid://bd3fqm7porkj8" path="res://Assets/Audio/stone-sliding.wav" id="15_8785c"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="16_8irpl"]
+[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="17_f1u1d"]
 
 [sub_resource type="Animation" id="Animation_qjx48"]
 length = 0.001
@@ -199,12 +199,24 @@ size = Vector3(27.505615, 15.109375, 0.25024414)
 [sub_resource type="BoxShape3D" id="BoxShape3D_x7n1t"]
 size = Vector3(2.0510254, 6.665161, 1.7341309)
 
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_ham4c"]
+panorama = ExtResource("17_f1u1d")
+
+[sub_resource type="Sky" id="Sky_7mycd"]
+sky_material = SubResource("PanoramaSkyMaterial_ham4c")
+
+[sub_resource type="Environment" id="Environment_8qgfj"]
+background_mode = 2
+sky = SubResource("Sky_7mycd")
+ambient_light_source = 1
+ambient_light_energy = 0.0
+reflected_light_source = 2
+
 [node name="StartRoom" type="Node3D"]
 script = ExtResource("1_n4xud")
 
 [node name="Player" parent="." instance=ExtResource("1_ecy7y")]
 transform = Transform3D(-1, 0, 1.509958e-07, 0, 1, 0, -1.509958e-07, 0, -1, 4.1842957, 0.9603636, -3.3936381)
-respawn_sound = ExtResource("3_f1u1d")
 
 [node name="Skeleton3D" parent="Player/Y/metarig" index="0"]
 bones/0/position = Vector3(0.0139953345, 1.833467, -0.14342877)
@@ -324,7 +336,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.07701484, 0.36648107, -0.07162342, 0.9970296, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.077014826, 0.36648107, -0.07162342, 0.9970294, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
@@ -400,6 +412,9 @@ shape = SubResource("BoxShape3D_x7n1t")
 
 [node name="door" parent="." instance=ExtResource("16_8irpl")]
 transform = Transform3D(-2.0325796e-08, 0, 0.465, 0, 0.465, 0, -0.465, 0, -2.0325796e-08, -6.010289, 0.088177204, -0.15183356)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_8qgfj")
 
 [editable path="Player"]
 [editable path="Player/Y"]

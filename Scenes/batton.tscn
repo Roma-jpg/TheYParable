@@ -1,0 +1,249 @@
+[gd_scene load_steps=10 format=3 uid="uid://bbwu7pb6eronq"]
+
+[ext_resource type="PackedScene" uid="uid://c5nunklx4glqp" path="res://Assets/3DModels/batton.glb" id="1_lmxgv"]
+[ext_resource type="Script" uid="uid://8ca0qvvy7kjm" path="res://Scripts/batton.gd" id="2_bxe5t"]
+[ext_resource type="AudioStream" uid="uid://c4qe1mu2pk28c" path="res://Assets/Audio/portal-button-up-01.mp3" id="3_wr77c"]
+[ext_resource type="AudioStream" uid="uid://wymgwcqhc7hl" path="res://Assets/Audio/portal-button-down-01.mp3" id="4_kn7av"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_bxe5t"]
+points = PackedVector3Array(1.610836, 0.145, 1.610836, -1.778997, -0.17279682, -1.778997, -1.778997, -0.17279682, 1.778997, 1.778997, -0.17279682, -1.778997, -1.610836, 0.145, -1.610836, 1.778997, -0.17279682, 1.778997, -1.610836, 0.145, 1.610836, 1.610836, 0.145, -1.610836)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_t44em"]
+points = PackedVector3Array(-1.0912728, -0.22480525, 0.07789574, 1.3897214, -0.0343467, 0.2603687, 1.3262345, 0.09455134, 0.2993945, 0.043092918, 0.052259646, -1.384394, -0.6706237, 0.20639466, 0.9077654, 0.12637554, -0.20191334, 1.3504734, 0.96642256, -0.20101534, -0.96642256, -0.90753883, 0.20639917, -0.67088634, 0.9003503, 0.20478277, -0.66539097, -0.75763327, -0.20144723, -1.1367137, 0.66208375, 0.17458603, 1.0762427, -1.3465712, -0.1647173, 0.43443048, 1.1366147, -0.20142889, 0.75783104, -1.329037, 0.13761657, -0.042716168, -0.56212926, -0.034161292, 1.2970963, -1.298621, -0.16409454, -0.56279004, -0.49714813, 0.17484607, -1.1607915, 1.0623134, 0.09400157, -0.8500638, 0.15065299, 0.23522167, 0.18843429, 0.4341292, -0.16470568, -1.3467532, 1.3909482, -0.16473535, -0.26059854, 1.0140002, -0.22500545, -0.4680189, -1.0593368, 0.13613771, 0.8051916, -0.96626574, -0.2010385, 0.966529, -0.04297327, 0.13758202, 1.3289483, -1.0623626, 0.0940055, -0.85010314, 1.0325164, 0.20765464, 0.43674767, 0.86134803, -0.034005687, 1.1202114, 0.43672007, 0.2076421, -1.0327, -0.19556348, -0.22594236, 1.0965787, 0.19556303, -0.2259418, -1.0965762, 1.32893, 0.13763063, -0.042704098)
+
+[sub_resource type="Animation" id="Animation_t44em"]
+resource_name = "push"
+length = 0.3
+step = 0.1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Cylinder:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Cylinder:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.31521958, -0.25, 0, 0.25, 0, 0.08081895, -0.16666667, 0.039066773, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Cylinder:position:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Cylinder/Area3D:position:x")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Cylinder/Area3D:position:y")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Cylinder/Area3D:position:z")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Cylinder/Area3D/CollisionShape3D:position:x")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Cylinder/Area3D/CollisionShape3D:position:y")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.11086142, -0.25, 0, 0.25, 0, 0.11086142, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Cylinder/Area3D/CollisionShape3D:position:z")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.16666667, 0, 0, 0),
+"times": PackedFloat32Array(0, 0.3)
+}
+
+[sub_resource type="Animation" id="Animation_wr77c"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Cylinder:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Cylinder:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.31521958, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Cylinder:position:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Cylinder/Area3D:position:x")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Cylinder/Area3D:position:y")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Cylinder/Area3D:position:z")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Cylinder/Area3D/CollisionShape3D:position:x")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Cylinder/Area3D/CollisionShape3D:position:y")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.11086142, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Cylinder/Area3D/CollisionShape3D:position:z")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_kn7av"]
+_data = {
+&"RESET": SubResource("Animation_wr77c"),
+&"push": SubResource("Animation_t44em")
+}
+
+[node name="batton" instance=ExtResource("1_lmxgv")]
+script = ExtResource("2_bxe5t")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Cube" index="0"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Cube/StaticBody3D" index="0"]
+shape = SubResource("ConvexPolygonShape3D_bxe5t")
+
+[node name="Area3D" type="Area3D" parent="Cylinder" index="0"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Cylinder/Area3D" index="0"]
+transform = Transform3D(1.088, 0, 0, 0, 1.535, 0, 0, 0, 1.088, 0, 0.11086142, 0)
+shape = SubResource("ConvexPolygonShape3D_t44em")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="2"]
+libraries = {
+&"": SubResource("AnimationLibrary_kn7av")
+}
+
+[node name="AudioStreamPlayer3D_up" type="AudioStreamPlayer3D" parent="." index="3"]
+stream = ExtResource("3_wr77c")
+
+[node name="AudioStreamPlayer3D_down" type="AudioStreamPlayer3D" parent="." index="4"]
+stream = ExtResource("4_kn7av")

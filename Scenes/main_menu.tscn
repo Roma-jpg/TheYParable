@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=3 uid="uid://dhps7r678xgih"]
+
+[ext_resource type="Script" uid="uid://kc0hja0scy4e" path="res://Scripts/main_menu.gd" id="1_1ehe0"]
+[ext_resource type="FontFile" uid="uid://dfnicc7roabp2" path="res://Assets/Fonts/Interstate Compressed Bold.otf" id="1_28flt"]
+[ext_resource type="Texture2D" uid="uid://co70qig7hg56d" path="res://Assets/Pictures/mainmenu.png" id="2_48xlc"]
+
+[node name="MainMenu" type="Node2D"]
+script = ExtResource("1_1ehe0")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_48xlc")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -70.0
+offset_right = 169.0
+offset_bottom = 70.0
+grow_vertical = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 120
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="StartButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_fonts/font = ExtResource("1_28flt")
+theme_override_font_sizes/font_size = 26
+text = "НАЧАТЬ ИГРУ"
+flat = true
+alignment = 0
+
+[node name="OptionsButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_fonts/font = ExtResource("1_28flt")
+theme_override_font_sizes/font_size = 26
+text = "НАСТРОЙКИ"
+flat = true
+alignment = 0
+
+[node name="ExitButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_fonts/font = ExtResource("1_28flt")
+theme_override_font_sizes/font_size = 26
+text = "ВЫХОД"
+flat = true
+alignment = 0
+
+[connection signal="pressed" from="CanvasLayer/Control/MarginContainer/VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/MarginContainer/VBoxContainer/OptionsButton" to="." method="_on_options_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/MarginContainer/VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]
