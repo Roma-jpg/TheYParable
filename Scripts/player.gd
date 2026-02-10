@@ -33,7 +33,7 @@ var has_saved := false
 @onready var sfx_player := AudioStreamPlayer3D.new()
 
 # Для настроек
-var monday_mode_enabled := false
+var epileptic_mode_enabled := false
 var slippery_world_enabled := false
 var temperature_mode := "20с"
 
@@ -76,7 +76,7 @@ func _ready():
 
 func _unhandled_input(event):
 	
-	if monday_mode_enabled:
+	if epileptic_mode_enabled:
 		input_queue.append({ "event": event, "time": Time.get_ticks_msec() + randi_range(500, 700) })
 
 	if controls_locked or not can_look:
@@ -94,7 +94,7 @@ func _unhandled_input(event):
 		camera.rotation.x = deg_to_rad(pitch)
 
 func _physics_process(delta):
-	if monday_mode_enabled:
+	if epileptic_mode_enabled:
 		_process_input_queue()
 	# Гравитация
 	if not is_on_floor():
@@ -149,7 +149,7 @@ func handle_movement(delta):
 	var target_x = direction.x * speed
 	var target_z = direction.z * speed
 
-	var factor = 0.08
+	var factor = 0.03
 	if slippery_world_enabled:
 		velocity.x = lerp(velocity.x, target_x, factor * delta * 60)
 		velocity.z = lerp(velocity.z, target_z, factor * delta * 60)
@@ -269,7 +269,7 @@ func _teleport_to_saved():
 func apply_misc_settings():
 	var m = Settings.settings["misc"]
 
-	monday_mode_enabled = m["monday_mode"]
+	epileptic_mode_enabled = m["epileptic_mode"]
 	slippery_world_enabled = m["slippery_world"]
 	temperature_mode = m["temperature"]
 

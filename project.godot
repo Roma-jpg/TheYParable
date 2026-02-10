@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="TheYParable"
-run/main_scene="uid://pm7rk1u7k0ol"
+run/main_scene="uid://dhps7r678xgih"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://Assets/Pictures/icon.svg"
 
@@ -28,6 +28,7 @@ Settings="*res://Scripts/Settings.gd"
 
 window/size/viewport_width=960
 window/size/viewport_height=540
+window/stretch/mode="canvas_items"
 
 [global_group]
 

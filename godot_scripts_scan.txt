@@ -1,4 +1,4 @@
-Scanning for .gd files in: C:\Users\annak\OneDrive\Документы\the-y-parable
+Scanning for .gd files in: C:\Users\Ромэо\Documents\the-y-parable
 Ignoring folders: addons, .git, node_modules, __pycache__, .venv, venv
 --------------------------------------------------
 
@@ -1028,18 +1028,25 @@ var default_settings := {
 		"mute": false
 	},
 	"misc": {
-		"monday_mode": false,
+		"epileptic_mode": false,
 		"slippery_world": false,
 		"gravity": "Нормальная",
-		"temperature": "20с"
+		"temperature": "26с"
 	}
 }
 
 var settings := {}
+var slippery_physics_material: PhysicsMaterial # Новое: материал для скользкого мира
+var original_physics_materials: Dictionary = {}
 
 func _ready():
 	load_settings()
 	apply_all_settings()
+	
+	slippery_physics_material = PhysicsMaterial.new()
+	slippery_physics_material.friction = 0.1  # Очень низкое трение
+	slippery_physics_material.rough = true    # Включить грубость поверхности
+	slippery_physics_material.bounce = 0.05   # Минимальный отскок
 
 # -------------------
 # Load / Save
@@ -1129,26 +1136,49 @@ func apply_sound():
 # -------------------
 
 func apply_misc():
-	if settings["misc"]["monday_mode"]:
-		print("Monday mode ON")
+	if settings["misc"]["epileptic_mode"]:
+		print("Epileptic mode ON")
 
 	if settings["misc"]["slippery_world"]:
 		print("Slippery world ON")
 
 	match settings["misc"]["gravity"]:
 		"Низкая":
-			ProjectSettings.set_setting("physics/3d/default_gravity", 200)
+			ProjectSettings.set_setting("physics/3d/default_gravity", 1.62)
 		"Нормальная":
-			ProjectSettings.set_setting("physics/3d/default_gravity", 400)
+			ProjectSettings.set_setting("physics/3d/default_gravity", 9.8)
 		"Солнце":
-			ProjectSettings.set_setting("physics/3d/default_gravity", 1200)
+			ProjectSettings.set_setting("physics/3d/default_gravity", 274.1)
 		"Переменная":
-			ProjectSettings.set_setting("physics/3d/default_gravity", randi() % 1200)
+			ProjectSettings.set_setting("physics/3d/default_gravity", randi() % 50)
 
 	print("Температура: ", settings["misc"]["temperature"])
 	for p in get_tree().get_nodes_in_group("player"):
 		if p.has_method("apply_misc_settings"):
 			p.apply_misc_settings()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\SlipperyFloor.gd]
+[============================================================]
+
+# Создайте новый файл SlipperyFloor.gd
+extends StaticBody3D
+
+@export var is_slippery: bool = false
+
+func _ready():
+	if Settings.settings["misc"]["slippery_world"]:
+		make_slippery()
+
+func make_slippery():
+	var material = PhysicsMaterial.new()
+	material.friction = 0.2  # Низкое трение
+	material.rough = true
+	physics_material_override = material
 
 
 ================================================================================
@@ -1628,8 +1658,7 @@ func _on_start_button_pressed() -> void:
 
 
 func _on_options_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://Scenes/settings_menu.tscn")
-
+	get_tree().change_scene_to_file("res://Scenes/settings_scene.tscn")
 
 func _on_exit_button_pressed() -> void:
 	get_tree().quit()
@@ -1686,7 +1715,7 @@ var has_saved := false
 @onready var sfx_player := AudioStreamPlayer3D.new()
 
 # Для настроек
-var monday_mode_enabled := false
+var epileptic_mode_enabled := false
 var slippery_world_enabled := false
 var temperature_mode := "20с"
 
@@ -1729,7 +1758,7 @@ func _ready():
 
 func _unhandled_input(event):
 	
-	if monday_mode_enabled:
+	if epileptic_mode_enabled:
 		input_queue.append({ "event": event, "time": Time.get_ticks_msec() + randi_range(500, 700) })
 
 	if controls_locked or not can_look:
@@ -1747,11 +1776,11 @@ func _unhandled_input(event):
 		camera.rotation.x = deg_to_rad(pitch)
 
 func _physics_process(delta):
-	if monday_mode_enabled:
+	if epileptic_mode_enabled:
 		_process_input_queue()
 	# Гравитация
 	if not is_on_floor():
-		var grav = ProjectSettings.get_setting("physics/2d/default_gravity")
+		var grav = ProjectSettings.get_setting("physics/3d/default_gravity")
 		velocity.y -= grav * delta
 
 
@@ -1922,7 +1951,7 @@ func _teleport_to_saved():
 func apply_misc_settings():
 	var m = Settings.settings["misc"]
 
-	monday_mode_enabled = m["monday_mode"]
+	epileptic_mode_enabled = m["epileptic_mode"]
 	slippery_world_enabled = m["slippery_world"]
 	temperature_mode = m["temperature"]
 
@@ -1933,11 +1962,11 @@ func _apply_temperature():
 		"26с":
 			camera_shake_strength = 0.0
 		"20с":
-			camera_shake_strength = 0.1
+			camera_shake_strength = 0.03
 		"15с":
-			camera_shake_strength = 0.25
+			camera_shake_strength = 0.1
 		"Ниже нуля":
-			camera_shake_strength = 0.45
+			camera_shake_strength = 0.15
 
 func _apply_camera_shake(delta):
 	if camera_shake_strength <= 0.0:
@@ -2118,7 +2147,7 @@ func load_ui_values():
 	mute_check.button_pressed = s["mute"]
 
 	var m = Settings.settings["misc"]
-	monday_check.button_pressed = m["monday_mode"]
+	monday_check.button_pressed = m["epileptic_mode"]
 	slippery_check.button_pressed = m["slippery_world"]
 	gravity_option.select(_find_option_index(gravity_option, m["gravity"]))
 	temp_option.select(_find_option_index(temp_option, m["temperature"]))
@@ -2168,7 +2197,7 @@ func _on_save_sound():
 func _on_save_misc():
 	var m = Settings.settings["misc"]
 
-	m["monday_mode"] = monday_check.button_pressed
+	m["epileptic_mode"] = monday_check.button_pressed
 	m["slippery_world"] = slippery_check.button_pressed
 	m["gravity"] = gravity_option.get_item_text(gravity_option.selected)
 	m["temperature"] = temp_option.get_item_text(temp_option.selected)
@@ -2368,4 +2397,4 @@ func perform_interaction():
 
 
 ==================================================
-Total .gd files found: 28
+Total .gd files found: 29

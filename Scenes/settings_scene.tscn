@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://b082277fv4u5h"]
 
-[ext_resource type="Script" uid="uid://6dvxxep4leed" path="res://Scripts/settings_scene.gd" id="1_2kfxj"]
+[ext_resource type="Script" uid="uid://c0bntbvf8rabp" path="res://Scripts/settings_scene.gd" id="1_2kfxj"]
 [ext_resource type="Texture2D" uid="uid://co70qig7hg56d" path="res://Assets/Pictures/mainmenu.png" id="1_cmf5w"]
 [ext_resource type="FontFile" uid="uid://dfnicc7roabp2" path="res://Assets/Fonts/Interstate Compressed Bold.otf" id="2_amiku"]
 [ext_resource type="Texture2D" uid="uid://bm0qyldksfby8" path="res://Assets/Pictures/mortal-kombat-sub-zero-i202629 (1).jpg" id="4_2gedn"]
@@ -93,9 +93,10 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_2kfxj")
-current_tab = 0
+current_tab = 2
 
 [node name="Графика" type="TabBar" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer"]
+visible = false
 layout_mode = 2
 tab_alignment = 1
 metadata/_tab_index = 0
@@ -269,7 +270,6 @@ text = "СОХРАНИТЬ"
 flat = true
 
 [node name="Хз" type="TabBar" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer"]
-visible = false
 layout_mode = 2
 tab_alignment = 1
 metadata/_tab_index = 2
@@ -289,7 +289,7 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer/Хз/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
-text = "Режим понедельника: "
+text = "Эпилептический статус (жёсткие конвульсии): "
 
 [node name="CheckButton" type="CheckButton" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer/Хз/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2

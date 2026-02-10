@@ -61,7 +61,7 @@ func load_ui_values():
 	mute_check.button_pressed = s["mute"]
 
 	var m = Settings.settings["misc"]
-	monday_check.button_pressed = m["monday_mode"]
+	monday_check.button_pressed = m["epileptic_mode"]
 	slippery_check.button_pressed = m["slippery_world"]
 	gravity_option.select(_find_option_index(gravity_option, m["gravity"]))
 	temp_option.select(_find_option_index(temp_option, m["temperature"]))
@@ -111,7 +111,7 @@ func _on_save_sound():
 func _on_save_misc():
 	var m = Settings.settings["misc"]
 
-	m["monday_mode"] = monday_check.button_pressed
+	m["epileptic_mode"] = monday_check.button_pressed
 	m["slippery_world"] = slippery_check.button_pressed
 	m["gravity"] = gravity_option.get_item_text(gravity_option.selected)
 	m["temperature"] = temp_option.get_item_text(temp_option.selected)

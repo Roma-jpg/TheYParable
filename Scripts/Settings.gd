@@ -14,7 +14,7 @@ var default_settings := {
 		"mute": false
 	},
 	"misc": {
-		"monday_mode": false,
+		"epileptic_mode": false,
 		"slippery_world": false,
 		"gravity": "Нормальная",
 		"temperature": "26с"
@@ -122,8 +122,8 @@ func apply_sound():
 # -------------------
 
 func apply_misc():
-	if settings["misc"]["monday_mode"]:
-		print("Monday mode ON")
+	if settings["misc"]["epileptic_mode"]:
+		print("Epileptic mode ON")
 
 	if settings["misc"]["slippery_world"]:
 		print("Slippery world ON")
