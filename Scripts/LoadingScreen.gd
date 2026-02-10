@@ -20,7 +20,7 @@ func _ready() -> void:
 	modulate.a = 0.0
 	progress_bar.value = 0
 	top_level = true
-	z_index = 10_000
+	z_index = 100
 
 func start(duration: float, advice_text: String) -> void:
 	_hide_player_ui()

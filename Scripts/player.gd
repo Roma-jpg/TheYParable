@@ -32,6 +32,17 @@ var has_saved := false
 
 @onready var sfx_player := AudioStreamPlayer3D.new()
 
+# Для настроек
+var monday_mode_enabled := false
+var slippery_world_enabled := false
+var temperature_mode := "20с"
+
+var input_delay := 0.0
+var input_queue := []
+
+var camera_shake_strength := 0.0
+var camera_base_rotation := Vector3.ZERO
+
 
 # Флаги возможностей
 var can_move := true
@@ -48,6 +59,8 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	respawn_anim.visible = false
+	camera_base_rotation = camera.rotation
+
 	
 	sfx_player.stream = respawn_sound
 	add_child(sfx_player)
@@ -56,11 +69,16 @@ func _ready():
 	saved_position = global_position
 	saved_rotation = rotation
 	has_saved = true
+	apply_misc_settings()
 	print("Checkpoint saved on game start at: ", saved_position)
 
 
 
 func _unhandled_input(event):
+	
+	if monday_mode_enabled:
+		input_queue.append({ "event": event, "time": Time.get_ticks_msec() + randi_range(500, 700) })
+
 	if controls_locked or not can_look:
 		return
 	if not can_look:
@@ -76,9 +94,13 @@ func _unhandled_input(event):
 		camera.rotation.x = deg_to_rad(pitch)
 
 func _physics_process(delta):
+	if monday_mode_enabled:
+		_process_input_queue()
 	# Гравитация
 	if not is_on_floor():
-		velocity.y -= gravity * delta
+		var grav = ProjectSettings.get_setting("physics/3d/default_gravity")
+		velocity.y -= grav * delta
+
 
 	if controls_locked or not can_move:
 		velocity.x = 0
@@ -99,7 +121,7 @@ func _physics_process(delta):
 		else:
 			print("Checkpoint skipped - falling | velocity.y = ", velocity.y)
 
-
+	_apply_camera_shake(delta)
 	# Teleport if fallen too low
 	if has_saved and global_position.y <= fall_limit_y:
 		_teleport_to_saved()
@@ -124,8 +146,17 @@ func handle_movement(delta):
 	if can_sprint and Input.is_action_pressed("sprint"):
 		speed = sprint_speed
 
-	velocity.x = direction.x * speed
-	velocity.z = direction.z * speed
+	var target_x = direction.x * speed
+	var target_z = direction.z * speed
+
+	var factor = 0.08
+	if slippery_world_enabled:
+		velocity.x = lerp(velocity.x, target_x, factor * delta * 60)
+		velocity.z = lerp(velocity.z, target_z, factor * delta * 60)
+	else:
+		velocity.x = target_x
+		velocity.z = target_z
+
 
 	if can_jump and Input.is_action_just_pressed("jump") and is_on_floor():
 		velocity.y = jump_force
@@ -234,3 +265,45 @@ func _teleport_to_saved():
 	
 	await respawn_anim.animation_finished
 	respawn_anim.visible = false
+
+func apply_misc_settings():
+	var m = Settings.settings["misc"]
+
+	monday_mode_enabled = m["monday_mode"]
+	slippery_world_enabled = m["slippery_world"]
+	temperature_mode = m["temperature"]
+
+	_apply_temperature()
+
+func _apply_temperature():
+	match temperature_mode:
+		"26с":
+			camera_shake_strength = 0.0
+		"20с":
+			camera_shake_strength = 0.1
+		"15с":
+			camera_shake_strength = 0.25
+		"Ниже нуля":
+			camera_shake_strength = 0.45
+
+func _apply_camera_shake(delta):
+	if camera_shake_strength <= 0.0:
+		return
+	var shake_x = randf_range(-camera_shake_strength, camera_shake_strength)
+	var shake_y = randf_range(-camera_shake_strength, camera_shake_strength)
+	var shake_z = randf_range(-camera_shake_strength, camera_shake_strength)
+
+	camera.rotation = camera_base_rotation + Vector3(shake_x, shake_y, shake_z)
+	
+	camera_base_rotation.x = camera.rotation.x
+	camera_base_rotation.y = camera.rotation.y
+	camera_base_rotation.z = camera.rotation.z
+
+
+func _process_input_queue():
+	var now = Time.get_ticks_msec()
+
+	for i in range(input_queue.size() - 1, -1, -1):
+		if input_queue[i]["time"] <= now:
+			_unhandled_input(input_queue[i]["event"])
+			input_queue.remove_at(i)

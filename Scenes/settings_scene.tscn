@@ -1,6 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://b082277fv4u5h"]
+[gd_scene load_steps=8 format=3 uid="uid://b082277fv4u5h"]
 
-[ext_resource type="Script" uid="uid://c0bntbvf8rabp" path="res://Scripts/settings_scene.gd" id="1_2kfxj"]
+[ext_resource type="Script" uid="uid://6dvxxep4leed" path="res://Scripts/settings_scene.gd" id="1_2kfxj"]
 [ext_resource type="Texture2D" uid="uid://co70qig7hg56d" path="res://Assets/Pictures/mainmenu.png" id="1_cmf5w"]
 [ext_resource type="FontFile" uid="uid://dfnicc7roabp2" path="res://Assets/Fonts/Interstate Compressed Bold.otf" id="2_amiku"]
 [ext_resource type="Texture2D" uid="uid://bm0qyldksfby8" path="res://Assets/Pictures/mortal-kombat-sub-zero-i202629 (1).jpg" id="4_2gedn"]
@@ -22,8 +22,19 @@ bg_color = Color(0.14767197, 0.14767176, 0.14767179, 1)
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2gedn"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+corner_detail = 5
+
 [node name="SettingsScene" type="Node2D"]
-script = ExtResource("1_2kfxj")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -34,6 +45,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_2kfxj")
 
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control"]
 layout_mode = 1
@@ -160,7 +172,7 @@ text = "FPS лимит:"
 layout_mode = 2
 selected = 1
 fit_to_longest_item = false
-item_count = 5
+item_count = 6
 popup/item_0/text = "30"
 popup/item_0/id = 0
 popup/item_1/text = "60"
@@ -171,6 +183,8 @@ popup/item_3/text = "240"
 popup/item_3/id = 3
 popup/item_4/text = "Нет лимита"
 popup/item_4/id = 4
+popup/item_5/text = "1"
+popup/item_5/id = 5
 
 [node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer/Графика"]
 layout_mode = 1
@@ -223,6 +237,7 @@ theme_override_constants/margin_top = 5
 [node name="HSlider" type="HSlider" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer/Звук/MarginContainer/VBoxContainer/HBoxContainer/MarginContainer"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
+value = 70.0
 rounded = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer/Звук/MarginContainer/VBoxContainer"]
@@ -349,3 +364,55 @@ theme_override_constants/margin_bottom = 12
 layout_mode = 2
 text = "СОХРАНИТЬ"
 flat = true
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2gedn")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Control/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 19
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Вы уверены что вы хотите выйти?
+При выходе через ESC настройки не сохраняются. "
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 124
+alignment = 1
+
+[node name="OkButton" type="Button" parent="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 2
+text = "Да"
+
+[node name="NoButton" type="Button" parent="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+z_index = 101
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 2
+text = "Нет"
+
+[connection signal="pressed" from="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/OkButton" to="CanvasLayer/Control" method="_on_ok_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/NoButton" to="CanvasLayer/Control" method="_on_no_button_pressed"]
