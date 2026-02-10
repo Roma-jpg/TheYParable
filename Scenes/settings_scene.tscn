@@ -93,10 +93,9 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_2kfxj")
-current_tab = 2
+current_tab = 0
 
 [node name="Графика" type="TabBar" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer"]
-visible = false
 layout_mode = 2
 tab_alignment = 1
 metadata/_tab_index = 0
@@ -270,6 +269,7 @@ text = "СОХРАНИТЬ"
 flat = true
 
 [node name="Хз" type="TabBar" parent="CanvasLayer/Control/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/TabContainer"]
+visible = false
 layout_mode = 2
 tab_alignment = 1
 metadata/_tab_index = 2
@@ -395,7 +395,8 @@ theme_override_constants/separation = 19
 [node name="Label" type="Label" parent="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Вы уверены что вы хотите выйти?
-При выходе через ESC настройки не сохраняются. "
+При выходе через ESC настройки не сохраняются. 
+Перед выходом, сохраните их нажав на кнопку ниже."
 horizontal_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer"]

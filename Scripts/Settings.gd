@@ -130,13 +130,13 @@ func apply_misc():
 
 	match settings["misc"]["gravity"]:
 		"Низкая":
-			ProjectSettings.set_setting("physics/3d/default_gravity", 200)
+			ProjectSettings.set_setting("physics/3d/default_gravity", 1.62)
 		"Нормальная":
-			ProjectSettings.set_setting("physics/3d/default_gravity", 400)
+			ProjectSettings.set_setting("physics/3d/default_gravity", 9.8)
 		"Солнце":
-			ProjectSettings.set_setting("physics/3d/default_gravity", 1200)
+			ProjectSettings.set_setting("physics/3d/default_gravity", 274.1)
 		"Переменная":
-			ProjectSettings.set_setting("physics/3d/default_gravity", randi() % 1200)
+			ProjectSettings.set_setting("physics/3d/default_gravity", randi() % 50)
 
 	print("Температура: ", settings["misc"]["temperature"])
 	for p in get_tree().get_nodes_in_group("player"):

@@ -1,19 +1,20 @@
-[gd_scene load_steps=24 format=3 uid="uid://cxqhmeq3o61in"]
+[gd_scene load_steps=25 format=3 uid="uid://cxqhmeq3o61in"]
 
 [ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="1_h2yge"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://r705u878a7uv" path="res://Scripts/CubeExample.gd" id="3_5vw27"]
 [ext_resource type="Material" uid="uid://cmu4vfp7y5t6b" path="res://addons/prototype_mini_bundle/M_prototype_purple.tres" id="4_272bh"]
 [ext_resource type="Material" uid="uid://7to3kb1tisdd" path="res://addons/prototype_mini_bundle/M_prototype_orange.tres" id="5_5vw27"]
 [ext_resource type="Script" uid="uid://cwvqyltciy7ku" path="res://Scripts/CubeExample5.gd" id="5_jkdf5"]
-[ext_resource type="Script" uid="uid://0d0fmlxsop6" path="res://Scripts/CubeExample2.gd" id="6_d1ilt"]
+[ext_resource type="Script" path="res://Scripts/CubeExample2.gd" id="6_d1ilt"]
 [ext_resource type="Material" uid="uid://dyx4l6ea0am6f" path="res://addons/prototype_mini_bundle/M_prototype_green.tres" id="6_kek77"]
 [ext_resource type="Script" uid="uid://bwjk0kcfoxbvd" path="res://Scripts/CubeExample6.gd" id="6_wsu2k"]
 [ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="7_4c57u"]
 [ext_resource type="Script" uid="uid://q2qdivwtafb8" path="res://Scripts/CubeExample7.gd" id="7_k12tt"]
-[ext_resource type="Script" uid="uid://cqfcnk44dde5f" path="res://Scripts/CubeExample3.gd" id="8_6iyac"]
+[ext_resource type="Script" path="res://Scripts/CubeExample3.gd" id="8_6iyac"]
 [ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="10_fdnlq"]
+[ext_resource type="Texture2D" uid="uid://di26y51ij7r76" path="res://Assets/Pictures/easter_pic.jpg" id="15_wsu2k"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]
 size = Vector3(30, 0.05, 30)
@@ -184,3 +185,7 @@ shape = SubResource("BoxShape3D_1bvp3")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_272bh")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 6.23211, 2750.671)
+texture = ExtResource("15_wsu2k")

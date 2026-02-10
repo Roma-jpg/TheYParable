@@ -280,11 +280,11 @@ func _apply_temperature():
 		"26с":
 			camera_shake_strength = 0.0
 		"20с":
-			camera_shake_strength = 0.1
+			camera_shake_strength = 0.03
 		"15с":
-			camera_shake_strength = 0.25
+			camera_shake_strength = 0.1
 		"Ниже нуля":
-			camera_shake_strength = 0.45
+			camera_shake_strength = 0.15
 
 func _apply_camera_shake(delta):
 	if camera_shake_strength <= 0.0:
