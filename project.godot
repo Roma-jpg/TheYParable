@@ -23,6 +23,7 @@ Console="*res://Scenes/console.tscn"
 MaterialManager="*res://Scripts/MaterialManager.gd"
 VisualisationDirector="*res://Scenes/OverlaySystem/VisualisationDirector.gd"
 Settings="*res://Scripts/Settings.gd"
+PunishmentManager="*res://Scripts/PunishmentManager.gd"
 
 [display]
 

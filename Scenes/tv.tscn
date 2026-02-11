@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3han2cm5va6c"]
+
+[ext_resource type="PackedScene" uid="uid://ddupcty7j6pae" path="res://Assets/3DModels/tv.glb" id="1_a4k46"]
+
+[node name="tv" instance=ExtResource("1_a4k46")]

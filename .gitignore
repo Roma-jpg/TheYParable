@@ -16,3 +16,5 @@ export_credentials.cfg
 .mono/
 mono_crash.*.json
 data_*/
+
+/Assets/Pictures/output.ogv

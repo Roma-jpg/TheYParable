@@ -420,12 +420,12 @@ func _apply_temperature():
 	match temperature_mode:
 		"26с":
 			camera_shake_strength = 0.0
-		"20с":
-			camera_shake_strength = 0.03
-		"15с":
+		"-20с":
 			camera_shake_strength = 0.1
+		"-15с":
+			camera_shake_strength = 0.03
 		"Ниже нуля":
-			camera_shake_strength = 0.15
+			camera_shake_strength = 0.01
 
 func _apply_camera_shake(delta):
 	if camera_shake_strength <= 0.0:

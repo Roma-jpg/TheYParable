@@ -26,12 +26,12 @@ func _create_scene_button(scene_path: String) -> void:
 	grid.add_child(btn)
 
 func _on_scene_button_pressed(scene_path: String) -> void:
-	var packed_scene = load(scene_path) as PackedScene
+	var packed_scene := load(scene_path) as PackedScene
 	if not packed_scene:
 		print("Не удалось загрузить сцену: ", scene_path)
 		return
 	
-	# Очистим контейнер перед добавлением новой сцены
-	#grid.clear()
-	var instance = packed_scene.instantiate()
-	grid.add_child(instance)
+	var new_scene := packed_scene.instantiate()
+	get_tree().root.add_child(new_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = new_scene

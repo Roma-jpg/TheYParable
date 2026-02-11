@@ -3,7 +3,8 @@ extends Node2D
 @onready var canvas_layer: CanvasLayer = $CanvasLayer
 
 func _ready() -> void:
-	pass
+	if PunishmentManager.punishment_active and not PunishmentManager.video_completed:
+		get_tree().change_scene_to_file("res://Scenes/punishment_room.tscn")
 
 func _on_start_button_pressed() -> void:
 	canvas_layer.visible = false
