@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://bq3np8buadnid"]
+[gd_scene load_steps=48 format=3 uid="uid://bq3np8buadnid"]
 
 [ext_resource type="Script" uid="uid://b72n47ccqvnsw" path="res://Scripts/player.gd" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://bk7o521qvk5po" path="res://Scripts/InteractionManager.gd" id="2_i3pqv"]
@@ -170,19 +170,12 @@ animations = [{
 "speed": 20.0
 }]
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_r7t2e"]
+radius = 1.0
+
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 script = ExtResource("1_4flbx")
 respawn_sound = ExtResource("2_r7t2e")
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5837451, -0.54535663)
-
-[node name="InteractionManager" type="Node" parent="Camera3D"]
-script = ExtResource("2_i3pqv")
-metadata/_custom_type_script = "uid://bk7o521qvk5po"
-
-[node name="RayCast3D" type="RayCast3D" parent="Camera3D" groups=["player"]]
-target_position = Vector3(0, 0, -1.74)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_sh265")
@@ -236,7 +229,22 @@ sprite_frames = SubResource("SpriteFrames_h5cax")
 frame = 22
 frame_progress = 0.39182472
 
-[connection signal="interactable_focused" from="Camera3D/InteractionManager" to="InteractionUI" method="show_interaction"]
-[connection signal="interactable_unfocused" from="Camera3D/InteractionManager" to="InteractionUI" method="hide_interaction"]
+[node name="SpringArm3D" type="SpringArm3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.587081, -0.7939817)
+shape = SubResource("SphereShape3D_r7t2e")
+spring_length = 0.5
+margin = 0.1
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
+
+[node name="InteractionManager" type="Node" parent="SpringArm3D/Camera3D"]
+script = ExtResource("2_i3pqv")
+metadata/_custom_type_script = "uid://bk7o521qvk5po"
+
+[node name="RayCast3D" type="RayCast3D" parent="SpringArm3D/Camera3D" groups=["player"]]
+target_position = Vector3(0, 0, -1.74)
+
+[connection signal="interactable_focused" from="SpringArm3D/Camera3D/InteractionManager" to="InteractionUI" method="show_interaction"]
+[connection signal="interactable_unfocused" from="SpringArm3D/Camera3D/InteractionManager" to="InteractionUI" method="hide_interaction"]
 
 [editable path="Y"]

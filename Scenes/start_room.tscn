@@ -1,11 +1,11 @@
-[gd_scene load_steps=39 format=3 uid="uid://c6a301a8ogf56"]
+[gd_scene load_steps=45 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
 [ext_resource type="PackedScene" uid="uid://0dyufbh2dug" path="res://Assets/3DModels/room.glb" id="2_qwpf4"]
 [ext_resource type="PackedScene" uid="uid://daggepgs1p08w" path="res://Assets/3DModels/Y_bed.glb" id="3_gefdw"]
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
-[ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
+[ext_resource type="Script" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="5_n4xud"]
 [ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="8_qjx48"]
 [ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="9_ixl8n"]
@@ -13,10 +13,11 @@
 [ext_resource type="Texture2D" uid="uid://dste80nr8hb20" path="res://Assets/3DModels/statue_ganesha_4_texture_BaseColor.jpg" id="11_kntqd"]
 [ext_resource type="PackedScene" uid="uid://doq7rquq1q5tg" path="res://Assets/3DModels/potted_plant.glb" id="12_x7n1t"]
 [ext_resource type="PackedScene" uid="uid://dfvgqmuwdht3g" path="res://Assets/3DModels/statue.glb" id="13_8785c"]
-[ext_resource type="Script" uid="uid://br7a3ynb3275r" path="res://Scripts/statue.gd" id="14_x7n1t"]
+[ext_resource type="Script" uid="uid://cysmlkpspgplp" path="res://Scripts/statue.gd" id="14_x7n1t"]
 [ext_resource type="AudioStream" uid="uid://bd3fqm7porkj8" path="res://Assets/Audio/stone-sliding.wav" id="15_8785c"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="16_8irpl"]
-[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="17_f1u1d"]
+[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="17_f1u1d"]
+[ext_resource type="Script" uid="uid://y04ncqpf0unf" path="res://Scripts/start_door_script.gd" id="17_ham4c"]
 
 [sub_resource type="Animation" id="Animation_qjx48"]
 length = 0.001
@@ -199,6 +200,71 @@ size = Vector3(27.505615, 15.109375, 0.25024414)
 [sub_resource type="BoxShape3D" id="BoxShape3D_x7n1t"]
 size = Vector3(2.0510254, 6.665161, 1.7341309)
 
+[sub_resource type="Animation" id="Animation_8qgfj"]
+resource_name = "start_door_open"
+length = 0.5
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, -1.1770088e-05), Vector3(0.6670838, 0, -0.5739422)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, -1.5707964, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_csa5r"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, -1.1770088e-05)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_loqrl"]
+_data = {
+&"RESET": SubResource("Animation_csa5r"),
+&"start_door_open": SubResource("Animation_8qgfj")
+}
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_s04p8"]
+points = PackedVector3Array(-0.28231296, 1.3506056, 0.16321746, -0.6895813, 0.074107766, -0.067099996, -0.64226127, -0.04834318, -0.116693646, 0.73907393, -0.017778048, 0.120799996, 0.6845114, 2.3881423, -0.067099996, -0.6895813, 2.3881423, -0.067099996, 0.73907393, 2.4800284, 0.120799996, 0.6772022, -0.04834318, -0.116693646, -0.7423, -0.014672942, 0.12055749, -0.7423, 2.4769232, 0.12055749, -0.5622397, 1.2707014, 0.16321746, 0.6772022, 0.031811476, -0.116693646, -0.64226127, 0.031811476, -0.116693646, -0.28231296, 1.2707014, 0.16321746)
+
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_ham4c"]
 panorama = ExtResource("17_f1u1d")
 
@@ -211,6 +277,9 @@ sky = SubResource("Sky_7mycd")
 ambient_light_source = 1
 ambient_light_energy = 0.0
 reflected_light_source = 2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_csa5r"]
+size = Vector3(1.5544434, 1.6318359, 4.9920654)
 
 [node name="StartRoom" type="Node3D"]
 script = ExtResource("1_n4xud")
@@ -336,7 +405,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.077014826, 0.36648107, -0.07162342, 0.9970294, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.07701482, 0.36648107, -0.07162342, 0.99702936, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
@@ -386,6 +455,12 @@ shape = SubResource("BoxShape3D_ham4c")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.194183, 6.9769726, 0.74620056)
 shape = SubResource("BoxShape3D_8qgfj")
 
+[node name="Cube_003" parent="Y_corridor1/Rigged box model/Armature/Skeleton3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.275, 0)
+
+[node name="Cube_004" parent="Y_corridor1/Rigged box model_001/Armature_001/Skeleton3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+
 [node name="Label3D" type="Label3D" parent="Y_corridor1"]
 transform = Transform3D(0, 4.1482615, 2.3949997, 3.6265257e-07, 2.3949997, -4.1482615, -4.79, 1.8132627e-07, -3.140663e-07, 31.372541, 0, -39.215683)
 text = "Привет! Похоже вы вывалился за карту. 
@@ -413,8 +488,35 @@ shape = SubResource("BoxShape3D_x7n1t")
 [node name="door" parent="." instance=ExtResource("16_8irpl")]
 transform = Transform3D(-2.0325796e-08, 0, 0.465, 0, 0.465, 0, -0.465, 0, -2.0325796e-08, -6.010289, 0.088177204, -0.15183356)
 
+[node name="J_2b03" parent="door/Door White 2" index="0"]
+transform = Transform3D(0.9999999, 0, 0, 0, 0.9999999, 0, 0, 0, 0.9999999, 0, 0, -1.1770088e-05)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="door/Door White 2/J_2b03" index="0"]
+libraries = {
+&"": SubResource("AnimationLibrary_loqrl")
+}
+
+[node name="Area3D" type="Area3D" parent="door/Door White 2/J_2b03" index="1"]
+script = ExtResource("17_ham4c")
+interaction_text = "Открыть дверь [E]"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="door/Door White 2/J_2b03/Area3D"]
+shape = SubResource("ConvexPolygonShape3D_s04p8")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="door/Door White 2/J_2b03" index="2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="door/Door White 2/J_2b03/StaticBody3D"]
+shape = SubResource("ConvexPolygonShape3D_s04p8")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_8qgfj")
+
+[node name="StaticBody3D2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.160933, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.27722168, 0.31591797, 0.043395996)
+shape = SubResource("BoxShape3D_csa5r")
 
 [editable path="Player"]
 [editable path="Player/Y"]

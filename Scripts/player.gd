@@ -7,7 +7,13 @@ extends CharacterBody3D
 @export var mouse_sensitivity_vertical := 4.5  # Simplified sensitivity
 @export var gravity := 9.8
 
-@onready var camera := $Camera3D
+@export var camera_distance := 0.5  # Нормальное расстояние камеры
+@export var camera_collision_layer := 2  # Слой для проверки коллизий
+@export var camera_min_distance := 0.1  # Минимальное расстояние
+@onready var camera := $SpringArm3D/Camera3D
+@onready var spring_arm: SpringArm3D = $SpringArm3D
+var current_camera_distance := camera_distance
+
 
 @onready var interaction_ui: Control = $InteractionUI
 @onready var subtitles: CanvasLayer = $Subtitles
@@ -154,6 +160,7 @@ func _unhandled_input(event):
 func _physics_process(delta):
 	
 	_process_gamepad_input(delta)
+	_update_camera_collision()
 	
 	if epileptic_mode_enabled:
 		_process_input_queue()
@@ -186,6 +193,34 @@ func _physics_process(delta):
 	# Teleport if fallen too low
 	if has_saved and global_position.y <= fall_limit_y:
 		_teleport_to_saved()
+
+func _update_camera_collision():
+	var space_state = get_world_3d().direct_space_state
+	
+	# Начальная точка - позиция игрока (можно сместить вверх для глаз)
+	var from = global_position + Vector3(0, 1.5, 0)  # 1.5 - высота глаз
+	
+	# Конечная точка - желаемая позиция камеры
+	var to = from - camera.global_transform.basis.z * camera_distance
+	
+	# Создаем запрос raycast
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.collision_mask = camera_collision_layer
+	query.exclude = [self]  # Игнорируем самого игрока
+	
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		# Если есть столкновение, приближаем камеру
+		var collision_point = result.position
+		var new_distance = from.distance_to(collision_point) - 0.1  # Небольшой отступ
+		current_camera_distance = max(new_distance, camera_min_distance)
+	else:
+		# Иначе плавно возвращаем к нормальному расстоянию
+		current_camera_distance = lerp(current_camera_distance, camera_distance, 0.1)
+	
+	# Обновляем позицию камеры
+	camera.position.z = -current_camera_distance
 
 func handle_movement(delta):
 	# Get input based on camera direction
