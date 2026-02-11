@@ -54,9 +54,19 @@ var controls_locked := false
 
 var pitch := 0.0
 
+@export var gamepad_deadzone := 0.15  # Мертвая зона для стиков (защита от drift)
+@export var gamepad_sensitivity_horizontal := 2.0  # Чувствительность правого стика
+@export var gamepad_sensitivity_vertical := 1.5  # Чувствительность правого стика
+@export var touchpad_sensitivity := 3.0  # Чувствительность сенсорной панели
+
+var using_gamepad := false  # Флаг использования геймпада
+var last_input_type := "keyboard"  # Последний использованный тип ввода
+
 func _ready():
 	add_to_group("player")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	
 	respawn_anim.visible = false
 	camera_base_rotation = camera.rotation
@@ -72,28 +82,79 @@ func _ready():
 	apply_misc_settings()
 	print("Checkpoint saved on game start at: ", saved_position)
 
+func _on_joy_connection_changed(device_id: int, connected: bool):
+	if connected:
+		print("Gamepad connected: ", Input.get_joy_name(device_id))
+		using_gamepad = true
+	else:
+		print("Gamepad disconnected")
+		# Проверяем, остались ли другие подключенные геймпады
+		var joypads = Input.get_connected_joypads()
+		using_gamepad = joypads.size() > 0
+
+func _process_gamepad_input(delta):
+	if not using_gamepad or controls_locked or not can_look:
+		return
+	
+	# Получаем данные с правого стика
+	var right_stick_x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
+	var right_stick_y = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+	
+	# Применяем мертвую зону для защиты от drift
+	if abs(right_stick_x) < gamepad_deadzone:
+		right_stick_x = 0
+	if abs(right_stick_y) < gamepad_deadzone:
+		right_stick_y = 0
+	
+	# Вращение камеры с помощью правого стика
+	if right_stick_x != 0:
+		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)
+	
+	if right_stick_y != 0:
+		pitch += right_stick_y * gamepad_sensitivity_vertical * delta
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
 
 
 func _unhandled_input(event):
-	
+	# Определяем тип последнего ввода
+	if (event is InputEventKey or event is InputEventMouse or 
+		event is InputEventMouseMotion):
+		last_input_type = "keyboard"
+		using_gamepad = false
+	elif (event is InputEventJoypadButton or 
+		  event is InputEventJoypadMotion):
+		last_input_type = "gamepad"
+		using_gamepad = true
+
 	if epileptic_mode_enabled:
 		input_queue.append({ "event": event, "time": Time.get_ticks_msec() + randi_range(500, 700) })
 
 	if controls_locked or not can_look:
 		return
-	if not can_look:
-		return
 
+	# Обработка мыши
 	if event is InputEventMouseMotion:
-		# Rotate player horizontally (yaw)
-		rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
-		
-		# Rotate camera vertically (pitch)
-		pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
-		pitch = clamp(pitch, -85.0, 85.0)
-		camera.rotation.x = deg_to_rad(pitch)
+		# Только если активно управление мышью
+		if not using_gamepad or last_input_type == "keyboard":
+			rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
+			pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
+			pitch = clamp(pitch, -85.0, 85.0)
+			camera.rotation.x = deg_to_rad(pitch)
+	
+	# Обработка сенсорной панели на DualShock
+	elif event is InputEventScreenDrag:
+		if event.index == 0:  # Основной палец
+			rotate_y(-event.relative.x * touchpad_sensitivity * 0.01)
+			pitch -= event.relative.y * touchpad_sensitivity * 0.01
+			pitch = clamp(pitch, -85.0, 85.0)
+			camera.rotation.x = deg_to_rad(pitch)
+
 
 func _physics_process(delta):
+	
+	_process_gamepad_input(delta)
+	
 	if epileptic_mode_enabled:
 		_process_input_queue()
 	# Гравитация
@@ -132,19 +193,57 @@ func handle_movement(delta):
 	var camera_right = camera.global_transform.basis.x
 	
 	var input_dir := Vector2.ZERO
-	input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
+	
+	# Обработка ввода с клавиатуры и геймпада
+	if using_gamepad:
+		# Используем левый стик для движения
+		var left_stick_x = Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
+		var left_stick_y = Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+		
+		# Применяем мертвую зону
+		if abs(left_stick_x) < gamepad_deadzone:
+			left_stick_x = 0
+		if abs(left_stick_y) < gamepad_deadzone:
+			left_stick_y = 0
+		
+		input_dir.x = left_stick_x
+		input_dir.y = -left_stick_y  # Инвертируем ось Y для соответствия WASD
+		
+		# Альтернатива: D-pad (крестик) для точного управления
+		if Input.is_action_pressed("gamepad_dpad_right"):
+			input_dir.x = 1.0
+		elif Input.is_action_pressed("gamepad_dpad_left"):
+			input_dir.x = -1.0
+		
+		if Input.is_action_pressed("gamepad_dpad_up"):
+			input_dir.y = 1.0
+		elif Input.is_action_pressed("gamepad_dpad_down"):
+			input_dir.y = -1.0
+	else:
+		# Клавиатура
+		input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
+		input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
 	
 	# Calculate direction relative to camera
 	var direction = Vector3.ZERO
 	direction += camera_forward * input_dir.y
 	direction += camera_right * input_dir.x
 	direction.y = 0
-	direction = direction.normalized()
+	if direction.length() > 0:
+		direction = direction.normalized()
 
 	var speed := walk_speed
-	if can_sprint and Input.is_action_pressed("sprint"):
-		speed = sprint_speed
+	
+	# Обработка спринта (геймпад)
+	if using_gamepad:
+		if can_sprint and Input.is_action_pressed("gamepad_sprint"):
+			speed = sprint_speed
+		# Альтернатива: кнопка левого стика для спринта
+		if can_sprint and Input.is_action_pressed("gamepad_left_stick_click"):
+			speed = sprint_speed
+	else:
+		if can_sprint and Input.is_action_pressed("sprint"):
+			speed = sprint_speed
 
 	var target_x = direction.x * speed
 	var target_z = direction.z * speed
@@ -157,9 +256,16 @@ func handle_movement(delta):
 		velocity.x = target_x
 		velocity.z = target_z
 
-
-	if can_jump and Input.is_action_just_pressed("jump") and is_on_floor():
+	# Обработка прыжка
+	var jump_pressed = false
+	if using_gamepad:
+		jump_pressed = Input.is_action_just_pressed("gamepad_jump")
+	else:
+		jump_pressed = Input.is_action_just_pressed("jump")
+	
+	if can_jump and jump_pressed and is_on_floor():
 		velocity.y = jump_force
+
 
 # Add this function to your player.gd
 func _push_rigidbodies(delta: float) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://cxqhmeq3o61in"]
+[gd_scene load_steps=26 format=3 uid="uid://cxqhmeq3o61in"]
 
 [ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="1_h2yge"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ig7tw"]
@@ -29,6 +29,8 @@ size = Vector3(30, 0.05, 30)
 [sub_resource type="SphereMesh" id="SphereMesh_h2yge"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1bvp3"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_wsu2k"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_lquwl"]
 panorama = ExtResource("3_1bvp3")
@@ -181,7 +183,7 @@ shape = SubResource("SphereShape3D_1bvp3")
 script = ExtResource("10_fdnlq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Objs/Sphr/Area3D"]
-shape = SubResource("BoxShape3D_1bvp3")
+shape = SubResource("SphereShape3D_wsu2k")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_272bh")
