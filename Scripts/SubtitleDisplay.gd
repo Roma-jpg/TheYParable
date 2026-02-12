@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 @onready var subtitle_panel = $Control/Panel
-@onready var subtitle_label = $Control/Panel/CenterContainer/Label
+@onready var subtitle_label = $Control/Panel/MarginContainer/Label
 
 var max_width: float = 800.0
 var min_width: float = 300.0

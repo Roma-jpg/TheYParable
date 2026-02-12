@@ -1,4 +1,4 @@
-[gd_scene load_steps=63 format=3 uid="uid://c6a301a8ogf56"]
+[gd_scene load_steps=64 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://8mmthorfrgab" path="res://Scenes/base_trigga.tscn" id="19_8qgfj"]
 [ext_resource type="Script" uid="uid://cjh75v0lypsum" path="res://Scripts/trigger_stroom_left.gd" id="20_csa5r"]
 [ext_resource type="Script" uid="uid://b472b4203jntb" path="res://Scripts/trigger_stroom_right.gd" id="21_loqrl"]
+[ext_resource type="Script" uid="uid://xttd83vm202i" path="res://Scripts/trigger_stroom_right_second_one.gd" id="22_60oek"]
 [ext_resource type="PackedScene" uid="uid://xc2ctm2ohmj3" path="res://Assets/3DModels/neon_sign.glb" id="22_s04p8"]
 
 [sub_resource type="Animation" id="Animation_qjx48"]
@@ -481,7 +482,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.077014804, 0.36648107, -0.07162342, 0.9970291, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.0770148, 0.36648107, -0.07162342, 0.99702907, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
@@ -598,6 +599,13 @@ script = ExtResource("21_loqrl")
 [node name="CollisionShape3D" parent="Y_corridor/Cube_001/BaseTrigger2" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5386353, 3.2297497)
 
+[node name="BaseTrigger3" parent="Y_corridor/Cube_001" index="3" instance=ExtResource("19_8qgfj")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 20.63344, 0, -5.0170135)
+script = ExtResource("22_60oek")
+
+[node name="CollisionShape3D" parent="Y_corridor/Cube_001/BaseTrigger3" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5386353, 3.2297497)
+
 [node name="StaticBody3D" type="StaticBody3D" parent="Y_corridor/Cube_002" index="0"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Y_corridor/Cube_002/StaticBody3D"]
@@ -659,4 +667,5 @@ visible = false
 [editable path="Y_corridor"]
 [editable path="Y_corridor/Cube_001/BaseTrigger"]
 [editable path="Y_corridor/Cube_001/BaseTrigger2"]
+[editable path="Y_corridor/Cube_001/BaseTrigger3"]
 [editable path="neon_sign"]
