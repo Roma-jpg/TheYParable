@@ -534,7 +534,7 @@ material = SubResource("StandardMaterial3D_bjwkx")
 transform = Transform3D(0.2, 0, -9.536744e-09, 0, 0.2, 0, 9.536744e-09, 0, 0.2, 0, 6.326564, 0)
 
 [node name="Player" parent="." instance=ExtResource("2_dnawa")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3650414, 0)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 5.6898265, 1.3650414, 1.1294343)
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, -4.7683717e-08, 0, 1, 0, 4.7683717e-08, 0, 1, 0, 6.5356145, 0)

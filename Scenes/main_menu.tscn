@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dhps7r678xgih"]
 
-[ext_resource type="Script" uid="uid://kc0hja0scy4e" path="res://Scripts/main_menu.gd" id="1_1ehe0"]
+[ext_resource type="Script" uid="uid://cexe8h0b5hq1c" path="res://Scripts/main_menu.gd" id="1_1ehe0"]
 [ext_resource type="FontFile" uid="uid://dfnicc7roabp2" path="res://Assets/Fonts/Interstate Compressed Bold.otf" id="1_28flt"]
 [ext_resource type="Texture2D" uid="uid://co70qig7hg56d" path="res://Assets/Pictures/mainmenu.png" id="2_48xlc"]
 
@@ -76,6 +76,8 @@ theme_override_font_sizes/font_size = 26
 text = "ВЫХОД"
 flat = true
 alignment = 0
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 
 [connection signal="pressed" from="CanvasLayer/Control/MarginContainer/VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="button_down" from="CanvasLayer/Control/MarginContainer/VBoxContainer/OptionsButton" to="." method="_on_options_button_button_down"]
