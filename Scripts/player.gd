@@ -121,6 +121,14 @@ func _process_gamepad_input(delta):
 		pitch = clamp(pitch, -85.0, 85.0)
 		camera.rotation.x = deg_to_rad(pitch)
 
+func _input(event):
+	# Проверяем нажатие Escape (ui_cancel - стандартное действие)
+	if event.is_action_pressed("ui_cancel"):
+		# Находим редактор по группе
+		var editor = get_tree().get_first_node_in_group("editors")
+		if editor:
+			# Вызываем метод возврата в редактор
+			editor._return_to_editor()
 
 func _unhandled_input(event):
 	# Определяем тип последнего ввода

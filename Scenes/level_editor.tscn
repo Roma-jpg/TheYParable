@@ -1,0 +1,66 @@
+[gd_scene load_steps=13 format=3 uid="uid://b5s2p5r03o2ma"]
+
+[ext_resource type="Script" uid="uid://5pjxx6jtb2rr" path="res://Scripts/level_editor.gd" id="1_5o76e"]
+[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="2_s1b0e"]
+[ext_resource type="PackedScene" uid="uid://daaosu30gjds5" path="res://Scenes/editor/wall.tscn" id="2_xi6ke"]
+[ext_resource type="PackedScene" uid="uid://kdeo5qx6hbl6" path="res://Scenes/editor/ramp.tscn" id="3_i8l5y"]
+[ext_resource type="PackedScene" uid="uid://ljajuj7equjj" path="res://Scenes/editor/trampoline.tscn" id="4_fhsmn"]
+[ext_resource type="PackedScene" uid="uid://ba14c46wb606d" path="res://Scenes/editor/finish_flag.tscn" id="5_5ogug"]
+[ext_resource type="PackedScene" uid="uid://ccvetgunye1sk" path="res://Scenes/editor/start.tscn" id="6_kerlq"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_n1xa8"]
+panorama = ExtResource("2_s1b0e")
+
+[sub_resource type="Sky" id="Sky_w8wcq"]
+sky_material = SubResource("PanoramaSkyMaterial_n1xa8")
+
+[sub_resource type="Environment" id="Environment_rot6e"]
+background_mode = 2
+sky = SubResource("Sky_w8wcq")
+ambient_light_source = 3
+reflected_light_source = 2
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_wchaa"]
+size = Vector2(25, 25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_iwybi"]
+size = Vector3(30, 0.2, 45)
+
+[node name="LevelEditor" type="Node3D"]
+script = ExtResource("1_5o76e")
+wall_scene = ExtResource("2_xi6ke")
+ramp_scene = ExtResource("3_i8l5y")
+trampoline_scene = ExtResource("4_fhsmn")
+finish_scene = ExtResource("5_5ogug")
+spawn_scene = ExtResource("6_kerlq")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_rot6e")
+
+[node name="GridVisual" type="Node3D" parent="."]
+
+[node name="PlacedObjects" type="Node3D" parent="."]
+
+[node name="GridPlane" type="StaticBody3D" parent="."]
+collision_layer = 3
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="GridPlane"]
+visible = false
+layers = 3
+mesh = SubResource("PlaneMesh_wchaa")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GridPlane"]
+shape = SubResource("BoxShape3D_iwybi")
+
+[node name="CameraPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 10)
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.8660254, 0.5, 0, -0.5, 0.8660254, 0, 0, 0)
+current = true
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_iwybi")

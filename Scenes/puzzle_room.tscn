@@ -1,20 +1,22 @@
-[gd_scene load_steps=41 format=4 uid="uid://pm7rk1u7k0ol"]
+[gd_scene load_steps=42 format=4 uid="uid://pm7rk1u7k0ol"]
 
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="1_dnawa"]
-[ext_resource type="PackedScene" uid="uid://cepq7qxjsncwf" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
+[ext_resource type="PackedScene" uid="uid://bcfot4h2lej4j" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="2_dnawa"]
-[ext_resource type="Texture2D" uid="uid://bf4k88smrrev0" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="4_yskdw"]
+[ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="4_yskdw"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="5_bjwkx"]
-[ext_resource type="Script" uid="uid://bnrxqmai7uq8g" path="res://Scripts/puzzledoor.gd" id="6_mtnun"]
+[ext_resource type="Script" uid="uid://bg7kulxxxdbv6" path="res://Scripts/puzzledoor.gd" id="6_mtnun"]
 [ext_resource type="Texture2D" uid="uid://dx88gyl4q7g5y" path="res://Assets/3DModels/door_door2_11_BaseColor.jpg" id="6_sngpb"]
 [ext_resource type="Texture2D" uid="uid://1kybiucttxry" path="res://Assets/3DModels/door_door2_11_Metallic-door2_11_Roughness.png" id="7_mtnun"]
 [ext_resource type="Texture2D" uid="uid://cpnv7v6tj4obp" path="res://Assets/3DModels/door_door2_11_Normal.jpg" id="8_srax6"]
 [ext_resource type="PackedScene" uid="uid://clxapnnoboi35" path="res://Assets/3DModels/cubick.glb" id="10_b7kfe"]
 [ext_resource type="PackedScene" uid="uid://b6ohytjhtl2hj" path="res://Assets/3DModels/polka.glb" id="11_bjwkx"]
 [ext_resource type="PackedScene" uid="uid://bbwu7pb6eronq" path="res://Scenes/batton.tscn" id="11_sngpb"]
-[ext_resource type="Script" uid="uid://ctln54ls8x0wf" path="res://Scripts/puzzle_polka.gd" id="12_mtnun"]
+[ext_resource type="Script" uid="uid://dv3j33i3a0d27" path="res://Scripts/puzzle_polka.gd" id="12_mtnun"]
 [ext_resource type="Texture2D" uid="uid://bhf07lkngcd36" path="res://Assets/Pictures/fuckin_train.jpg" id="13_srax6"]
-[ext_resource type="PackedScene" uid="uid://dvkxjs32u7uba" path="res://Assets/3DModels/6960_autosave.glb" id="15_ivfha"]
+[ext_resource type="PackedScene" uid="uid://drg5ei1o6f1wd" path="res://Assets/3DModels/Y_corridor_part.glb" id="15_ivfha"]
+[ext_resource type="PackedScene" uid="uid://8mmthorfrgab" path="res://Scenes/base_trigga.tscn" id="16_pfuln"]
+[ext_resource type="Script" uid="uid://osuao3lefhl3" path="res://Scripts/trigger_puzzle_room_exit.gd" id="17_w8wcq"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_dnawa"]
 points = PackedVector3Array(1.0158731, -0.9841332, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, 1.0158731, -1.0158731, -0.9841332, 1.0158731, 1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, 1.0158731)
@@ -529,9 +531,6 @@ albedo_color = Color(0.080783345, 0.080783345, 0.080783345, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_sngpb"]
 material = SubResource("StandardMaterial3D_bjwkx")
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ivfha"]
-size = Vector3(18.220886, 0.103515625, 5.569336)
-
 [node name="PuzzleRoom" type="Node3D"]
 
 [node name="Y_lamp_nocover" parent="." instance=ExtResource("1_dnawa")]
@@ -706,22 +705,17 @@ mesh = SubResource("BoxMesh_sngpb")
 [node name="batton" parent="." instance=ExtResource("11_sngpb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.00546, 0.21806753, 5.2287054)
 
-[node name="6960_autosave" parent="." instance=ExtResource("15_ivfha")]
-transform = Transform3D(0.445, 0, 0, 0, 0.515, 0, 0, 0, 0.445, -18.628, 2.137, 0.003)
+[node name="Y_corridor_part" parent="." instance=ExtResource("15_ivfha")]
+transform = Transform3D(-1.0490733e-08, 0, 0.62, 0, 0.29, 0, -0.24, 0, -2.7101061e-08, -27.676, -0.307, -0.023)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="6960_autosave/Cube" index="0"]
+[node name="Y_corridor_part2" parent="." instance=ExtResource("15_ivfha")]
+transform = Transform3D(-0.0994997, 0, 0.56420743, 0, 0.29, 0, -0.21840285, 0, -0.2570409, -64.540146, -0.4231461, 8.084833)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="6960_autosave/Cube/StaticBody3D"]
-transform = Transform3D(0.9999999, 0, 0, 0, 0.9999998, 0, 0, 0, 0.9999997, -0.007171631, -2.7332199, 0)
-shape = SubResource("BoxShape3D_ivfha")
+[node name="BaseTrigger" parent="." instance=ExtResource("16_pfuln")]
+script = ExtResource("17_w8wcq")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="6960_autosave/Cube/StaticBody3D"]
-transform = Transform3D(0.9999999, 0, 0, 0, 0, -0.9999994, 0, 0.9999996, -3.348575e-08, -0.007171631, -0.22841907, 2.767881)
-shape = SubResource("BoxShape3D_ivfha")
-
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="6960_autosave/Cube/StaticBody3D"]
-transform = Transform3D(0.9999999, 0, 0, 0, 0, -0.99999934, 0, 0.9999996, -3.348575e-08, -0.007171631, -0.22841907, -2.7762086)
-shape = SubResource("BoxShape3D_ivfha")
+[node name="CollisionShape3D" parent="BaseTrigger" index="0"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -15.656382, 2.037472, 0)
 
 [connection signal="button_depressed" from="batton" to="door" method="_on_batton_button_depressed"]
 [connection signal="button_pressed" from="batton" to="door" method="_on_batton_button_pressed"]
@@ -730,4 +724,4 @@ shape = SubResource("BoxShape3D_ivfha")
 [editable path="door"]
 [editable path="RigidBody3D/cubick"]
 [editable path="polka"]
-[editable path="6960_autosave"]
+[editable path="BaseTrigger"]

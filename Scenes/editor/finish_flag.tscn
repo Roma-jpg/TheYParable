@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://ba14c46wb606d"]
+
+[ext_resource type="PackedScene" uid="uid://0vbbpr3ut651" path="res://Assets/3DModels/editor/finish_flag.glb" id="1_uh56p"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6fxmu"]
+size = Vector3(0.3173828, 2.2949219, 1.951416)
+
+[node name="finish_flag" instance=ExtResource("1_uh56p")]
+
+[node name="Cube" parent="." index="0"]
+transform = Transform3D(0.07745098, 0, 0, 0, 0.5338251, 0, 0, 0, 1, 0, 1.6568725, 1.0111234)
+
+[node name="Cylinder" parent="." index="1"]
+transform = Transform3D(0.7546599, 0, 0, 0, 1, 0, 0, 0, 0.7546599, 0, 1.275769, 0)
+
+[node name="Area3D" type="Area3D" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275769, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.015136719, -0.11376953, 0.94165754)
+shape = SubResource("BoxShape3D_6fxmu")

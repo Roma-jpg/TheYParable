@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://kdeo5qx6hbl6"]
+
+[ext_resource type="PackedScene" uid="uid://dufdjklkjuhl0" path="res://Assets/3DModels/editor/ramp.glb" id="1_qf1co"]
+[ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="2_nbpo8"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_7qrqk"]
+points = PackedVector3Array(-1.0158731, -0.9522318, -1.0158731, 1, 1, 1, 1, -1, 1, 1.0158731, -0.9522318, -1.0158731, -1.0158731, 1.0158731, 0.9522318, -1, -1, 1, 1, -1, -1, 1.0158731, 1.0158731, 0.9522318, -1, 1, 1, -1, -1, -1)
+
+[node name="ramp" instance=ExtResource("1_qf1co")]
+
+[node name="Cube" parent="." index="0"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 1.5, 0)
+material_override = ExtResource("2_nbpo8")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Cube" index="0"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Cube/StaticBody3D" index="0"]
+shape = SubResource("ConvexPolygonShape3D_7qrqk")
