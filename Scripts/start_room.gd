@@ -1,6 +1,6 @@
 extends Node3D
 
-@export var enable_intro_sequence: bool = false  # hardcoded switch
+@export var enable_intro_sequence: bool = true  # hardcoded switch
 
 @onready var player_animation_player: AnimationPlayer = $Player/AnimationPlayer
 @onready var animation_player: AnimationPlayer = $Player/Y/AnimationPlayer

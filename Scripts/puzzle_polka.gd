@@ -1,5 +1,8 @@
 extends Interactable
 
+# Hardcoded switch: set to false to disable the screamer effect
+const FunnyPicture_ENABLED := false
+
 var sfx_player: AudioStreamPlayer
 
 @export var audio_path := "res://Assets/Audio/gudok-poezda_reverb.mp3"
@@ -12,10 +15,14 @@ var sfx_player: AudioStreamPlayer
 func _ready():
 	super._ready()
 	update_interaction_text()
-	_setup_sfx()
-	if screen_image:
-		screen_image.visible = false
-		screen_image.modulate.a = 1.0
+	
+	if FunnyPicture_ENABLED:
+		_setup_sfx()
+		if screen_image:
+			screen_image.visible = false
+			screen_image.modulate.a = 1.0
+	else:
+		print("Screamer is disabled (skip setup)")
 
 func update_interaction_text():
 	interaction_text = interaction_text
@@ -27,9 +34,15 @@ func _setup_sfx():
 
 func perform_interaction():
 	print("From polka")
-	if not sfx_player.playing:
-		sfx_player.play()
-		_show_image_with_fade()
+	
+	if FunnyPicture_ENABLED:
+		if not sfx_player.playing:
+			sfx_player.play()
+			_show_image_with_fade()
+	else:
+		# Do nothing or print a debug message
+		print("Screamer is disabled – interaction skipped")
+		# pass
 
 func _show_image_with_fade():
 	if not screen_image:

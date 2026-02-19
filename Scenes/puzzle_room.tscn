@@ -16,7 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://bhf07lkngcd36" path="res://Assets/Pictures/fuckin_train.jpg" id="13_srax6"]
 [ext_resource type="PackedScene" uid="uid://drg5ei1o6f1wd" path="res://Assets/3DModels/Y_corridor_part.glb" id="15_ivfha"]
 [ext_resource type="PackedScene" uid="uid://8mmthorfrgab" path="res://Scenes/base_trigga.tscn" id="16_pfuln"]
-[ext_resource type="Script" uid="uid://osuao3lefhl3" path="res://Scripts/trigger_puzzle_room_exit.gd" id="17_w8wcq"]
+[ext_resource type="Script" path="res://Scripts/trigger_puzzle_room_exit.gd" id="17_w8wcq"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_dnawa"]
 points = PackedVector3Array(1.0158731, -0.9841332, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, 1.0158731, -1.0158731, -0.9841332, 1.0158731, 1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, 1.0158731)
