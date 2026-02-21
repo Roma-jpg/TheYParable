@@ -15,14 +15,7 @@ var sfx_player: AudioStreamPlayer
 func _ready():
 	super._ready()
 	update_interaction_text()
-	
-	if FunnyPicture_ENABLED:
-		_setup_sfx()
-		if screen_image:
-			screen_image.visible = false
-			screen_image.modulate.a = 1.0
-	else:
-		print("Screamer is disabled (skip setup)")
+	screen_image.visible = false
 
 func update_interaction_text():
 	interaction_text = interaction_text
@@ -36,13 +29,15 @@ func perform_interaction():
 	print("From polka")
 	
 	if FunnyPicture_ENABLED:
-		if not sfx_player.playing:
-			sfx_player.play()
-			_show_image_with_fade()
+		_setup_sfx()
+		if screen_image:
+			screen_image.visible = false
+			screen_image.modulate.a = 1.0
 	else:
-		# Do nothing or print a debug message
-		print("Screamer is disabled – interaction skipped")
-		# pass
+		MonologueSystem.play_monologue("dont_touch_this_closet_1")
+		await MonologueSystem.monologue_finished
+		MonologueSystem.play_monologue("dont_touch_this_closet_2")
+		await MonologueSystem.monologue_finished
 
 func _show_image_with_fade():
 	if not screen_image:

@@ -8,6 +8,7 @@ var min_width: float = 300.0
 var padding: Vector2 = Vector2(40, 20)
 
 func _ready() -> void:
+	debug_print_scene_tree()
 	MonologueSystem.subtitle_changed.connect(_on_subtitle_changed)
 	hide_subtitle()
 	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -35,8 +36,8 @@ func show_subtitle(text: String) -> void:
 func adjust_panel_size() -> void:
 	var label_size = subtitle_label.get_minimum_size()
 	var margins = Vector2(
-		$Control/Panel/CenterContainer.get_theme_constant("margin_left") + $Control/Panel/CenterContainer.get_theme_constant("margin_right"),
-		$Control/Panel/CenterContainer.get_theme_constant("margin_top") + $Control/Panel/CenterContainer.get_theme_constant("margin_bottom")
+		$Control/Panel/MarginContainer.get_theme_constant("margin_left") + $Control/Panel/MarginContainer.get_theme_constant("margin_right"),
+		$Control/Panel/MarginContainer.get_theme_constant("margin_top") + $Control/Panel/MarginContainer.get_theme_constant("margin_bottom")
 	)
 	var final_width = clamp(label_size.x + margins.x + padding.x * 2, min_width, max_width)
 	var final_height = label_size.y + margins.y + padding.y * 2
@@ -56,3 +57,30 @@ func hide_subtitle() -> void:
 	await tween.finished
 	subtitle_panel.hide()
 	subtitle_label.text = ""
+
+func debug_print_scene_tree():
+	print("\n" + "=".repeat(60))
+	print("DEBUG: SCENE TREE HIERARCHY")
+	print("=".repeat(60))
+	_debug_print_node_recursive(get_tree().current_scene, 0)
+	print("=".repeat(60) + "\n")
+
+func _debug_print_node_recursive(node: Node, current_depth: int, indent: String = ""):
+	# No max_depth check
+	var node_prefix = "├── "
+	if node.get_child_count() == 0:
+		node_prefix = "└── "
+	
+	var visible_str = ""
+	if node is CanvasItem:
+		visible_str = " [Visible: %s]" % node.visible
+		if node.has_method("get_modulate"):
+			visible_str += " [Alpha: %.2f]" % node.modulate.a
+	
+	var node_info = "%s%s%s (%s)%s" % [indent, node_prefix, node.name, node.get_class(), visible_str]
+	print(node_info)
+	for i in range(node.get_child_count()):
+		var child = node.get_child(i)
+		var is_last = (i == node.get_child_count() - 1)
+		var new_indent = indent + ("	" if is_last else "│	 ")
+		_debug_print_node_recursive(child, current_depth + 1, new_indent)
