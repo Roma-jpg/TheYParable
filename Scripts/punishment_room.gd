@@ -55,4 +55,4 @@ func _on_reward_monologue_finished():
 	await get_tree().create_timer(3.0).timeout
 	LoadingScreen.allow_fade_out()
 	get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
-	get_tree().quit()
+	#get_tree().quit()

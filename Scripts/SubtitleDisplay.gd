@@ -4,13 +4,18 @@ extends CanvasLayer
 @onready var subtitle_label = $Control/Panel/MarginContainer/Label
 
 var max_width: float = 800.0
-var min_width: float = 300.0
-var padding: Vector2 = Vector2(40, 20)
+var min_width: float = 200.0
+var padding: Vector2 = Vector2(0, 0)
 
 func _ready() -> void:
 	debug_print_scene_tree()
 	MonologueSystem.subtitle_changed.connect(_on_subtitle_changed)
 	hide_subtitle()
+	var mc = $Control/Panel/MarginContainer
+	mc.add_theme_constant_override("margin_left",   0)
+	mc.add_theme_constant_override("margin_right",  0)
+	mc.add_theme_constant_override("margin_top",    0)
+	mc.add_theme_constant_override("margin_bottom", 0)
 	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 

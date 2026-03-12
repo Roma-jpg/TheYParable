@@ -12,6 +12,7 @@ var sequence_index: int = -1
 
 # Signal for errors (replaces push_error)
 signal error_occurred(message: String)
+signal slides_finished
 
 func _ready() -> void:
 	register_slide("materials", preload("res://Scenes/Overlays/how_materials_work.tscn"))
@@ -88,6 +89,8 @@ func _cleanup_sequence() -> void:
 	sequence_index = -1
 	current_sequence.clear()
 	get_tree().paused = false
+
+	slides_finished.emit()
 
 func is_showing() -> bool:
 	return current_slide != null

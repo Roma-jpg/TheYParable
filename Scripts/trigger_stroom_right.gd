@@ -7,6 +7,10 @@ extends BaseTrigger
 var counter := -1
 var can_interact := true
 
+func _ready() -> void:
+	super._ready()
+	one_shot = false
+
 func on_trigger_enter(body):
 	if can_interact:
 		pass

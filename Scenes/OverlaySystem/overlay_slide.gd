@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 @onready var dismiss_button = $BGDimmer/DismissButton
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 signal slide_closed
 
@@ -21,6 +22,7 @@ func _ready() -> void:
 	
 	# Fade in all children in parallel
 	_fade_children(1.0, 0.3)
+	animation_player.play("main")
 	
 	if dismiss_button:
 		dismiss_button.pressed.connect(close_slide)

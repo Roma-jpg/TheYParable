@@ -1,6 +1,6 @@
 extends Node3D
 
-@export var enable_intro_sequence: bool = true  # hardcoded switch
+@export var enable_intro_sequence: bool = false  # hardcoded switch
 
 @onready var player_animation_player: AnimationPlayer = $Player/AnimationPlayer
 @onready var animation_player: AnimationPlayer = $Player/Y/AnimationPlayer
@@ -65,11 +65,24 @@ func _play_intro_sequence() -> void:
 	await player_animation_player.animation_finished
 	camera_animation_player.play("CameraPickup")
 	await camera_animation_player.animation_finished
-	print("done")
 	_unlock_player_controls()
 	
 	await get_tree().create_timer(2.0).timeout
-
+	await MonologueSystem.play_and_wait_monologues([
+		"2a_just_look_at_that",
+		"2a_adult_joke",
+		"2a_being_serious_now",
+	    "2a_now_we_will_meet_aspect"
+	])
+	await MonologueSystem.monologue_finished
+	await get_tree().create_timer(1.0).timeout
+	
+	VisualisationDirector.show_slide("materials")
+	await VisualisationDirector.slides_finished
+	
+	await get_tree().create_timer(1.0).timeout
+	
+	
 
 func _lock_player_controls():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

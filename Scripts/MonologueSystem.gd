@@ -56,21 +56,21 @@ func load_monologues_from_json(path: String) -> void:
 	if not FileAccess.file_exists(path):
 		create_default_json(path)
 		return
-	
+
 	var file = FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("Could not open monologues JSON: ", path)
 		return
-	
+
 	var json_text = file.get_as_text()
 	file.close()
-	
+
 	var json = JSON.new()
 	var error = json.parse(json_text)
 	if error != OK:
 		push_error("JSON parse error in monologues: ", json.get_error_message())
 		return
-	
+
 	var data = json.data
 	if data is Dictionary and data.has("monologues"):
 		for key in data["monologues"]:
@@ -80,20 +80,20 @@ func create_default_json(path: String) -> void:
 	var dir = path.get_base_dir()
 	if not DirAccess.dir_exists_absolute(dir):
 		DirAccess.make_dir_recursive_absolute(dir)
-	
+
 	var default_data = {
 		"monologues": {
 			"example_1": "Это пример монолога без аудио файла.",
 			"example_2": "Второй пример с более длинным текстом для тестирования длительности субтитров."
 		}
 	}
-	
+
 	var file = FileAccess.open(path, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(default_data, "\t"))
 		file.close()
 		print("Created default monologues.json at: ", path)
-		load_monologues_from_json(path)  # Reload with defaults
+		load_monologues_from_json(path)
 	else:
 		push_error("Failed to create default monologues.json")
 
@@ -101,19 +101,19 @@ func play_monologue(key: String, force: bool = false) -> bool:
 	if not monologues.has(key):
 		push_error("Monologue not found: ", key)
 		return false
-	
+
 	if is_playing and not force:
 		if auto_advance:
 			audio_queue.append(key)
 			return true
 		else:
 			return false
-	
-	stop_monologue()  # Clear any previous
+
+	stop_monologue()
 	current_key = key
 	var text = monologues[key]
-	
-	# Try to load audio (priority: ogg > wav > mp3)
+
+	# Try to load audio
 	var audio_stream = null
 	var extensions = [".ogg", ".wav", ".mp3"]
 	for ext in extensions:
@@ -121,7 +121,7 @@ func play_monologue(key: String, force: bool = false) -> bool:
 		if ResourceLoader.exists(full_path):
 			audio_stream = load(full_path)
 			break
-	
+
 	if audio_stream:
 		current_audio.stream = audio_stream
 		current_audio.volume_db = audio_config["volume_db"]
@@ -133,12 +133,12 @@ func play_monologue(key: String, force: bool = false) -> bool:
 		monologue_started.emit(key)
 		return true
 	else:
-		# Text-only mode
+		# Text-only
 		if subtitles_enabled:
 			show_subtitle(text)
 		monologue_started.emit(key)
 		is_playing = true
-		
+
 		var duration = calculate_subtitle_duration(text)
 		var timer = Timer.new()
 		timer.wait_time = duration
@@ -151,8 +151,7 @@ func play_monologue(key: String, force: bool = false) -> bool:
 func show_subtitle(text: String) -> void:
 	var full_text = subtitle_prefix + text
 	subtitle_changed.emit(full_text)
-	
-	# Auto-hide if no audio playing
+
 	if not current_audio.playing:
 		var duration = calculate_subtitle_duration(text)
 		var timer = Timer.new()
@@ -208,6 +207,17 @@ func play_sequence(keys: Array[String]) -> void:
 	for i in range(1, keys.size()):
 		audio_queue.append(keys[i])
 	play_monologue(keys[0])
+
+# НОВАЯ УДОБНАЯ ФУНКЦИЯ — используй её для цепочек
+func play_and_wait_monologues(keys: Array[String]) -> void:
+	if keys.is_empty():
+		return
+	audio_queue.clear()
+	for i in range(1, keys.size()):
+		audio_queue.append(keys[i])
+	play_monologue(keys[0])
+	for x in range(keys.size()):
+		await monologue_finished
 
 func clear_queue() -> void:
 	audio_queue.clear()
