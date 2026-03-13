@@ -1,7 +1,5 @@
 extends BaseTrigger
 
-@export var monologue_id: String = "intro_01"
-
 func on_trigger_enter(_body):
 	MonologueSystem.play_monologue("T_good_job")
 	await MonologueSystem.monologue_finished

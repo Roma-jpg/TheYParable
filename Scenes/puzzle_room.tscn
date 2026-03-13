@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=4 uid="uid://pm7rk1u7k0ol"]
+[gd_scene load_steps=46 format=4 uid="uid://pm7rk1u7k0ol"]
 
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="1_dnawa"]
 [ext_resource type="PackedScene" uid="uid://bcfot4h2lej4j" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
@@ -538,6 +538,9 @@ size = Vector3(11.40918, 0.45507813, 63.267944)
 [sub_resource type="BoxShape3D" id="BoxShape3D_83gqx"]
 size = Vector3(15.216797, 0.45507813, 63.267944)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_5jnx6"]
+size = Vector3(3.609375, 5.754883, 1)
+
 [node name="PuzzleRoom" type="Node3D"]
 script = ExtResource("1_w8wcq")
 
@@ -742,6 +745,13 @@ script = ExtResource("17_w8wcq")
 
 [node name="CollisionShape3D" parent="BaseTrigger" index="0"]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -19.77218, 2.037472, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -19.77218, 2.037472, 0)
+
+[node name="playa_stoppa" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6138506e-07, 0, 3.6920605)
+shape = SubResource("BoxShape3D_5jnx6")
 
 [connection signal="button_depressed" from="batton" to="door" method="_on_batton_button_depressed"]
 [connection signal="button_pressed" from="batton" to="door" method="_on_batton_button_pressed"]

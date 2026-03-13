@@ -17,7 +17,7 @@ extends CharacterBody3D
 
 # Взаимодействие с физикой
 @export var push_force: float = 150.0
-@export var push_layers: int = 1 << 5
+@export var push_layers: int = 1 << 5      # Слой 6
 @export var max_push_distance: float = 1.5
 @export var player_mass: float = 60.0
 
@@ -41,6 +41,12 @@ extends CharacterBody3D
 @onready var crosshair: Label = $Crosshair/Control/Label
 @onready var respawn_anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var sfx_player := AudioStreamPlayer3D.new()
+
+# Меню паузы (дочерние узлы Crosshair)
+@onready var pause_menu: Control = $Crosshair/Pause
+@onready var resume_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/ResumeButton
+@onready var main_menu_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/MainMenuButton
+@onready var fun_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/FunButton
 
 # ===== ВНУТРЕННИЕ ПЕРЕМЕННЫЕ СОСТОЯНИЯ =====
 
@@ -70,7 +76,7 @@ var is_playing_monologue := false
 var idle_stages = [
 	{ "time": 900.0,  "monologue": "idle_1" },
 	{ "time": 1200.0, "monologue": ["what_if_u_died_1", "what_if_u_died_2", "what_if_u_died_3", "what_if_u_died_4"] },
-	{ "time": 1500.0, "monologue": "penis" }
+	{ "time": 1500.0, "monologue": "idle_3" }
 ]
 
 # Сохранение чекпоинта
@@ -83,6 +89,9 @@ var has_saved := false
 var epileptic_mode_enabled := false
 var slippery_world_enabled := false
 var temperature_mode := "20с"
+
+# Состояние паузы
+var is_paused := false
 
 # ===== МЕТОДЫ ЖИЗНЕННОГО ЦИКЛА =====
 
@@ -105,13 +114,23 @@ func _ready():
 	has_saved = true
 	apply_misc_settings()
 	print("Чекпоинт сохранён при старте: ", saved_position)
+	
+	# Настройка меню паузы
+	pause_menu.visible = false
+	pause_menu.process_mode = PROCESS_MODE_ALWAYS  # Чтобы работало при заморозке дерева
+	resume_button.pressed.connect(_on_resume_button_pressed)
+	main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+	fun_button.pressed.connect(_on_fun_button_pressed)
+	pause_menu.gui_input.connect(_on_pause_menu_gui_input)
 
 func _input(event):
-	# Обработка нажатия Escape для возврата в редактор
+	# Обработка нажатия Escape для возврата в редактор или открытия меню паузы
 	if event.is_action_pressed("ui_cancel"):
 		var editor = get_tree().get_first_node_in_group("editors")
 		if editor:
 			editor._return_to_editor()
+		else:
+			toggle_pause()
 
 func _unhandled_input(event):
 	# Сбрасываем таймер бездействия при любом вводе
@@ -529,3 +548,43 @@ func unlock_controls():
 	# Разблокировка управления и захват мыши
 	controls_locked = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+# ===== МЕНЮ ПАУЗЫ =====
+
+func toggle_pause():
+	# Переключение состояния паузы
+	if is_paused:
+		unpause_game()
+	else:
+		pause_game()
+
+func pause_game():
+	# Постановка игры на паузу
+	is_paused = true
+	pause_menu.visible = true
+	lock_controls()                # Блокируем ввод игрока
+	get_tree().paused = true        # Замораживаем всё, кроме узлов с process_mode = ALWAYS
+
+func unpause_game():
+	# Снятие игры с паузы
+	is_paused = false
+	pause_menu.visible = false
+	unlock_controls()               # Возвращаем ввод игроку
+	get_tree().paused = false       # Размораживаем дерево
+
+func _on_resume_button_pressed() -> void:
+	unpause_game()
+
+func _on_main_menu_button_pressed() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
+
+func _on_fun_button_pressed() -> void:
+	fun_button.text = "НЕЕЕЕЕТТ"
+	$Crosshair/Pause/AudioStreamPlayer3D.play()
+	await $Crosshair/Pause/AudioStreamPlayer3D.finished
+	fun_button.text = "ПРОШУ НЕ НАЖИМАЙ СЮДА"
+	
+func _on_pause_menu_gui_input(event: InputEvent):
+	if event.is_action_pressed("ui_cancel"):
+		unpause_game()

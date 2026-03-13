@@ -26,7 +26,8 @@ func _process(delta):
 		cube_stay_timer += delta
 		if cube_stay_timer >= 2.0:
 			cube_triggered_once = true
-			MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_1", "puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"])
+			await MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_1", "puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"])
+			$"../StaticBody3D/playa_stoppa".disabled = true
 
 func _on_body_entered(body):
 	if _is_valid_presser(body):
