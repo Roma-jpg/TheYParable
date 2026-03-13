@@ -1,74 +1,93 @@
 extends CharacterBody3D
 
+# ===== ЭКСПОРТИРУЕМЫЕ ПАРАМЕТРЫ =====
+
+# Движение
 @export var walk_speed := 4.0
 @export var sprint_speed := 7.0
 @export var jump_force := 5.0
-@export var mouse_sensitivity_horizontal := 0.1
-@export var mouse_sensitivity_vertical := 4.5  # Simplified sensitivity
 @export var gravity := 9.8
 
-@export var camera_distance := 0.5  # Нормальное расстояние камеры
-@export var camera_collision_layer := 2  # Слой для проверки коллизий
-@export var camera_min_distance := 0.1  # Минимальное расстояние
-@onready var camera := $SpringArm3D/Camera3D
-@onready var spring_arm: SpringArm3D = $SpringArm3D
-var current_camera_distance := camera_distance
+# Камера и ввод
+@export var mouse_sensitivity_horizontal := 0.1
+@export var mouse_sensitivity_vertical := 4.5
+@export var camera_distance := 0.5
+@export var camera_collision_layer := 2
+@export var camera_min_distance := 0.1
 
+# Взаимодействие с физикой
+@export var push_force: float = 150.0
+@export var push_layers: int = 1 << 5
+@export var max_push_distance: float = 1.5
+@export var player_mass: float = 60.0
 
-@onready var interaction_ui: Control = $InteractionUI
-@onready var subtitles: CanvasLayer = $Subtitles
-@onready var crosshair: Label = $Crosshair/Control/Label
-@onready var respawn_anim: AnimatedSprite2D = $AnimatedSprite2D
-
-
-@export var push_force: float = 150.0           # Tune: higher = stronger push (try 100-300)
-@export var push_layers: int = 1 << 5           # Layer 6 (bitshift: 1<<5 = 32 = layer 6)
-@export var max_push_distance: float = 1.5      # How far player can push (raycast limit)
-@export var player_mass: float = 60.0           # "Player weight" for heavy box resistance
-	
-	
+# Сохранение и респаун
 @export var save_interval := 10.0
 @export var fall_limit_y := -50.0
 @export var respawn_sound: AudioStream
 
+# Управление с геймпада
+@export var gamepad_deadzone := 0.15
+@export var gamepad_sensitivity_horizontal := 2.0
+@export var gamepad_sensitivity_vertical := 1.5
+@export var touchpad_sensitivity := 3.0
+
+# ===== ССЫЛКИ НА УЗЛЫ =====
+
+@onready var camera := $SpringArm3D/Camera3D
+@onready var spring_arm: SpringArm3D = $SpringArm3D
+@onready var interaction_ui: Control = $InteractionUI
+@onready var subtitles: CanvasLayer = $Subtitles
+@onready var crosshair: Label = $Crosshair/Control/Label
+@onready var respawn_anim: AnimatedSprite2D = $AnimatedSprite2D
+@onready var sfx_player := AudioStreamPlayer3D.new()
+
+# ===== ВНУТРЕННИЕ ПЕРЕМЕННЫЕ СОСТОЯНИЯ =====
+
+# Камера
+var current_camera_distance := camera_distance
+var camera_base_rotation := Vector3.ZERO
+var camera_shake_strength := 0.0
+var pitch := 0.0
+
+# Управление возможностями
+var can_move := true
+var can_jump := true
+var can_sprint := true
+var can_look := true
+var controls_locked := false
+
+# Система ввода
+var using_gamepad := false
+var last_input_type := "keyboard"
+var input_delay := 0.0
+var input_queue := []
+
+# Система бездействия (монологи)
+var idle_timer: float = 0.0
+var current_idle_stage: int = 0
+var is_playing_monologue := false
+var idle_stages = [
+	{ "time": 900.0,  "monologue": "idle_1" },
+	{ "time": 1200.0, "monologue": ["what_if_u_died_1", "what_if_u_died_2", "what_if_u_died_3", "what_if_u_died_4"] },
+	{ "time": 1500.0, "monologue": "penis" }
+]
+
+# Сохранение чекпоинта
 var save_timer := 0.0
 var saved_position: Vector3
 var saved_rotation: Vector3
 var has_saved := false
 
-@onready var sfx_player := AudioStreamPlayer3D.new()
-
-# Для настроек
+# Настройки (из Settings)
 var epileptic_mode_enabled := false
 var slippery_world_enabled := false
 var temperature_mode := "20с"
 
-var input_delay := 0.0
-var input_queue := []
-
-var camera_shake_strength := 0.0
-var camera_base_rotation := Vector3.ZERO
-
-
-# Флаги возможностей
-var can_move := true
-var can_jump := true
-var can_sprint := true
-var can_look := true
-
-var controls_locked := false
-
-var pitch := 0.0
-
-@export var gamepad_deadzone := 0.15  # Мертвая зона для стиков (защита от drift)
-@export var gamepad_sensitivity_horizontal := 2.0  # Чувствительность правого стика
-@export var gamepad_sensitivity_vertical := 1.5  # Чувствительность правого стика
-@export var touchpad_sensitivity := 3.0  # Чувствительность сенсорной панели
-
-var using_gamepad := false  # Флаг использования геймпада
-var last_input_type := "keyboard"  # Последний использованный тип ввода
+# ===== МЕТОДЫ ЖИЗНЕННОГО ЦИКЛА =====
 
 func _ready():
+	# Инициализация
 	add_to_group("player")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
@@ -76,61 +95,29 @@ func _ready():
 	
 	respawn_anim.visible = false
 	camera_base_rotation = camera.rotation
-
 	
 	sfx_player.stream = respawn_sound
 	add_child(sfx_player)
 
-	# Initial checkpoint save on game start
+	# Начальный чекпоинт
 	saved_position = global_position
 	saved_rotation = rotation
 	has_saved = true
 	apply_misc_settings()
-	print("Checkpoint saved on game start at: ", saved_position)
-
-func _on_joy_connection_changed(device_id: int, connected: bool):
-	if connected:
-		print("Gamepad connected: ", Input.get_joy_name(device_id))
-		using_gamepad = true
-	else:
-		print("Gamepad disconnected")
-		# Проверяем, остались ли другие подключенные геймпады
-		var joypads = Input.get_connected_joypads()
-		using_gamepad = joypads.size() > 0
-
-func _process_gamepad_input(delta):
-	if not using_gamepad or controls_locked or not can_look:
-		return
-	
-	# Получаем данные с правого стика
-	var right_stick_x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
-	var right_stick_y = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
-	
-	# Применяем мертвую зону для защиты от drift
-	if abs(right_stick_x) < gamepad_deadzone:
-		right_stick_x = 0
-	if abs(right_stick_y) < gamepad_deadzone:
-		right_stick_y = 0
-	
-	# Вращение камеры с помощью правого стика
-	if right_stick_x != 0:
-		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)
-	
-	if right_stick_y != 0:
-		pitch += right_stick_y * gamepad_sensitivity_vertical * delta
-		pitch = clamp(pitch, -85.0, 85.0)
-		camera.rotation.x = deg_to_rad(pitch)
+	print("Чекпоинт сохранён при старте: ", saved_position)
 
 func _input(event):
-	# Проверяем нажатие Escape (ui_cancel - стандартное действие)
+	# Обработка нажатия Escape для возврата в редактор
 	if event.is_action_pressed("ui_cancel"):
-		# Находим редактор по группе
 		var editor = get_tree().get_first_node_in_group("editors")
 		if editor:
-			# Вызываем метод возврата в редактор
 			editor._return_to_editor()
 
 func _unhandled_input(event):
+	# Сбрасываем таймер бездействия при любом вводе
+	idle_timer = 0.0
+	current_idle_stage = 0
+	
 	# Определяем тип последнего ввода
 	if (event is InputEventKey or event is InputEventMouse or 
 		event is InputEventMouseMotion):
@@ -141,118 +128,144 @@ func _unhandled_input(event):
 		last_input_type = "gamepad"
 		using_gamepad = true
 
+	# Режим «эпилепсия» — добавляем события в очередь с задержкой
 	if epileptic_mode_enabled:
 		input_queue.append({ "event": event, "time": Time.get_ticks_msec() + randi_range(500, 700) })
 
 	if controls_locked or not can_look:
 		return
 
-	# Обработка мыши
-	if event is InputEventMouseMotion:
-		# Только если активно управление мышью
-		if not using_gamepad or last_input_type == "keyboard":
-			rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
-			pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
-			pitch = clamp(pitch, -85.0, 85.0)
-			camera.rotation.x = deg_to_rad(pitch)
+	# Обработка мыши (только если не используется геймпад)
+	if event is InputEventMouseMotion and (not using_gamepad or last_input_type == "keyboard"):
+		rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
+		pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
 	
-	# Обработка сенсорной панели на DualShock
-	elif event is InputEventScreenDrag:
-		if event.index == 0:  # Основной палец
-			rotate_y(-event.relative.x * touchpad_sensitivity * 0.01)
-			pitch -= event.relative.y * touchpad_sensitivity * 0.01
-			pitch = clamp(pitch, -85.0, 85.0)
-			camera.rotation.x = deg_to_rad(pitch)
-
+	# Обработка сенсорной панели DualShock
+	elif event is InputEventScreenDrag and event.index == 0:
+		rotate_y(-event.relative.x * touchpad_sensitivity * 0.01)
+		pitch -= event.relative.y * touchpad_sensitivity * 0.01
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
 
 func _physics_process(delta):
-	
+	# Обработка ввода с геймпада (правый стик)
 	_process_gamepad_input(delta)
+	
+	# Обновление коллизии камеры
 	_update_camera_collision()
 	
+	# Очередь ввода для эпилептического режима
 	if epileptic_mode_enabled:
 		_process_input_queue()
+	
 	# Гравитация
 	if not is_on_floor():
 		var grav = ProjectSettings.get_setting("physics/3d/default_gravity")
 		velocity.y -= grav * delta
 
-
+	# Управление движением
 	if controls_locked or not can_move:
 		velocity.x = 0
 		velocity.z = 0
 	else:
 		handle_movement(delta)
+	
+	# Взаимодействие с физическими телами (толкание)
 	_push_rigidbodies(delta)
+	
 	move_and_slide()
+	
+	# Таймер бездействия (только если стоим на месте)
+	if is_on_floor() and velocity.length_squared() < 0.01:
+		idle_timer += delta
+	else:
+		idle_timer = 0.0
+		current_idle_stage = 0
+
+	# Запуск монолога бездействия, если не играется другой
+	if not is_playing_monologue:
+		if current_idle_stage < idle_stages.size() and idle_timer >= idle_stages[current_idle_stage]["time"]:
+			start_idle_monologue(idle_stages[current_idle_stage]["monologue"])
+	
+	# Автосохранение чекпоинта (только если не падаем)
 	save_timer += delta
 	if save_timer >= save_interval:
 		save_timer = 0.0
-		
 		if velocity.y >= 0.0:
 			saved_position = global_position
 			saved_rotation = rotation
 			has_saved = true
-			print("Checkpoint updated at: ", saved_position, " | velocity.y = ", velocity.y)
+			print("Чекпоинт обновлён: ", saved_position, " | velocity.y = ", velocity.y)
 		else:
-			print("Checkpoint skipped - falling | velocity.y = ", velocity.y)
+			print("Чекпоинт пропущен (падение): velocity.y = ", velocity.y)
 
+	# Эффект дрожания камеры
 	_apply_camera_shake(delta)
-	# Teleport if fallen too low
+	
+	# Телепортация при падении ниже лимита
 	if has_saved and global_position.y <= fall_limit_y:
 		_teleport_to_saved()
 
-func _update_camera_collision():
-	var space_state = get_world_3d().direct_space_state
-	
-	# Начальная точка - позиция игрока (можно сместить вверх для глаз)
-	var from = global_position + Vector3(0, 1.5, 0)  # 1.5 - высота глаз
-	
-	# Конечная точка - желаемая позиция камеры
-	var to = from - camera.global_transform.basis.z * camera_distance
-	
-	# Создаем запрос raycast
-	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = camera_collision_layer
-	query.exclude = [self]  # Игнорируем самого игрока
-	
-	var result = space_state.intersect_ray(query)
-	
-	if result:
-		# Если есть столкновение, приближаем камеру
-		var collision_point = result.position
-		var new_distance = from.distance_to(collision_point) - 0.1  # Небольшой отступ
-		current_camera_distance = max(new_distance, camera_min_distance)
+# ===== ОБРАБОТКА ВВОДА =====
+
+func _on_joy_connection_changed(device_id: int, connected: bool):
+	# Обновляем флаг наличия геймпада
+	if connected:
+		print("Геймпад подключён: ", Input.get_joy_name(device_id))
+		using_gamepad = true
 	else:
-		# Иначе плавно возвращаем к нормальному расстоянию
-		current_camera_distance = lerp(current_camera_distance, camera_distance, 0.1)
+		print("Геймпад отключён")
+		var joypads = Input.get_connected_joypads()
+		using_gamepad = joypads.size() > 0
+
+func _process_gamepad_input(delta):
+	# Вращение камеры правым стиком геймпада
+	if not using_gamepad or controls_locked or not can_look:
+		return
 	
-	# Обновляем позицию камеры
-	camera.position.z = -current_camera_distance
+	var right_stick_x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
+	var right_stick_y = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+	
+	# Мёртвая зона
+	if abs(right_stick_x) < gamepad_deadzone:
+		right_stick_x = 0
+	if abs(right_stick_y) < gamepad_deadzone:
+		right_stick_y = 0
+	
+	if right_stick_x != 0:
+		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)
+	
+	if right_stick_y != 0:
+		pitch += right_stick_y * gamepad_sensitivity_vertical * delta
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
+
+# ===== ДВИЖЕНИЕ И ФИЗИКА =====
 
 func handle_movement(delta):
-	# Get input based on camera direction
+	# Направления камеры
 	var camera_forward = camera.global_transform.basis.z
 	var camera_right = camera.global_transform.basis.x
 	
 	var input_dir := Vector2.ZERO
 	
-	# Обработка ввода с клавиатуры и геймпада
+	# Получение ввода в зависимости от типа управления
 	if using_gamepad:
-		# Используем левый стик для движения
+		# Левый стик
 		var left_stick_x = Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
 		var left_stick_y = Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
 		
-		# Применяем мертвую зону
 		if abs(left_stick_x) < gamepad_deadzone:
 			left_stick_x = 0
 		if abs(left_stick_y) < gamepad_deadzone:
 			left_stick_y = 0
 		
 		input_dir.x = left_stick_x
-		input_dir.y = -left_stick_y  # Инвертируем ось Y для соответствия WASD
+		input_dir.y = -left_stick_y  # Инверсия для соответствия WASD
 		
-		# Альтернатива: D-pad (крестик) для точного управления
+		# D-pad (крестовина)
 		if Input.is_action_pressed("gamepad_dpad_right"):
 			input_dir.x = 1.0
 		elif Input.is_action_pressed("gamepad_dpad_left"):
@@ -267,7 +280,7 @@ func handle_movement(delta):
 		input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
 		input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
 	
-	# Calculate direction relative to camera
+	# Направление движения относительно камеры
 	var direction = Vector3.ZERO
 	direction += camera_forward * input_dir.y
 	direction += camera_right * input_dir.x
@@ -275,31 +288,30 @@ func handle_movement(delta):
 	if direction.length() > 0:
 		direction = direction.normalized()
 
+	# Выбор скорости (ходьба / спринт)
 	var speed := walk_speed
-	
-	# Обработка спринта (геймпад)
 	if using_gamepad:
-		if can_sprint and Input.is_action_pressed("gamepad_sprint"):
-			speed = sprint_speed
-		# Альтернатива: кнопка левого стика для спринта
-		if can_sprint and Input.is_action_pressed("gamepad_left_stick_click"):
+		if can_sprint and (Input.is_action_pressed("gamepad_sprint") or Input.is_action_pressed("gamepad_left_stick_click")):
 			speed = sprint_speed
 	else:
 		if can_sprint and Input.is_action_pressed("sprint"):
 			speed = sprint_speed
 
+	# Применение скорости к velocity
 	var target_x = direction.x * speed
 	var target_z = direction.z * speed
 
-	var factor = 0.03
 	if slippery_world_enabled:
+		# Плавное ускорение (скользкий мир)
+		var factor = 0.03
 		velocity.x = lerp(velocity.x, target_x, factor * delta * 60)
 		velocity.z = lerp(velocity.z, target_z, factor * delta * 60)
 	else:
+		# Мгновенное изменение скорости
 		velocity.x = target_x
 		velocity.z = target_z
 
-	# Обработка прыжка
+	# Прыжок
 	var jump_pressed = false
 	if using_gamepad:
 		jump_pressed = Input.is_action_just_pressed("gamepad_jump")
@@ -309,9 +321,8 @@ func handle_movement(delta):
 	if can_jump and jump_pressed and is_on_floor():
 		velocity.y = jump_force
 
-
-# Add this function to your player.gd
 func _push_rigidbodies(delta: float) -> void:
+	# Толкание RigidBody при столкновении
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
@@ -319,11 +330,11 @@ func _push_rigidbodies(delta: float) -> void:
 		if collider is RigidBody3D:
 			var normal = collision.get_normal()
 			
-			# Skip pushing if mostly standing on top (prevents downward torque on landing)
-			if normal.y > 0.65:	# ← tune 0.6–0.8; higher = more strict
+			# Не толкаем, если игрок стоит сверху (чтобы не создавать крутящий момент при приземлении)
+			if normal.y > 0.65:
 				continue
 			
-			# Also skip if almost vertical (side hits only)
+			# Пропускаем почти вертикальные столкновения
 			if abs(normal.y) > 0.9:
 				continue
 			
@@ -333,6 +344,7 @@ func _push_rigidbodies(delta: float) -> void:
 				continue
 			push_dir = push_dir.normalized()
 			
+			# Учитываем соотношение масс
 			var mass_ratio = min(player_mass / collider.mass, 1.0)
 			if mass_ratio < 0.25:
 				continue
@@ -342,33 +354,66 @@ func _push_rigidbodies(delta: float) -> void:
 			
 			collider.apply_impulse(impulse, contact_pos_local)
 			
-			# Optional: tiny slowdown only when actually pushing side
+			# Небольшое замедление игрока при толкании
 			velocity.x *= 0.9
 			velocity.z *= 0.9
 
-# ===== Методы управления возможностями =====
+# ===== КАМЕРА =====
 
-func set_can_move(value: bool):
-	can_move = value
-
-func set_can_jump(value: bool):
-	can_jump = value
-
-func set_can_sprint(value: bool):
-	can_sprint = value
-
-func set_can_look(value: bool):
-	can_look = value
+func _update_camera_collision():
+	# Корректировка расстояния камеры при столкновении с препятствиями
+	var space_state = get_world_3d().direct_space_state
 	
-func lock_controls():
-	controls_locked = true
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-
-func unlock_controls():
-	controls_locked = false
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	var from = global_position + Vector3(0, 1.5, 0)  # Точка на уровне глаз
+	var to = from - camera.global_transform.basis.z * camera_distance
 	
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.collision_mask = camera_collision_layer
+	query.exclude = [self]
+	
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		var collision_point = result.position
+		var new_distance = from.distance_to(collision_point) - 0.1
+		current_camera_distance = max(new_distance, camera_min_distance)
+	else:
+		# Плавное возвращение к нормальному расстоянию
+		current_camera_distance = lerp(current_camera_distance, camera_distance, 0.1)
+	
+	camera.position.z = -current_camera_distance
+
+func _apply_camera_shake(_delta):
+	# Дрожание камеры (например, от холода)
+	if camera_shake_strength <= 0.0:
+		return
+	var shake_x = randf_range(-camera_shake_strength, camera_shake_strength)
+	var shake_y = randf_range(-camera_shake_strength, camera_shake_strength)
+	var shake_z = randf_range(-camera_shake_strength, camera_shake_strength)
+
+	camera.rotation = camera_base_rotation + Vector3(shake_x, shake_y, shake_z)
+	
+	# Обновляем базовый поворот, чтобы дрожание накапливалось правильно
+	camera_base_rotation.x = camera.rotation.x
+	camera_base_rotation.y = camera.rotation.y
+	camera_base_rotation.z = camera.rotation.z
+
+# ===== УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ =====
+
+func hide_game_ui():
+	# Скрываем элементы интерфейса
+	_fade_node(interaction_ui, 0.0)
+	_fade_node(subtitles, 0.0)
+	_fade_node(crosshair, 0.0)
+
+func show_game_ui():
+	# Показываем элементы интерфейса
+	_fade_node(interaction_ui, 1.0)
+	_fade_node(subtitles, 1.0)
+	_fade_node(crosshair, 1.0)
+
 func _fade_node(node: Node, target_alpha: float, duration := 1.0):
+	# Плавное изменение прозрачности узла
 	if node == null:
 		return
 
@@ -384,38 +429,34 @@ func _fade_node(node: Node, target_alpha: float, duration := 1.0):
 		track.set_trans(Tween.TRANS_SINE)
 		track.set_ease(Tween.EASE_IN_OUT)
 
-
-func hide_game_ui():
-	_fade_node(interaction_ui, 0.0)
-	_fade_node(subtitles, 0.0)
-	_fade_node(crosshair, 0.0)
-
-func show_game_ui():
-	_fade_node(interaction_ui, 1.0)
-	_fade_node(subtitles, 1.0)
-	_fade_node(crosshair, 1.0)
+# ===== СОХРАНЕНИЕ И РЕСПАУН =====
 
 func _teleport_to_saved():
+	# Телепортация к последнему чекпоинту
 	global_position = saved_position
 	rotation = saved_rotation
 	velocity = Vector3.ZERO
 	
 	sfx_player.global_position = global_position
 	
+	# Анимация и звук респауна
 	respawn_anim.visible = true
 	respawn_anim.frame = 0
 	respawn_anim.play()
 	
 	if sfx_player.stream:
-		print("Playing respawn sound")
+		print("Воспроизведение звука респауна")
 		sfx_player.play()
 	else:
-		print("ERROR: No audio stream assigned")
+		print("ОШИБКА: Не назначен аудиопоток")
 	
 	await respawn_anim.animation_finished
 	respawn_anim.visible = false
 
+# ===== НАСТРОЙКИ =====
+
 func apply_misc_settings():
+	# Применение настроек из глобального объекта Settings
 	var m = Settings.settings["misc"]
 
 	epileptic_mode_enabled = m["epileptic_mode"]
@@ -425,6 +466,7 @@ func apply_misc_settings():
 	_apply_temperature()
 
 func _apply_temperature():
+	# Установка силы дрожания камеры в зависимости от температуры
 	match temperature_mode:
 		"26с":
 			camera_shake_strength = 0.0
@@ -435,24 +477,55 @@ func _apply_temperature():
 		"Ниже нуля":
 			camera_shake_strength = 0.01
 
-func _apply_camera_shake(delta):
-	if camera_shake_strength <= 0.0:
-		return
-	var shake_x = randf_range(-camera_shake_strength, camera_shake_strength)
-	var shake_y = randf_range(-camera_shake_strength, camera_shake_strength)
-	var shake_z = randf_range(-camera_shake_strength, camera_shake_strength)
-
-	camera.rotation = camera_base_rotation + Vector3(shake_x, shake_y, shake_z)
-	
-	camera_base_rotation.x = camera.rotation.x
-	camera_base_rotation.y = camera.rotation.y
-	camera_base_rotation.z = camera.rotation.z
-
+# ===== ОЧЕРЕДЬ ВВОДА (ЭПИЛЕПТИЧЕСКИЙ РЕЖИМ) =====
 
 func _process_input_queue():
+	# Обработка отложенных событий ввода
 	var now = Time.get_ticks_msec()
 
 	for i in range(input_queue.size() - 1, -1, -1):
 		if input_queue[i]["time"] <= now:
 			_unhandled_input(input_queue[i]["event"])
 			input_queue.remove_at(i)
+
+# ===== МОНОЛОГИ БЕЗДЕЙСТВИЯ =====
+
+func start_idle_monologue(monologue_data):
+	# Запуск монолога, если ещё не играется другой
+	if is_playing_monologue:
+		return
+	is_playing_monologue = true
+	_play_monologue_async(monologue_data)
+
+func _play_monologue_async(monologue_data):
+	# Воспроизведение одного или нескольких монологов через глобальную систему
+	if monologue_data is String:
+		await MonologueSystem.play_and_wait_monologues([monologue_data])
+	elif monologue_data is Array:
+		await MonologueSystem.play_and_wait_monologues(monologue_data)
+	is_playing_monologue = false
+	current_idle_stage += 1  # Переход к следующему этапу
+
+# ===== УПРАВЛЕНИЕ ВОЗМОЖНОСТЯМИ =====
+
+func set_can_move(value: bool):
+	can_move = value
+
+func set_can_jump(value: bool):
+	can_jump = value
+
+func set_can_sprint(value: bool):
+	can_sprint = value
+
+func set_can_look(value: bool):
+	can_look = value
+
+func lock_controls():
+	# Блокировка управления и показ курсора
+	controls_locked = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func unlock_controls():
+	# Разблокировка управления и захват мыши
+	controls_locked = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)

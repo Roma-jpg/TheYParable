@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="1_dnawa"]
 [ext_resource type="PackedScene" uid="uid://bcfot4h2lej4j" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
-[ext_resource type="Script" uid="uid://bnlp0t5663b1o" path="res://Scripts/puzzle_room.gd" id="1_w8wcq"]
+[ext_resource type="Script" uid="uid://biitt7b4jvskr" path="res://Scripts/puzzle_room.gd" id="1_w8wcq"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="2_dnawa"]
 [ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="4_yskdw"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="5_bjwkx"]
@@ -741,7 +741,7 @@ transform = Transform3D(-0.0994997, 0, 0.56420743, 0, 0.29, 0, -0.21840285, 0, -
 script = ExtResource("17_w8wcq")
 
 [node name="CollisionShape3D" parent="BaseTrigger" index="0"]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -25.213524, 2.037472, 0)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -19.77218, 2.037472, 0)
 
 [connection signal="button_depressed" from="batton" to="door" method="_on_batton_button_depressed"]
 [connection signal="button_pressed" from="batton" to="door" method="_on_batton_button_pressed"]
