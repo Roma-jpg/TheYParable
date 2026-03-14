@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://b0t2a0a4p0hf7"]
+[gd_scene load_steps=14 format=3 uid="uid://b0t2a0a4p0hf7"]
 
 [ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="1_wq24h"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="3_jc4e8"]
 [ext_resource type="PackedScene" uid="uid://eniane1yq7q3" path="res://Assets/3DModels/final_room_new_ver.glb" id="3_wq24h"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="4_daj1l"]
 [ext_resource type="PackedScene" uid="uid://dqqk4mlgjxse5" path="res://Assets/3DModels/Y_lamp_cover.glb" id="4_jc4e8"]
+[ext_resource type="Script" uid="uid://r61w4hphxtt4" path="res://Scripts/final_room_button.gd" id="4_o77y6"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_o77y6"]
 panorama = ExtResource("1_wq24h")
@@ -17,6 +18,9 @@ background_mode = 2
 sky = SubResource("Sky_w8wcq")
 ambient_light_source = 3
 reflected_light_source = 2
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_o77y6"]
+points = PackedVector3Array(-0.26809525, -0.8369951, -0.09735527, -0.23225573, -0.8369951, -0.16898176, 0.26876187, -0.8369951, 0.117261454, 0.08972191, 1.1672714, -0.27639523, -0.26809525, 1.2744466, 0.117261454, -0.12489481, -0.8369951, 0.2604619, 0.1613484, -0.8369951, -0.2405557, -0.16068178, 1.2029217, -0.2405557, 0.23292235, 1.0955223, -0.16898176, 0.12556143, 1.3818461, 0.2604619, -0.053320874, -0.8369951, -0.27639523, -0.12489481, 1.3818461, 0.2604619, 0.12556143, -0.8369951, 0.2604619, 0.26876187, 1.2744466, 0.117261454, -0.26809525, -0.8369951, 0.117261454, 0.26876187, -0.8369951, -0.09735527, -0.23225573, 1.0955223, -0.16898176, 0.086083144, 1.4069732, 0.07778317, 0.19713537, 1.2744466, -0.16898176, -0.19646876, 1.2744466, -0.16898176, -0.08905529, 1.1672714, -0.27639523, -0.16068178, -0.8369951, -0.2405557, 0.053987492, -0.8369951, -0.27639523, -0.085416526, 1.4069732, 0.07778317, 0.1613484, 1.2029217, -0.2405557, 0.23292235, -0.8369951, -0.16898176, -0.15384677, 1.3706263, 0.04340992, 0.1544454, 1.3701578, 0.043387264, 0.1613484, 1.3818461, 0.22462237, -0.16068178, 1.3818461, 0.22462237, 0.08972191, 1.0955223, -0.27639523, -0.08905529, 1.0955223, -0.27639523)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_daj1l"]
 size = Vector3(27.251587, 0.25561523, 11.165649)
@@ -36,6 +40,12 @@ environment = SubResource("Environment_jsg6b")
 transform = Transform3D(-1, 0, -8.940697e-08, 0, 1, 0, 8.940697e-08, 0, -1, -13.703408, 1.3254414, -9.611364)
 
 [node name="final_room_new_ver" parent="." instance=ExtResource("3_wq24h")]
+
+[node name="StaticBody3D" type="Area3D" parent="final_room_new_ver/Cylinder_003" index="0"]
+script = ExtResource("4_o77y6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="final_room_new_ver/Cylinder_003/StaticBody3D"]
+shape = SubResource("ConvexPolygonShape3D_o77y6")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="final_room_new_ver"]
 
@@ -78,3 +88,5 @@ omni_range = 21.73204
 [node name="OmniLight3D2" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.413536, 4.906742, 0.44500446)
 omni_range = 21.73204
+
+[editable path="final_room_new_ver"]

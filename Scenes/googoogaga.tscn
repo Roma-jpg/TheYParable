@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3 uid="uid://q4o8k5731k6i"]
+
+[ext_resource type="PackedScene" uid="uid://bj8knn4bkorfm" path="res://Assets/3DModels/googoogaga.glb" id="1_3g65p"]
+[ext_resource type="Script" uid="uid://cn52yh41dkcv8" path="res://Scripts/googoogaga.gd" id="1_441yl"]
+[ext_resource type="AudioStream" uid="uid://bjx53xkudea8g" path="res://Assets/Audio/tung-tung-tung-saur-tatata-saur.mp3" id="2_441yl"]
+[ext_resource type="AudioStream" uid="uid://dnfrmrl280okv" path="res://Assets/Audio/skachai-maks.mp3" id="4_vpsoh"]
+[ext_resource type="Script" uid="uid://dd4i7pk4i04im" path="res://Scripts/googoogaga_interact.gd" id="5_aeepr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dmqr0"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_441yl")
+
+[node name="Sketchfab_Scene" parent="." instance=ExtResource("1_3g65p")]
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_441yl")
+volume_db = 80.0
+autoplay = true
+max_distance = 80.0
+
+[node name="DownloadMAX" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_vpsoh")
+volume_db = 80.0
+
+[node name="Area3D" type="Area3D" parent="."]
+script = ExtResource("5_aeepr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09556204, 1.1579313, 0)
+shape = SubResource("BoxShape3D_dmqr0")
