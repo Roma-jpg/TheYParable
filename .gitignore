@@ -18,3 +18,4 @@ mono_crash.*.json
 data_*/
 
 /Assets/Pictures/output.ogv
+godot_scripts_scan.txt
