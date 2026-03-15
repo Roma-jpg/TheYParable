@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=4 uid="uid://pm7rk1u7k0ol"]
+[gd_scene load_steps=45 format=4 uid="uid://pm7rk1u7k0ol"]
 
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="1_dnawa"]
 [ext_resource type="PackedScene" uid="uid://bcfot4h2lej4j" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://drg5ei1o6f1wd" path="res://Assets/3DModels/Y_corridor_part.glb" id="15_ivfha"]
 [ext_resource type="PackedScene" uid="uid://8mmthorfrgab" path="res://Scenes/base_trigga.tscn" id="16_pfuln"]
 [ext_resource type="Script" uid="uid://osuao3lefhl3" path="res://Scripts/trigger_puzzle_room_exit.gd" id="17_w8wcq"]
+[ext_resource type="Texture2D" uid="uid://y544cchgo163" path="res://Assets/Pictures/HappyEndTitleScreen.png" id="19_83gqx"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_dnawa"]
 points = PackedVector3Array(1.0158731, -0.9841332, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, 1.0158731, -1.0158731, -0.9841332, 1.0158731, 1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, 1.0158731)
@@ -526,12 +527,6 @@ points = PackedVector3Array(0.28062496, 0.28132498, 0.12709999, -0.28047788, -0.
 [sub_resource type="BoxShape3D" id="BoxShape3D_srax6"]
 size = Vector3(4.882324, 14.510956, 4.5944824)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bjwkx"]
-albedo_color = Color(0.080783345, 0.080783345, 0.080783345, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_sngpb"]
-material = SubResource("StandardMaterial3D_bjwkx")
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_w8wcq"]
 size = Vector3(11.40918, 0.45507813, 63.267944)
 
@@ -709,10 +704,6 @@ grow_vertical = 2
 texture = ExtResource("13_srax6")
 expand_mode = 2
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(-7.273506e-07, 0, 0.075672835, 0, 10.173441, 0, -16.639843, 0, -3.3077645e-09, 7.965518, 2.473856, 0)
-mesh = SubResource("BoxMesh_sngpb")
-
 [node name="batton" parent="." instance=ExtResource("11_sngpb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.00546, 0.21806753, 5.2287054)
 
@@ -752,6 +743,10 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -19.
 [node name="playa_stoppa" type="CollisionShape3D" parent="StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6138506e-07, 0, 3.6920605)
 shape = SubResource("BoxShape3D_5jnx6")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(-4.371139e-08, 1, 4.371139e-08, -8.742278e-08, 4.3711385e-08, -1, -1, -4.3711392e-08, 8.742278e-08, 3.5301285, -0.035007, -2.1581573)
+texture = ExtResource("19_83gqx")
 
 [connection signal="button_depressed" from="batton" to="door" method="_on_batton_button_depressed"]
 [connection signal="button_pressed" from="batton" to="door" method="_on_batton_button_pressed"]

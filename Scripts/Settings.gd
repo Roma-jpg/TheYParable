@@ -17,12 +17,13 @@ var default_settings := {
 		"epileptic_mode": false,
 		"slippery_world": false,
 		"gravity": "Нормальная",
-		"temperature": "26с"
+		"temperature": "26с",
+		"language": "ru"
 	}
 }
 
 var settings := {}
-var slippery_physics_material: PhysicsMaterial # Новое: материал для скользкого мира
+var slippery_physics_material: PhysicsMaterial
 var original_physics_materials: Dictionary = {}
 
 func _ready():
@@ -30,9 +31,9 @@ func _ready():
 	apply_all_settings()
 	
 	slippery_physics_material = PhysicsMaterial.new()
-	slippery_physics_material.friction = 0.1  # Очень низкое трение
-	slippery_physics_material.rough = true    # Включить грубость поверхности
-	slippery_physics_material.bounce = 0.05   # Минимальный отскок
+	slippery_physics_material.friction = 0.1
+	slippery_physics_material.rough = true
+	slippery_physics_material.bounce = 0.05
 
 # -------------------
 # Load / Save
@@ -97,12 +98,10 @@ func apply_graphics():
 		DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED
 	)
 
-
 	if typeof(fps_limit) == TYPE_STRING and fps_limit == "Нет лимита":
 		Engine.max_fps = 0
 	else:
 		Engine.max_fps = int(fps_limit)
-
 
 # -------------------
 # Sound
@@ -139,6 +138,7 @@ func apply_misc():
 			ProjectSettings.set_setting("physics/3d/default_gravity", randi() % 50)
 
 	print("Температура: ", settings["misc"]["temperature"])
+	# Language setting is used elsewhere – no direct effect here.
 	for p in get_tree().get_nodes_in_group("player"):
 		if p.has_method("apply_misc_settings"):
 			p.apply_misc_settings()

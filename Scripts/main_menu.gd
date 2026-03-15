@@ -9,15 +9,13 @@ func _ready() -> void:
 func _on_start_button_pressed() -> void:
 	canvas_layer.visible = false
 	LoadingScreen.start(
-		4.0,
+		6.0,
 		"Совет: Чтобы идти вперёд, идите вперёд."
 	)
 	
-	await get_tree().create_timer(5.2).timeout
-	
-	LoadingScreen.allow_fade_out()
+	await get_tree().create_timer(5.3).timeout
 	get_tree().change_scene_to_file("res://Scenes/start_room.tscn")
-
+	LoadingScreen.allow_fade_out()
 
 func _on_options_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://Scenes/settings_scene.tscn")

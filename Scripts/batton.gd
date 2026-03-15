@@ -26,7 +26,10 @@ func _process(delta):
 		cube_stay_timer += delta
 		if cube_stay_timer >= 2.0:
 			cube_triggered_once = true
-			await MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_1", "puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"])
+			MonologueSystem.play_monologue("puzzle_room_well_done_1")
+			await MonologueSystem.monologue_finished
+			VisualisationDirector.show_slide("buttons")
+			await MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"])
 			$"../StaticBody3D/playa_stoppa".disabled = true
 
 func _on_body_entered(body):

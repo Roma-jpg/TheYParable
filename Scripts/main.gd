@@ -19,7 +19,9 @@ func _ready():
 		"debug_room_2",
 		"debug_room_3",
 		"debug_room_4",
-		"debug_room_5"
+		"debug_room_5",
+		"try_to_kill_yourself",
+		"you_cant_die_in_this_game"
 	])
 
 func _on_timer_timeout():

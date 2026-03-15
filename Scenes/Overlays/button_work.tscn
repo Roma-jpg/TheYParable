@@ -1,12 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://s1p8hkg2bwg7"]
+[gd_scene load_steps=9 format=3 uid="uid://dsvye24irqkb6"]
 
-[ext_resource type="PackedScene" uid="uid://bdbkcd83cyl5h" path="res://Scenes/OverlaySystem/OverlaySlide.tscn" id="1_lgvux"]
-[ext_resource type="Script" uid="uid://b2c6vwdekg6w2" path="res://Scenes/Overlays/materials_dialogue_starter.gd" id="2_ndf2g"]
-[ext_resource type="Texture2D" uid="uid://cyvegs04ru14l" path="res://Assets/Pictures/slides/no_materials.jpg" id="2_qymtc"]
-[ext_resource type="Texture2D" uid="uid://buc1s0xqvs65q" path="res://Assets/Pictures/slides/yes_materials.jpg" id="3_ndf2g"]
-[ext_resource type="Texture2D" uid="uid://bjbngo0sxovfs" path="res://Assets/Pictures/slides/big_red_arrow.png" id="4_ujr84"]
+[ext_resource type="PackedScene" uid="uid://bdbkcd83cyl5h" path="res://Scenes/OverlaySystem/OverlaySlide.tscn" id="1_cit2m"]
+[ext_resource type="Texture2D" uid="uid://dxltoebmbyuhw" path="res://Assets/Pictures/slides/button_expl1.png" id="2_kanve"]
+[ext_resource type="Texture2D" uid="uid://b3eglhsfpcjp2" path="res://Assets/Pictures/slides/button_expl2.png" id="3_vfvjr"]
 
-[sub_resource type="Animation" id="Animation_qymtc"]
+[sub_resource type="Animation" id="Animation_kanve"]
 length = 0.001
 tracks/0/type = "bezier"
 tracks/0/imported = false
@@ -143,7 +141,7 @@ tracks/11/keys = {
 tracks/12/type = "value"
 tracks/12/imported = false
 tracks/12/enabled = true
-tracks/12/path = NodePath("SlideContainer/Content/NoMaterials:modulate")
+tracks/12/path = NodePath("SlideContainer/Content/ButtonExpl1:modulate")
 tracks/12/interp = 1
 tracks/12/loop_wrap = true
 tracks/12/keys = {
@@ -155,7 +153,7 @@ tracks/12/keys = {
 tracks/13/type = "value"
 tracks/13/imported = false
 tracks/13/enabled = true
-tracks/13/path = NodePath("SlideContainer/Content/BigRedArrow:modulate")
+tracks/13/path = NodePath("SlideContainer/Content/ButtonExpl2:modulate")
 tracks/13/interp = 1
 tracks/13/loop_wrap = true
 tracks/13/keys = {
@@ -167,7 +165,7 @@ tracks/13/keys = {
 tracks/14/type = "value"
 tracks/14/imported = false
 tracks/14/enabled = true
-tracks/14/path = NodePath("SlideContainer/Content/YesMaterials:modulate")
+tracks/14/path = NodePath("SlideContainer/Content/Label2:modulate")
 tracks/14/interp = 1
 tracks/14/loop_wrap = true
 tracks/14/keys = {
@@ -179,53 +177,29 @@ tracks/14/keys = {
 tracks/15/type = "value"
 tracks/15/imported = false
 tracks/15/enabled = true
-tracks/15/path = NodePath("SlideContainer/Content/NoMaterials:position")
+tracks/15/path = NodePath("SlideContainer/Content/ButtonExpl1:position")
 tracks/15/interp = 1
 tracks/15/loop_wrap = true
 tracks/15/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(122, 271.62607)]
+"values": [Vector2(192.95938, 264.3557)]
 }
 tracks/16/type = "value"
 tracks/16/imported = false
 tracks/16/enabled = true
-tracks/16/path = NodePath("SlideContainer/Content/BigRedArrow:position")
+tracks/16/path = NodePath("SlideContainer/Content/ButtonExpl2:position")
 tracks/16/interp = 1
 tracks/16/loop_wrap = true
 tracks/16/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(374.99997, 261.62607)]
-}
-tracks/17/type = "value"
-tracks/17/imported = false
-tracks/17/enabled = true
-tracks/17/path = NodePath("SlideContainer/Content/YesMaterials:position")
-tracks/17/interp = 1
-tracks/17/loop_wrap = true
-tracks/17/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(630, 276.62607)]
-}
-tracks/18/type = "value"
-tracks/18/imported = false
-tracks/18/enabled = true
-tracks/18/path = NodePath("SlideContainer/Content/Label2:modulate")
-tracks/18/interp = 1
-tracks/18/loop_wrap = true
-tracks/18/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(1, 1, 1, 0)]
+"values": [Vector2(632.95935, 263.3557)]
 }
 
-[sub_resource type="Animation" id="Animation_ndf2g"]
+[sub_resource type="Animation" id="Animation_vfvjr"]
 resource_name = "fade_in"
 length = 0.3
 step = 0.1
@@ -318,7 +292,7 @@ tracks/7/keys = {
 "times": PackedFloat32Array(0, 0.3)
 }
 
-[sub_resource type="Animation" id="Animation_ujr84"]
+[sub_resource type="Animation" id="Animation_3yj8h"]
 resource_name = "fade_out"
 length = 0.3
 step = 0.1
@@ -411,12 +385,12 @@ tracks/7/keys = {
 "times": PackedFloat32Array(0, 0.3)
 }
 
-[sub_resource type="Animation" id="Animation_vwusu"]
+[sub_resource type="Animation" id="Animation_2dtun"]
 resource_name = "main"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("SlideContainer/Content/NoMaterials:modulate")
+tracks/0/path = NodePath("SlideContainer/Content/ButtonExpl1:modulate")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -428,7 +402,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("SlideContainer/Content/BigRedArrow:modulate")
+tracks/1/path = NodePath("SlideContainer/Content/ButtonExpl2:modulate")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -440,7 +414,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("SlideContainer/Content/YesMaterials:modulate")
+tracks/2/path = NodePath("SlideContainer/Content/Label2:modulate")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -452,101 +426,65 @@ tracks/2/keys = {
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("SlideContainer/Content/NoMaterials:position")
-tracks/3/interp = 1
+tracks/3/path = NodePath("SlideContainer/Content/ButtonExpl1:position")
+tracks/3/interp = 2
 tracks/3/loop_wrap = true
 tracks/3/keys = {
 "times": PackedFloat32Array(0, 1),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector2(122, 271.62607), Vector2(122, 158.62607)]
+"values": [Vector2(192.95938, 264.3557), Vector2(192.95938, 182.35571)]
 }
 tracks/4/type = "value"
 tracks/4/imported = false
 tracks/4/enabled = true
-tracks/4/path = NodePath("SlideContainer/Content/BigRedArrow:position")
-tracks/4/interp = 1
+tracks/4/path = NodePath("SlideContainer/Content/ButtonExpl2:position")
+tracks/4/interp = 2
 tracks/4/loop_wrap = true
 tracks/4/keys = {
 "times": PackedFloat32Array(0, 1),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector2(374.99997, 261.62607), Vector2(374.99997, 148.62607)]
-}
-tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("SlideContainer/Content/YesMaterials:position")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector2(630, 276.62607), Vector2(630, 163.62607)]
-}
-tracks/6/type = "value"
-tracks/6/imported = false
-tracks/6/enabled = true
-tracks/6/path = NodePath("SlideContainer/Content/Label2:modulate")
-tracks/6/interp = 1
-tracks/6/loop_wrap = true
-tracks/6/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+"values": [Vector2(632.95935, 263.3557), Vector2(632.95935, 181.35571)]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_cghbj"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hm6ed"]
 _data = {
-&"RESET": SubResource("Animation_qymtc"),
-&"fade_in": SubResource("Animation_ndf2g"),
-&"fade_out": SubResource("Animation_ujr84"),
-&"main": SubResource("Animation_vwusu")
+&"RESET": SubResource("Animation_kanve"),
+&"fade_in": SubResource("Animation_vfvjr"),
+&"fade_out": SubResource("Animation_3yj8h"),
+&"main": SubResource("Animation_2dtun")
 }
 
-[node name="OverlaySlide" instance=ExtResource("1_lgvux")]
+[node name="ButtonWork" instance=ExtResource("1_cit2m")]
 
-[node name="Content" parent="SlideContainer" index="0"]
-script = ExtResource("2_ndf2g")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SlideContainer/Content" index="0"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="SlideContainer/Content/VBoxContainer" index="0"]
+[node name="Label" type="Label" parent="SlideContainer/Content" index="0"]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_font_sizes/font_size = 36
-text = "Как работают материалы?"
+theme_override_font_sizes/font_size = 31
+text = "Как работают кнопки:"
 
-[node name="NoMaterials" type="Sprite2D" parent="SlideContainer/Content" index="1"]
+[node name="ButtonExpl1" type="Sprite2D" parent="SlideContainer/Content" index="1"]
 modulate = Color(1, 1, 1, 0)
-position = Vector2(122, 271.62607)
-scale = Vector2(0.72, 0.72)
-texture = ExtResource("2_qymtc")
+position = Vector2(192.95938, 264.3557)
+scale = Vector2(0.7217657, 0.7217657)
+texture = ExtResource("2_kanve")
 
-[node name="YesMaterials" type="Sprite2D" parent="SlideContainer/Content" index="2"]
+[node name="ButtonExpl2" type="Sprite2D" parent="SlideContainer/Content" index="2"]
 modulate = Color(1, 1, 1, 0)
-position = Vector2(630, 276.62607)
-scale = Vector2(0.72, 0.72)
-texture = ExtResource("3_ndf2g")
+position = Vector2(632.95935, 263.3557)
+scale = Vector2(0.7217657, 0.7217657)
+texture = ExtResource("3_vfvjr")
 
-[node name="BigRedArrow" type="Sprite2D" parent="SlideContainer/Content" index="3"]
-modulate = Color(1, 1, 1, 0)
-position = Vector2(374.99997, 261.62607)
-rotation = -0.32343632
-scale = Vector2(0.10262346, 0.10262346)
-texture = ExtResource("4_ujr84")
-
-[node name="Label2" type="Label" parent="SlideContainer/Content" index="4"]
+[node name="Label2" type="Label" parent="SlideContainer/Content" index="3"]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
-size_flags_vertical = 10
-text = "Текстуры - это растровые изображения, несущие информацию о внешнем виде поверхности: цвет (albedo), рельеф (normal map), шероховатость (roughness) и другие детали. Материал — это шейдерный набор параметров и инструкций, определяющих физические свойства поверхности (металличность, прозрачность, преломление) и её реакцию на источники света. Материал использует текстуры как входные данные (слоты), комбинируя их с настройками освещения, чтобы для каждого пикселя модели вычислить итоговый цвет на экране. Таким образом, текстуры предоставляют детализацию, а материал управляет тем, как эти детали взаимодействуют со светом в игровой среде."
+size_flags_vertical = 8
+text = "Вот как работает кнопка в игре: когда игрок ставит кубик на кнопку (или встаёт сам), кубик попадает в специальную невидимую зону под названием Area3D (на картинках выше она обведена синим цветом). Скрипт кнопки понимает, что на ней лежит нужный предмет, и отправляет сигнал менеджеру анимаций. Менеджер анимаций принимает команду и запускает анимацию опускания кнопки и открытия двери.
+"
 autowrap_mode = 3
 
 [node name="AnimationPlayer" parent="." index="2"]
 libraries = {
-&"": SubResource("AnimationLibrary_cghbj")
+&"": SubResource("AnimationLibrary_hm6ed")
 }

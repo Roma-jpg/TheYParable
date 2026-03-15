@@ -16,9 +16,7 @@ signal slides_finished
 
 func _ready() -> void:
 	register_slide("materials", preload("res://Scenes/Overlays/how_materials_work.tscn"))
-	# register_slide("textures", preload("res://Scenes/Overlays/texture_tutorial.tscn"))
-	# register_slide("importance-of-both", preload("res://Scenes/Overlays/importance_of_both.tscn"))
-	# Add more slides here as needed
+	register_slide("buttons", preload("res://Scenes/Overlays/button_work.tscn"))
 
 func register_slide(slide_name: String, slide_scene: PackedScene) -> void:
 	slide_library[slide_name] = slide_scene

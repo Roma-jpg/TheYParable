@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=3 uid="uid://c6a301a8ogf56"]
+[gd_scene load_steps=72 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
@@ -7,11 +7,14 @@
 [ext_resource type="PackedScene" uid="uid://bkhssjyme4aqv" path="res://Assets/3DModels/Y_tumbochka.glb" id="4_dua0g"]
 [ext_resource type="Script" uid="uid://ui55re67owa3" path="res://Scripts/y_tumbochka.gd" id="5_dua0g"]
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="5_n4xud"]
+[ext_resource type="AudioStream" uid="uid://02yvrxbo05m3" path="res://Assets/Audio/vy-pozvonili-tsariu-batiushke.mp3" id="7_xh3pb"]
 [ext_resource type="Material" uid="uid://1nvrnylcajfg" path="res://addons/prototype_mini_bundle/M_prototype_red.tres" id="8_qjx48"]
 [ext_resource type="Script" uid="uid://cy7wutoxwt8mu" path="res://Scripts/CubeExample4.gd" id="9_ixl8n"]
 [ext_resource type="Texture2D" uid="uid://dste80nr8hb20" path="res://Assets/3DModels/statue_ganesha_4_texture_BaseColor.jpg" id="11_kntqd"]
+[ext_resource type="Script" uid="uid://dgun421ot0113" path="res://Scripts/painting.gd" id="12_okgqw"]
 [ext_resource type="PackedScene" uid="uid://doq7rquq1q5tg" path="res://Assets/3DModels/potted_plant.glb" id="12_x7n1t"]
 [ext_resource type="PackedScene" uid="uid://dfvgqmuwdht3g" path="res://Assets/3DModels/statue.glb" id="13_8785c"]
+[ext_resource type="Script" uid="uid://bcxaphdrg6cb3" path="res://Scripts/potted_plant.gd" id="13_xl3ds"]
 [ext_resource type="Script" uid="uid://br7a3ynb3275r" path="res://Scripts/statue.gd" id="14_x7n1t"]
 [ext_resource type="AudioStream" uid="uid://bd3fqm7porkj8" path="res://Assets/Audio/stone-sliding.wav" id="15_8785c"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="16_8irpl"]
@@ -189,6 +192,13 @@ _data = {
 [sub_resource type="SphereShape3D" id="SphereShape3D_a2wcv"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kntqd"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ns8gf"]
+size = Vector3(20.271149, 20.294678, 0.07397461)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_okgqw"]
+height = 2.1269531
+radius = 0.8491211
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_x7n1t"]
 size = Vector3(2.0510254, 6.665161, 1.7341309)
@@ -388,6 +398,12 @@ script = ExtResource("5_dua0g")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0030813217, 0.049835205, 0)
 shape = SubResource("BoxShape3D_7gtko")
 
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="Y_tumbochka/Area3D"]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1.1664805, 0)
+stream = ExtResource("7_xh3pb")
+volume_db = -40.0
+max_distance = 1.0
+
 [node name="Y_lamp_nocover" parent="." instance=ExtResource("5_n4xud")]
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 3.171061, 3.8044748, -0.19257367)
 
@@ -485,7 +501,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.077014774, 0.36648107, -0.07162342, 0.99702877, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.077014774, 0.36648107, -0.07162342, 0.9970287, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
@@ -513,8 +529,22 @@ shape = SubResource("BoxShape3D_kntqd")
 transform = Transform3D(0.10117991, 0, 0, 0, 0.10117991, 0, 0, 0, 1, -2.9280236, 2.3434353, -4.514644)
 texture = ExtResource("11_kntqd")
 
+[node name="Area3D" type="Area3D" parent="Sprite3D"]
+script = ExtResource("12_okgqw")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sprite3D/Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.109846115, -0.011592865, -0.08928251)
+shape = SubResource("BoxShape3D_ns8gf")
+
 [node name="potted_plant" parent="." instance=ExtResource("12_x7n1t")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.281357, 0.040395334, 2.8396893)
+
+[node name="Area3D" type="Area3D" parent="potted_plant"]
+script = ExtResource("13_xl3ds")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="potted_plant/Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12189913, 0.95015275, 0.107210875)
+shape = SubResource("CylinderShape3D_okgqw")
 
 [node name="statue" parent="." instance=ExtResource("13_8785c")]
 transform = Transform3D(-0.64, 0, -5.5950576e-08, 0, 0.64, 0, 5.5950576e-08, 0, -0.64, -4.3787413, 0.039999843, 2.706318)

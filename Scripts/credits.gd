@@ -12,6 +12,7 @@ func _process(delta: float) -> void:
 	await get_tree().create_timer(3).timeout
 	scroll_container.scroll_vertical += speed * delta
 	
-	if scroll_container.scroll_vertical >= 7860:
+	if scroll_container.scroll_vertical >= 8472:
+		await get_tree().create_timer(3).timeout
 		get_tree().quit()
 	

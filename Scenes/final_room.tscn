@@ -1,5 +1,6 @@
-[gd_scene load_steps=14 format=3 uid="uid://b0t2a0a4p0hf7"]
+[gd_scene load_steps=15 format=3 uid="uid://b0t2a0a4p0hf7"]
 
+[ext_resource type="Script" uid="uid://bqy45ttymjlou" path="res://Scripts/final_room.gd" id="1_jsg6b"]
 [ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="1_wq24h"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="3_jc4e8"]
 [ext_resource type="PackedScene" uid="uid://eniane1yq7q3" path="res://Assets/3DModels/final_room_new_ver.glb" id="3_wq24h"]
@@ -32,6 +33,7 @@ size = Vector3(27.251587, 0.25561523, 6.125458)
 size = Vector3(11.206207, 0.25561523, 6.125458)
 
 [node name="FinalRoom" type="Node3D"]
+script = ExtResource("1_jsg6b")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_jsg6b")

@@ -1,6 +1,6 @@
 extends Node3D
 
-@export var enable_intro_sequence: bool = false  # hardcoded switch
+@export var enable_intro_sequence: bool = true  # hardcoded switch
 
 @onready var player_animation_player: AnimationPlayer = $Player/AnimationPlayer
 @onready var animation_player: AnimationPlayer = $Player/Y/AnimationPlayer
@@ -22,7 +22,6 @@ func _play_intro_sequence() -> void:
 	_lock_player_controls()
 	LoadingScreen.fade_time = 0
 	LoadingScreen.start(3, "Совет: чтобы прыгать, прыгните")
-	
 	MaterialManager.make_objects_white()
 	camera_animation_player.play("CameraPickup")
 	camera_animation_player.stop()
@@ -30,26 +29,24 @@ func _play_intro_sequence() -> void:
 	animation_player.play("wakeup")
 	animation_player.stop()
 	animation_player.seek(0.0, true)
-	
-	await get_tree().create_timer(3).timeout
+	await get_tree().create_timer(4.0).timeout
 	LoadingScreen.fade_time = 1
 	LoadingScreen.allow_fade_out()
-	await get_tree().create_timer(1).timeout
-	_lock_player_controls()
 	await get_tree().create_timer(1.5).timeout
+	_lock_player_controls()
+	await get_tree().create_timer(2.0).timeout
 	MonologueSystem.play_monologue("1a_Y_wake_up")
 	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	MonologueSystem.play_monologue("1a_no_anim")
 	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	Console.open_console()
 	Console.type_message("engine.TheYParable.Characters.Y.animated = true;")
 	await Console.typing_completed
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	Console.print_instant("[color=green]Variable `engine.TheYParable.Characters.Y.animated` changed to `true`.[/color]")
-	await get_tree().create_timer(1.0).timeout
-	
+	await get_tree().create_timer(1.5).timeout
 	Console.close()
 	MonologueSystem.play_monologue("1a_now_you_can_move")
 	await MonologueSystem.monologue_finished
@@ -60,29 +57,32 @@ func _play_intro_sequence() -> void:
 	player_animation_player.seek(0.0, true)
 	MonologueSystem.play_monologue("1a_see_that_camera")
 	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	player_animation_player.play("walk_up")
 	await player_animation_player.animation_finished
 	camera_animation_player.play("CameraPickup")
 	await camera_animation_player.animation_finished
 	_unlock_player_controls()
-	
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(3.0).timeout
 	await MonologueSystem.play_and_wait_monologues([
 		"2a_just_look_at_that",
 		"2a_adult_joke",
 		"2a_being_serious_now",
-	    "2a_now_we_will_meet_aspect"
+		"2a_now_we_will_meet_aspect"
 	])
-	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
-	
+	await get_tree().create_timer(1.8).timeout
 	VisualisationDirector.show_slide("materials")
 	await VisualisationDirector.slides_finished
-	
-	await get_tree().create_timer(1.0).timeout
-	
-	
+	await get_tree().create_timer(1.5).timeout
+	Console.open_console()
+	Console.type_message("engine.TheYParable.Objects.Materials.SelfModulate = #232323;")
+	await Console.typing_completed
+	await get_tree().create_timer(1.5).timeout
+	Console.print_instant("[color=green]Variable `engine.TheYParable.Objects.Materials.SelfModulate` changed to `#232323`.[/color]")
+	await get_tree().create_timer(1.5).timeout
+	Console.close()
+	MaterialManager.revert_objects()
+	await get_tree().create_timer(1.5).timeout
 
 func _lock_player_controls():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)

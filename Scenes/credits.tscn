@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://byj10tp0o8051"]
+[gd_scene load_steps=4 format=3 uid="uid://d0xoruh365und"]
 
-[ext_resource type="Script" uid="uid://bsil3hyf24h8a" path="res://Scripts/credits.gd" id="1_r18jl"]
+[ext_resource type="Script" uid="uid://3tu7w2ey3ado" path="res://Scripts/credits.gd" id="1_r18jl"]
+[ext_resource type="Texture2D" uid="uid://byqd4vy01uqtm" path="res://Assets/Pictures/Hungover_Y_Lakeside.png" id="2_ccovl"]
 [ext_resource type="AudioStream" uid="uid://bfo1xbeuy5hd" path="res://Assets/Audio/Music/icosa - Oliver Buckland.wav" id="2_gryuy"]
 
 [node name="Credits" type="Control"]
@@ -26,10 +27,12 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -2.0
+offset_bottom = -2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-scroll_vertical = 7860
+scroll_vertical = 8472
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
 
@@ -290,8 +293,31 @@ Romeo558
 Ну и конечно спасибо ВАМ, дорогие игроки, 
 что решили доиграть в это нечто напоминающее игру.
 
-Romeo558 (c) "
+Romeo558 (c) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Спасибо за игру!
+На фото Игрик отдыхает после долгого рабочего дня
+на базе отдыха Бережок
+
+"
 horizontal_alignment = 1
+
+[node name="HungoverYLakeside" type="Sprite2D" parent="ScrollContainer/VBoxContainer"]
+position = Vector2(472, 8689)
+scale = Vector2(0.28, 0.28)
+texture = ExtResource("2_ccovl")
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("2_gryuy")

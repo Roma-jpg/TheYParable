@@ -1,11 +1,49 @@
-[gd_scene load_steps=3 format=3 uid="uid://ba14c46wb606d"]
+[gd_scene load_steps=7 format=3 uid="uid://ba14c46wb606d"]
 
 [ext_resource type="PackedScene" uid="uid://0vbbpr3ut651" path="res://Assets/3DModels/editor/finish_flag.glb" id="1_uh56p"]
+[ext_resource type="Script" uid="uid://dfeyqt40iiql3" path="res://Scripts/finish_flag.gd" id="2_6fxmu"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_6fxmu"]
 size = Vector3(0.3173828, 2.2949219, 1.951416)
 
+[sub_resource type="Animation" id="Animation_jsg6b"]
+resource_name = "fade_in"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Control/ColorRect:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_1xycw"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Control/ColorRect:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_dmoq2"]
+_data = {
+&"RESET": SubResource("Animation_1xycw"),
+&"fade_in": SubResource("Animation_jsg6b")
+}
+
 [node name="finish_flag" instance=ExtResource("1_uh56p")]
+script = ExtResource("2_6fxmu")
 
 [node name="Cube" parent="." index="0"]
 transform = Transform3D(0.07745098, 0, 0, 0, 0.5338251, 0, 0, 0, 1, 0, 1.6568725, 1.0111234)
@@ -19,3 +57,30 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275769, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.015136719, -0.11376953, 0.94165754)
 shape = SubResource("BoxShape3D_6fxmu")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." index="3"]
+
+[node name="Control" type="Control" parent="CanvasLayer" index="0"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/Control" index="0"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.033853278, 0.033853278, 0.033853274, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer" index="1"]
+libraries = {
+&"": SubResource("AnimationLibrary_dmoq2")
+}
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]
