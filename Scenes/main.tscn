@@ -1,7 +1,9 @@
-[gd_scene load_steps=24 format=3 uid="uid://cxqhmeq3o61in"]
+[gd_scene load_steps=26 format=3 uid="uid://cxqhmeq3o61in"]
 
 [ext_resource type="Material" uid="uid://dgjiw8udooecr" path="res://addons/prototype_mini_bundle/M_prototype_dark.tres" id="1_h2yge"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://di2fdrtmjghb4" path="res://Scripts/main.gd" id="1_jkdf5"]
+[ext_resource type="PackedScene" uid="uid://q4o8k5731k6i" path="res://Scenes/googoogaga.tscn" id="2_wsu2k"]
 [ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="3_1bvp3"]
 [ext_resource type="Script" uid="uid://r705u878a7uv" path="res://Scripts/CubeExample.gd" id="3_5vw27"]
 [ext_resource type="Material" uid="uid://cmu4vfp7y5t6b" path="res://addons/prototype_mini_bundle/M_prototype_purple.tres" id="4_272bh"]
@@ -43,6 +45,9 @@ ambient_light_source = 3
 reflected_light_source = 2
 
 [node name="Main" type="Node3D"]
+script = ExtResource("1_jkdf5")
+scene_to_spawn = ExtResource("2_wsu2k")
+spawn_interval = 120.0
 
 [node name="Floor" type="StaticBody3D" parent="."]
 
@@ -189,3 +194,8 @@ environment = SubResource("Environment_272bh")
 [node name="Sprite3D" type="Sprite3D" parent="."]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 6.23211, 2750.671)
 texture = ExtResource("15_wsu2k")
+
+[node name="Timer" type="Timer" parent="."]
+
+[node name="Marker3D" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0, -3.487)

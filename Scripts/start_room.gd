@@ -21,7 +21,7 @@ func _ready() -> void:
 func _play_intro_sequence() -> void:
 	_lock_player_controls()
 	LoadingScreen.fade_time = 0
-	LoadingScreen.start(4, "Совет: чтобы прыгать, прыгните")
+	LoadingScreen.start(3, "Совет: чтобы прыгать, прыгните")
 	
 	MaterialManager.make_objects_white()
 	camera_animation_player.play("CameraPickup")
@@ -31,7 +31,7 @@ func _play_intro_sequence() -> void:
 	animation_player.stop()
 	animation_player.seek(0.0, true)
 	
-	await get_tree().create_timer(5.2).timeout
+	await get_tree().create_timer(3).timeout
 	LoadingScreen.fade_time = 1
 	LoadingScreen.allow_fade_out()
 	await get_tree().create_timer(1).timeout

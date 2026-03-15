@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="1_dnawa"]
 [ext_resource type="PackedScene" uid="uid://bcfot4h2lej4j" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
-[ext_resource type="Script" uid="uid://biitt7b4jvskr" path="res://Scripts/puzzle_room.gd" id="1_w8wcq"]
+[ext_resource type="Script" uid="uid://bnlp0t5663b1o" path="res://Scripts/puzzle_room.gd" id="1_w8wcq"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="2_dnawa"]
 [ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="4_yskdw"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="5_bjwkx"]
@@ -598,7 +598,7 @@ shape = SubResource("ConvexPolygonShape3D_8kpn7")
 transform = Transform3D(-0.99999994, 0, 8.742276e-08, 0, 1.0000005, 0, -8.742276e-08, 0, -0.99999994, 0, 1.9821669, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="puzzle_roo/Cube_001/StaticBody3D5"]
-transform = Transform3D(-4.3711374e-08, 0.99999994, 0, -1, -4.3711385e-08, 0, -4.2351647e-22, 0, 0.42781857, 5.0205486e-08, -1.9751426, 0.57428396)
+transform = Transform3D(-4.3711374e-08, 0.99999994, 0, -1, -4.3711385e-08, 0, -4.2351647e-22, 0, 0.42781857, 7.3381436e-08, -1.9751427, 0.839386)
 shape = SubResource("ConvexPolygonShape3D_m020c")
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="puzzle_roo/Cube_001/StaticBody3D5"]

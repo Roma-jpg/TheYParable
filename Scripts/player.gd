@@ -48,6 +48,11 @@ extends CharacterBody3D
 @onready var main_menu_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/MainMenuButton
 @onready var fun_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/FunButton
 
+# Шаги
+@export var footstep_sound_path: String = "res://Assets/Audio/footsteps.wav"
+@export var footstep_volume_db: float = 0.0
+@export var footstep_max_distance: float = 9999.9
+
 # ===== ВНУТРЕННИЕ ПЕРЕМЕННЫЕ СОСТОЯНИЯ =====
 
 # Камера
@@ -93,6 +98,15 @@ var temperature_mode := "20с"
 # Состояние паузы
 var is_paused := false
 
+# Пасхалка с счётчиком прыжков
+var jump_count_standing := 0
+var gravity_test_triggered := false
+
+# Шаги
+var footstep_player: AudioStreamPlayer3D
+var was_moving_on_ground: bool = false
+var is_sprinting: bool = false
+
 # ===== МЕТОДЫ ЖИЗНЕННОГО ЦИКЛА =====
 
 func _ready():
@@ -122,6 +136,19 @@ func _ready():
 	main_menu_button.pressed.connect(_on_main_menu_button_pressed)
 	fun_button.pressed.connect(_on_fun_button_pressed)
 	pause_menu.gui_input.connect(_on_pause_menu_gui_input)
+
+	# --- NEW: Footstep audio player setup ---
+	footstep_player = AudioStreamPlayer3D.new()
+	footstep_player.finished.connect(_on_footstep_finished)
+	var footstep_stream = load(footstep_sound_path) as AudioStream
+	if footstep_stream:
+		footstep_player.stream = footstep_stream
+		footstep_player.volume_db = footstep_volume_db
+		footstep_player.max_distance = footstep_max_distance
+		footstep_player.bus = "SFX"  # Change to your sound bus if needed
+	else:
+		push_error("Footstep sound not found at: ", footstep_sound_path)
+	add_child(footstep_player)
 
 func _input(event):
 	# Обработка нажатия Escape для возврата в редактор или открытия меню паузы
@@ -196,6 +223,20 @@ func _physics_process(delta):
 	
 	move_and_slide()
 	
+	var is_moving_on_ground = is_on_floor() and Vector2(velocity.x, velocity.z).length_squared() > 0.01
+
+	if is_moving_on_ground:
+		# Set pitch based on sprint state (1.7x when sprinting)
+		footstep_player.pitch_scale = 1.5 if is_sprinting else 1.0
+		if not footstep_player.playing:
+			footstep_player.play()
+	else:
+		if footstep_player.playing:
+			footstep_player.stop()
+
+	was_moving_on_ground = is_moving_on_ground
+	# --- END of footstep logic ---
+
 	# Таймер бездействия (только если стоим на месте)
 	if is_on_floor() and velocity.length_squared() < 0.01:
 		idle_timer += delta
@@ -309,12 +350,19 @@ func handle_movement(delta):
 
 	# Выбор скорости (ходьба / спринт)
 	var speed := walk_speed
+	var sprint_input = false
 	if using_gamepad:
-		if can_sprint and (Input.is_action_pressed("gamepad_sprint") or Input.is_action_pressed("gamepad_left_stick_click")):
+		sprint_input = (Input.is_action_pressed("gamepad_sprint") or Input.is_action_pressed("gamepad_left_stick_click"))
+		if can_sprint and sprint_input:
 			speed = sprint_speed
 	else:
-		if can_sprint and Input.is_action_pressed("sprint"):
+		sprint_input = Input.is_action_pressed("sprint")
+		if can_sprint and sprint_input:
 			speed = sprint_speed
+
+	# --- NEW: Track sprint state for footstep pitch ---
+	is_sprinting = sprint_input and direction.length() > 0  # only sprint when actually moving
+	# ----------------------------------------------------
 
 	# Применение скорости к velocity
 	var target_x = direction.x * speed
@@ -580,7 +628,7 @@ func _on_main_menu_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
 
 func _on_fun_button_pressed() -> void:
-	fun_button.text = "НЕЕЕЕЕТТ"
+	#fun_button.text = "НЕЕЕЕЕТТ"
 	$Crosshair/Pause/AudioStreamPlayer3D.play()
 	await $Crosshair/Pause/AudioStreamPlayer3D.finished
 	fun_button.text = "ПРОШУ НЕ НАЖИМАЙ СЮДА"
@@ -588,3 +636,8 @@ func _on_fun_button_pressed() -> void:
 func _on_pause_menu_gui_input(event: InputEvent):
 	if event.is_action_pressed("ui_cancel"):
 		unpause_game()
+
+func _on_footstep_finished():
+	# If the player is still moving on ground, restart the sound
+	if is_on_floor() and Vector2(velocity.x, velocity.z).length_squared() > 0.01:
+		footstep_player.play()

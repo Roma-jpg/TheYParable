@@ -52,6 +52,14 @@ func _ready():
 	create_ui()
 	update_special_visuals()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	await get_tree().create_timer(1).timeout
+	MonologueSystem.play_and_wait_monologues([
+		"somewhat_of_a_redactor_1",
+		"somewhat_of_a_redactor_2",
+		"somewhat_of_a_redactor_3",
+		"somewhat_of_a_redactor_4",
+		"somewhat_of_a_redactor_5",
+	])
 
 func calculate_grid_offset():
 	grid_offset = Vector3(

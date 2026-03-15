@@ -1,4 +1,4 @@
-[gd_scene load_steps=65 format=3 uid="uid://c6a301a8ogf56"]
+[gd_scene load_steps=67 format=3 uid="uid://c6a301a8ogf56"]
 
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="1_ecy7y"]
 [ext_resource type="Script" uid="uid://ciydge2a7bhc" path="res://Scripts/start_room.gd" id="1_n4xud"]
@@ -23,8 +23,9 @@
 [ext_resource type="Script" uid="uid://yslieanf8hv3" path="res://Scripts/trigger_stroom_right.gd" id="21_loqrl"]
 [ext_resource type="Script" uid="uid://dcusesnen70h1" path="res://Scripts/trigger_stroom_right_second_one.gd" id="22_60oek"]
 [ext_resource type="PackedScene" uid="uid://xc2ctm2ohmj3" path="res://Assets/3DModels/neon_sign.glb" id="22_s04p8"]
-[ext_resource type="Script" uid="uid://br3cwddp6qwvd" path="res://Scripts/trigger_collision.gd" id="23_iqh0y"]
-[ext_resource type="Script" uid="uid://c46r1iqpfe5x1" path="res://Scripts/trigger_turn_left_here.gd" id="24_o57yq"]
+[ext_resource type="Script" uid="uid://h54btvvw4hsn" path="res://Scripts/trigger_collision.gd" id="23_iqh0y"]
+[ext_resource type="Script" uid="uid://26fiyrpiu6al" path="res://Scripts/trigger_turn_left_here.gd" id="24_o57yq"]
+[ext_resource type="Script" uid="uid://bfo32ic75r6no" path="res://Scripts/trigger_T_afk_location.gd" id="25_fjank"]
 
 [sub_resource type="Animation" id="Animation_qjx48"]
 length = 0.001
@@ -285,6 +286,9 @@ data = PackedVector3Array(27.7972, -1.3873999, -11.6241, 34.600998, 15.102699, -
 [sub_resource type="BoxShape3D" id="BoxShape3D_o57yq"]
 size = Vector3(12.773682, 17.07727, 2)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_xh3pb"]
+size = Vector3(12.773682, 52.370796, 15.28894)
+
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_vaism"]
 points = PackedVector3Array(-1.6761999, -1.6690537, -3.0116675, 1.7048999, 1.8092998, 3.074666, -1.6976522, 1.8513694, 3.1494563, -1.6976522, 1.8513694, -3.1494563, 1.7048999, 1.8092998, -3.074666, 1.634093, -1.6761999, 3.023974, 1.634093, -1.6761999, -3.023974, -1.6761999, -1.6690537, 3.0116675)
 
@@ -481,7 +485,7 @@ omni_range = 10.0
 omni_shadow_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.9272328, 0.07701479, 0.36648107, -0.07162342, 0.9970289, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
+transform = Transform3D(0.9272328, 0.077014774, 0.36648107, -0.07162342, 0.99702877, -0.028308565, -0.3675728, 0, 0.92999476, 4.8834686, 1.2719685, -0.7344129)
 current = true
 
 [node name="CameraAnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
@@ -622,6 +626,14 @@ script = ExtResource("24_o57yq")
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -58.424576, 6.5386353, -19.437582)
 shape = SubResource("BoxShape3D_o57yq")
 
+[node name="BaseTrigger6" parent="Y_corridor/Cube_001" index="6" instance=ExtResource("19_8qgfj")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 20.633442, 0, -38.414955)
+script = ExtResource("25_fjank")
+
+[node name="CollisionShape3D" parent="Y_corridor/Cube_001/BaseTrigger6" index="0"]
+transform = Transform3D(-8.742278e-08, 1, 4.3711385e-08, -4.371139e-08, -4.371139e-08, 1, 1, 8.742278e-08, 4.3711385e-08, -53.131836, 7.1702724, -19.931854)
+shape = SubResource("BoxShape3D_xh3pb")
+
 [node name="StaticBody3D" type="StaticBody3D" parent="Y_corridor/Cube_002" index="0"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Y_corridor/Cube_002/StaticBody3D"]
@@ -692,4 +704,5 @@ shape = SubResource("BoxShape3D_60oek")
 [editable path="Y_corridor/Cube_001/BaseTrigger3"]
 [editable path="Y_corridor/Cube_001/BaseTrigger4"]
 [editable path="Y_corridor/Cube_001/BaseTrigger5"]
+[editable path="Y_corridor/Cube_001/BaseTrigger6"]
 [editable path="neon_sign"]
