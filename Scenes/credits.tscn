@@ -1,0 +1,297 @@
+[gd_scene load_steps=3 format=3 uid="uid://byj10tp0o8051"]
+
+[ext_resource type="Script" uid="uid://bsil3hyf24h8a" path="res://Scripts/credits.gd" id="1_r18jl"]
+[ext_resource type="AudioStream" uid="uid://bfo1xbeuy5hd" path="res://Assets/Audio/Music/icosa - Oliver Buckland.wav" id="2_gryuy"]
+
+[node name="Credits" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_r18jl")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.11489687, 0.1148968, 0.1148968, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+scroll_vertical = 7860
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label2" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Титры:
+"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Основатель и генеральный директор:
+Romeo558
+
+Руководитель студии:
+Romeo558
+
+Креативный директор:
+Romeo558
+
+Исполнительный продюсер:
+Romeo558
+
+Гейм-директор:
+Romeo558
+
+Ведущий дизайнер:
+Romeo558
+
+Ведущий программист:
+Romeo558
+
+Программист геймплея:
+Romeo558
+
+Программист графики:
+Romeo558
+
+Программист интерфейса:
+Romeo558
+
+Программист пользовательского опыта:
+Romeo558
+
+Программист инструментов:
+Romeo558
+
+Программист физики:
+Romeo558
+
+Программист звука:
+Romeo558
+
+Сетевой программист:
+Romeo558
+
+Системный программист:
+Romeo558
+
+Инженер по сборке:
+Romeo558
+
+Технический директор:
+Romeo558
+
+Ведущий тестировщик:
+Romeo558
+
+Ведущий 3D-моделлер:
+Romeo558
+
+Ведущий 2D-художник:
+Romeo558
+
+Художник по концептам:
+Romeo558
+
+Художник по персонажам:
+Romeo558
+
+Художник окружения:
+Romeo558
+
+Художник по объектам:
+Romeo558
+
+Художник по текстурам:
+Romeo558
+
+Художник по освещению:
+Romeo558
+
+VFX-художник:
+Romeo558
+
+Технический художник:
+Romeo558
+
+Ведущий аниматор:
+Romeo558
+
+Аниматор персонажей:
+Romeo558
+
+Риггинг-художник:
+Romeo558
+
+UI-художник:
+Romeo558
+
+Графический дизайнер:
+Romeo558
+
+Звукорежиссёр:
+Romeo558
+
+Композитор:
+Romeo558
+
+Художник по звуковым эффектам:
+Romeo558
+
+Художник по шумам:
+Romeo558
+
+Режиссёр озвучки:
+Romeo558
+
+Редактор диалогов:
+Romeo558
+
+Звукоинженер сведения:
+Romeo558
+
+Сценарист-режиссёр:
+Romeo558
+
+Ведущий сценарист:
+Romeo558
+
+Сценарист игры:
+Romeo558
+
+Сценарист диалогов:
+Romeo558
+
+Хранитель лора:
+Romeo558
+
+Копирайтер:
+Romeo558
+
+Дизайнер уровней:
+Romeo558
+
+Дизайнер квестов:
+Romeo558
+
+Дизайнер головоломок:
+Romeo558
+
+Строитель мира:
+Romeo558
+
+UI-дизайнер:
+Romeo558
+
+Игровой тестировщик:
+Romeo558
+
+Аналитик баланса:
+Romeo558
+
+Продюсер:
+Romeo558
+
+Руководитель проектов:
+Romeo558
+
+Скрам-мастер:
+Romeo558
+
+Тестировщик контроля качества:
+Romeo558
+
+Директор по маркетингу:
+Romeo558
+
+Маркетинг-директор:
+Romeo558
+
+Менеджер соцсетей:
+Romeo558
+
+Комьюнити-менеджер:
+Romeo558
+
+PR-менеджер:
+Romeo558
+
+Создатель контента:
+Romeo558
+
+Видеомонтажёр:
+Romeo558
+
+Режиссёр трейлеров:
+Romeo558
+
+Оптимизатор страницы в магазине:
+Romeo558
+
+Редактор рассылок:
+Romeo558
+
+Финансовый директор:
+Romeo558
+
+Бизнес-разработчик:
+Romeo558
+
+Юрисконсульт:
+Romeo558
+
+Специалист по контрактам:
+Romeo558
+
+Бухгалтер:
+Romeo558
+
+Связь с издателем:
+Romeo558
+
+Системный администратор:
+Romeo558
+
+Аналитик данных:
+Romeo558
+
+Офис-менеджер:
+Romeo558
+
+Главный по настроению:
+Romeo558
+
+Уборщик:
+Romeo558
+
+Уставший аниматор:
+Romeo558
+
+Ну и конечно спасибо ВАМ, дорогие игроки, 
+что решили доиграть в это нечто напоминающее игру.
+
+Romeo558 (c) "
+horizontal_alignment = 1
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_gryuy")
