@@ -31,6 +31,10 @@ window/size/viewport_width=960
 window/size/viewport_height=540
 window/stretch/mode="canvas_items"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/prototype_mini_bundle/plugin.cfg", "res://addons/virtual_joystick/plugin.cfg")
+
 [global_group]
 
 player=""
@@ -76,3 +80,7 @@ rotate={
 "deadzone": 0.2,
 "events": []
 }
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
