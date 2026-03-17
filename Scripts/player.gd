@@ -160,6 +160,8 @@ func _input(event):
 			toggle_pause()
 
 func _unhandled_input(event):
+	if event is InputEventMouseMotion:
+		print("Mouse move detected!")
 	# Сбрасываем таймер бездействия при любом вводе
 	idle_timer = 0.0
 	current_idle_stage = 0

@@ -51,7 +51,7 @@ func _ready():
 	create_grid_visual()
 	create_ui()
 	update_special_visuals()
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	await get_tree().create_timer(1).timeout
 	MonologueSystem.play_and_wait_monologues([
 		"somewhat_of_a_redactor_1",
@@ -450,7 +450,14 @@ func start_play():
 	_start_playing()
 
 func _start_playing():
+	palette_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Проверка наличия спавна
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	if canvas_layer:
+		canvas_layer.visible = false
+		
+	
 	if spawn_cell == Vector2i(-1, -1):
 		print("Предупреждение: точка спавна не установлена, игрок появится в (0,0)")
 		var start_pos = Vector3(0, CELL_SIZE, 0)
@@ -478,6 +485,8 @@ func _start_playing():
 		player_instance.position = grid_pos(spawn_cell, 0) + Vector3(0, CELL_SIZE, 0)
 	add_child(player_instance)
 	player_instance.add_to_group("player")
+	if player_instance.has_method("unlock_controls"):
+		player_instance.unlock_controls()
 
 	var player_cam = player_instance.find_child("Camera3D", true, false)
 	if player_cam:

@@ -1,4 +1,4 @@
-Scanning for .gd files in: C:\Users\Ромэо\Documents\the-y-parable
+Scanning for .gd files in: C:\Users\annak\OneDrive\Документы\the-y-parable
 Ignoring folders: addons, .git, node_modules, __pycache__, .venv, venv
 --------------------------------------------------
 
@@ -21,12 +21,11 @@ var sequence_index: int = -1
 
 # Signal for errors (replaces push_error)
 signal error_occurred(message: String)
+signal slides_finished
 
 func _ready() -> void:
 	register_slide("materials", preload("res://Scenes/Overlays/how_materials_work.tscn"))
-	# register_slide("textures", preload("res://Scenes/Overlays/texture_tutorial.tscn"))
-	# register_slide("importance-of-both", preload("res://Scenes/Overlays/importance_of_both.tscn"))
-	# Add more slides here as needed
+	register_slide("buttons", preload("res://Scenes/Overlays/button_work.tscn"))
 
 func register_slide(slide_name: String, slide_scene: PackedScene) -> void:
 	slide_library[slide_name] = slide_scene
@@ -98,6 +97,8 @@ func _cleanup_sequence() -> void:
 	current_sequence.clear()
 	get_tree().paused = false
 
+	slides_finished.emit()
+
 func is_showing() -> bool:
 	return current_slide != null
 
@@ -112,6 +113,7 @@ func is_showing() -> bool:
 extends CanvasLayer
 
 @onready var dismiss_button = $BGDimmer/DismissButton
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 signal slide_closed
 
@@ -132,6 +134,7 @@ func _ready() -> void:
 	
 	# Fade in all children in parallel
 	_fade_children(1.0, 0.3)
+	animation_player.play("main")
 	
 	if dismiss_button:
 		dismiss_button.pressed.connect(close_slide)
@@ -174,6 +177,56 @@ func _input(event: InputEvent) -> void:
 		if allow_next:
 			close_slide()
 			get_viewport().set_input_as_handled()
+
+
+================================================================================
+
+
+[============================================================]
+[Scenes\Overlays\materials_dialogue_starter.gd]
+[============================================================]
+
+extends MarginContainer
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	await MonologueSystem.play_and_wait_monologues(["2a_materials_expl1", "2a_materials_expl2", ""])
+	print("HELL YEAH")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\BaseTrigger.gd]
+[============================================================]
+
+# BaseTrigger.gd
+extends Area3D
+class_name BaseTrigger
+
+@export var target_group: String = "player"
+@export var one_shot: bool = true
+@export var enabled: bool = true
+
+var has_been_triggered: bool = false
+
+func _ready() -> void:
+	body_entered.connect(_on_body_entered)
+
+func _on_body_entered(body: Node3D) -> void:
+	if not enabled:
+		return
+	if one_shot and has_been_triggered:
+		return
+	if body.is_in_group(target_group):
+		has_been_triggered = true
+		on_trigger_enter(body)
+
+# Change this line — most triggers expect the player anyway
+func on_trigger_enter(body: CharacterBody3D) -> void:
+	pass
 
 
 ================================================================================
@@ -428,6 +481,59 @@ func update_interaction_text():
 
 func perform_interaction():
 	VisualisationDirector.show_slide("materials")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\DragPanel.gd]
+[============================================================]
+
+extends Panel
+
+@export var drag_type: String = ""
+@export var icon: Texture2D = null
+
+func _ready():
+	mouse_filter = Control.MOUSE_FILTER_STOP
+
+func _get_drag_data(at_position: Vector2):
+	# Превью перетаскивания
+	var preview = TextureRect.new()
+	preview.texture = icon
+	preview.custom_minimum_size = Vector2(64, 64)  # Задаём размер превью
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	set_drag_preview(preview)
+
+	# Сообщаем сцене, что начался драг
+	var root = get_tree().current_scene
+	if root and root.has_method("start_dragging"):
+		root.start_dragging(drag_type)
+
+	return drag_type
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\FinishArea.gd]
+[============================================================]
+
+extends Area3D
+
+func _ready():
+	# Подключаем сигнал входа
+	body_entered.connect(_on_body_entered)
+
+func _on_body_entered(body):
+	# Проверяем, что вошедший объект — игрок (по группе)
+	if body.is_in_group("player"):
+		# Находим редактор (текущую сцену) и вызываем on_win
+		var editor = get_tree().current_scene
+		if editor and editor.has_method("on_win"):
+			editor.on_win()
 
 
 ================================================================================
@@ -843,21 +949,21 @@ func load_monologues_from_json(path: String) -> void:
 	if not FileAccess.file_exists(path):
 		create_default_json(path)
 		return
-	
+
 	var file = FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("Could not open monologues JSON: ", path)
 		return
-	
+
 	var json_text = file.get_as_text()
 	file.close()
-	
+
 	var json = JSON.new()
 	var error = json.parse(json_text)
 	if error != OK:
 		push_error("JSON parse error in monologues: ", json.get_error_message())
 		return
-	
+
 	var data = json.data
 	if data is Dictionary and data.has("monologues"):
 		for key in data["monologues"]:
@@ -867,20 +973,20 @@ func create_default_json(path: String) -> void:
 	var dir = path.get_base_dir()
 	if not DirAccess.dir_exists_absolute(dir):
 		DirAccess.make_dir_recursive_absolute(dir)
-	
+
 	var default_data = {
 		"monologues": {
 			"example_1": "Это пример монолога без аудио файла.",
 			"example_2": "Второй пример с более длинным текстом для тестирования длительности субтитров."
 		}
 	}
-	
+
 	var file = FileAccess.open(path, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(default_data, "\t"))
 		file.close()
 		print("Created default monologues.json at: ", path)
-		load_monologues_from_json(path)  # Reload with defaults
+		load_monologues_from_json(path)
 	else:
 		push_error("Failed to create default monologues.json")
 
@@ -888,19 +994,19 @@ func play_monologue(key: String, force: bool = false) -> bool:
 	if not monologues.has(key):
 		push_error("Monologue not found: ", key)
 		return false
-	
+
 	if is_playing and not force:
 		if auto_advance:
 			audio_queue.append(key)
 			return true
 		else:
 			return false
-	
-	stop_monologue()  # Clear any previous
+
+	stop_monologue()
 	current_key = key
 	var text = monologues[key]
-	
-	# Try to load audio (priority: ogg > wav > mp3)
+
+	# Try to load audio
 	var audio_stream = null
 	var extensions = [".ogg", ".wav", ".mp3"]
 	for ext in extensions:
@@ -908,7 +1014,7 @@ func play_monologue(key: String, force: bool = false) -> bool:
 		if ResourceLoader.exists(full_path):
 			audio_stream = load(full_path)
 			break
-	
+
 	if audio_stream:
 		current_audio.stream = audio_stream
 		current_audio.volume_db = audio_config["volume_db"]
@@ -920,12 +1026,12 @@ func play_monologue(key: String, force: bool = false) -> bool:
 		monologue_started.emit(key)
 		return true
 	else:
-		# Text-only mode
+		# Text-only
 		if subtitles_enabled:
 			show_subtitle(text)
 		monologue_started.emit(key)
 		is_playing = true
-		
+
 		var duration = calculate_subtitle_duration(text)
 		var timer = Timer.new()
 		timer.wait_time = duration
@@ -938,8 +1044,7 @@ func play_monologue(key: String, force: bool = false) -> bool:
 func show_subtitle(text: String) -> void:
 	var full_text = subtitle_prefix + text
 	subtitle_changed.emit(full_text)
-	
-	# Auto-hide if no audio playing
+
 	if not current_audio.playing:
 		var duration = calculate_subtitle_duration(text)
 		var timer = Timer.new()
@@ -996,6 +1101,17 @@ func play_sequence(keys: Array[String]) -> void:
 		audio_queue.append(keys[i])
 	play_monologue(keys[0])
 
+# НОВАЯ УДОБНАЯ ФУНКЦИЯ — используй её для цепочек
+func play_and_wait_monologues(keys: Array[String]) -> void:
+	if keys.is_empty():
+		return
+	audio_queue.clear()
+	for i in range(1, keys.size()):
+		audio_queue.append(keys[i])
+	play_monologue(keys[0])
+	for x in range(keys.size()):
+		await monologue_finished
+
 func clear_queue() -> void:
 	audio_queue.clear()
 
@@ -1003,6 +1119,56 @@ func set_volume(volume_db: float) -> void:
 	audio_config["volume_db"] = volume_db
 	if current_audio:
 		current_audio.volume_db = volume_db
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\PunishmentManager.gd]
+[============================================================]
+
+extends Node
+
+var save_path = "user://punishment.save"
+
+var punishment_active = false
+var video_completed = false
+
+
+func _ready():
+	load_state()
+
+
+func start_punishment():
+	punishment_active = true
+	video_completed = false
+	save_state()
+
+
+func finish_video():
+	video_completed = true
+	punishment_active = false
+	save_state()
+
+
+func load_state():
+	if not FileAccess.file_exists(save_path):
+		return
+	
+	var file = FileAccess.open(save_path, FileAccess.READ)
+	while not file.eof_reached():
+		var line = file.get_line()
+		if line.begins_with("punishment_active="):
+			punishment_active = line.split("=")[1] == "true"
+		elif line.begins_with("video_completed="):
+			video_completed = line.split("=")[1] == "true"
+
+
+func save_state():
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	file.store_line("punishment_active=" + str(punishment_active))
+	file.store_line("video_completed=" + str(video_completed))
 
 
 ================================================================================
@@ -1031,12 +1197,13 @@ var default_settings := {
 		"epileptic_mode": false,
 		"slippery_world": false,
 		"gravity": "Нормальная",
-		"temperature": "26с"
+		"temperature": "26с",
+		"language": "ru"
 	}
 }
 
 var settings := {}
-var slippery_physics_material: PhysicsMaterial # Новое: материал для скользкого мира
+var slippery_physics_material: PhysicsMaterial
 var original_physics_materials: Dictionary = {}
 
 func _ready():
@@ -1044,9 +1211,9 @@ func _ready():
 	apply_all_settings()
 	
 	slippery_physics_material = PhysicsMaterial.new()
-	slippery_physics_material.friction = 0.1  # Очень низкое трение
-	slippery_physics_material.rough = true    # Включить грубость поверхности
-	slippery_physics_material.bounce = 0.05   # Минимальный отскок
+	slippery_physics_material.friction = 0.1
+	slippery_physics_material.rough = true
+	slippery_physics_material.bounce = 0.05
 
 # -------------------
 # Load / Save
@@ -1111,12 +1278,10 @@ func apply_graphics():
 		DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED
 	)
 
-
 	if typeof(fps_limit) == TYPE_STRING and fps_limit == "Нет лимита":
 		Engine.max_fps = 0
 	else:
 		Engine.max_fps = int(fps_limit)
-
 
 # -------------------
 # Sound
@@ -1153,6 +1318,7 @@ func apply_misc():
 			ProjectSettings.set_setting("physics/3d/default_gravity", randi() % 50)
 
 	print("Температура: ", settings["misc"]["temperature"])
+	# Language setting is used elsewhere – no direct effect here.
 	for p in get_tree().get_nodes_in_group("player"):
 		if p.has_method("apply_misc_settings"):
 			p.apply_misc_settings()
@@ -1191,15 +1357,21 @@ func make_slippery():
 extends CanvasLayer
 
 @onready var subtitle_panel = $Control/Panel
-@onready var subtitle_label = $Control/Panel/CenterContainer/Label
+@onready var subtitle_label = $Control/Panel/MarginContainer/Label
 
 var max_width: float = 800.0
-var min_width: float = 300.0
-var padding: Vector2 = Vector2(40, 20)
+var min_width: float = 200.0
+var padding: Vector2 = Vector2(0, 0)
 
 func _ready() -> void:
+	debug_print_scene_tree()
 	MonologueSystem.subtitle_changed.connect(_on_subtitle_changed)
 	hide_subtitle()
+	var mc = $Control/Panel/MarginContainer
+	mc.add_theme_constant_override("margin_left",   0)
+	mc.add_theme_constant_override("margin_right",  0)
+	mc.add_theme_constant_override("margin_top",    0)
+	mc.add_theme_constant_override("margin_bottom", 0)
 	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
@@ -1225,8 +1397,8 @@ func show_subtitle(text: String) -> void:
 func adjust_panel_size() -> void:
 	var label_size = subtitle_label.get_minimum_size()
 	var margins = Vector2(
-		$Control/Panel/CenterContainer.get_theme_constant("margin_left") + $Control/Panel/CenterContainer.get_theme_constant("margin_right"),
-		$Control/Panel/CenterContainer.get_theme_constant("margin_top") + $Control/Panel/CenterContainer.get_theme_constant("margin_bottom")
+		$Control/Panel/MarginContainer.get_theme_constant("margin_left") + $Control/Panel/MarginContainer.get_theme_constant("margin_right"),
+		$Control/Panel/MarginContainer.get_theme_constant("margin_top") + $Control/Panel/MarginContainer.get_theme_constant("margin_bottom")
 	)
 	var final_width = clamp(label_size.x + margins.x + padding.x * 2, min_width, max_width)
 	var final_height = label_size.y + margins.y + padding.y * 2
@@ -1246,6 +1418,33 @@ func hide_subtitle() -> void:
 	await tween.finished
 	subtitle_panel.hide()
 	subtitle_label.text = ""
+
+func debug_print_scene_tree():
+	print("\n" + "=".repeat(60))
+	print("DEBUG: SCENE TREE HIERARCHY")
+	print("=".repeat(60))
+	_debug_print_node_recursive(get_tree().current_scene, 0)
+	print("=".repeat(60) + "\n")
+
+func _debug_print_node_recursive(node: Node, current_depth: int, indent: String = ""):
+	# No max_depth check
+	var node_prefix = "├── "
+	if node.get_child_count() == 0:
+		node_prefix = "└── "
+	
+	var visible_str = ""
+	if node is CanvasItem:
+		visible_str = " [Visible: %s]" % node.visible
+		if node.has_method("get_modulate"):
+			visible_str += " [Alpha: %.2f]" % node.modulate.a
+	
+	var node_info = "%s%s%s (%s)%s" % [indent, node_prefix, node.name, node.get_class(), visible_str]
+	print(node_info)
+	for i in range(node.get_child_count()):
+		var child = node.get_child(i)
+		var is_last = (i == node.get_child_count() - 1)
+		var new_indent = indent + ("	" if is_last else "│	 ")
+		_debug_print_node_recursive(child, current_depth + 1, new_indent)
 
 
 ================================================================================
@@ -1281,7 +1480,6 @@ func hide_interaction():
 [============================================================]
 
 extends Node3D
-
 signal button_pressed
 signal button_depressed
 
@@ -1295,20 +1493,48 @@ signal button_depressed
 
 var press_count := 0
 var is_pressed := false
+var player_triggered_once := false
+var cube_triggered_once := false
+var cube_stay_timer := 0.0
+var cube_on_button := false
 
 func _ready():
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)
+
+func _process(delta):
+	if cube_on_button and not cube_triggered_once:
+		cube_stay_timer += delta
+		if cube_stay_timer >= 2.0:
+			cube_triggered_once = true
+			MonologueSystem.play_monologue("puzzle_room_well_done_1")
+			await MonologueSystem.monologue_finished
+			VisualisationDirector.show_slide("buttons")
+			await MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"])
+			$"../StaticBody3D/playa_stoppa".disabled = true
 
 func _on_body_entered(body):
 	if _is_valid_presser(body):
 		press_count += 1
 		_update_state()
 
+	if body.is_in_group("player") and not player_triggered_once:
+		player_triggered_once = true
+		MonologueSystem.play_and_wait_monologues(["button_pressed_with_player_1", "button_pressed_with_player_2"])
+		print("Player stepped on the button (one shot)")
+
+	if body.is_in_group("cube"):
+		cube_on_button = true
+		cube_stay_timer = 0.0
+
 func _on_body_exited(body):
 	if _is_valid_presser(body):
 		press_count -= 1
 		_update_state()
+
+	if body.is_in_group("cube"):
+		cube_on_button = false
+		cube_stay_timer = 0.0
 
 func _is_valid_presser(body) -> bool:
 	for group in required_groups:
@@ -1333,6 +1559,256 @@ func _release():
 	anim.play_backwards(press_animation)
 	release_sound.play()
 	emit_signal("button_depressed")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\credits.gd]
+[============================================================]
+
+extends Control
+
+@export var speed = 140
+@onready var scroll_container: ScrollContainer = $ScrollContainer
+@onready var music: AudioStreamPlayer2D = $AudioStreamPlayer2D
+
+func _ready() -> void:
+	scroll_container.scroll_vertical = 0
+	music.play()
+
+func _process(delta: float) -> void:
+	await get_tree().create_timer(3).timeout
+	scroll_container.scroll_vertical += speed * delta
+	
+	if scroll_container.scroll_vertical >= 8472:
+		await get_tree().create_timer(3).timeout
+		get_tree().quit()
+	
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\developer_main_menu.gd]
+[============================================================]
+
+extends Control
+
+const SCENES_PATH := "res://Scenes/"
+
+@onready var grid : GridContainer = $PanelContainer/MarginContainer/VBoxContainer/GridContainer
+
+func _ready():
+	#grid.clear()
+	var dir = DirAccess.open(SCENES_PATH)
+	if not dir:
+		print("Не удалось открыть папку ", SCENES_PATH)
+		return
+	
+	for file_name in dir.get_files():
+		if file_name.ends_with(".tscn"):
+			var scene_path = SCENES_PATH + file_name
+			_create_scene_button(scene_path)
+
+func _create_scene_button(scene_path: String) -> void:
+	var scene_name = scene_path.get_file().get_basename()
+	
+	var btn = Button.new()
+	btn.text = scene_name
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.pressed.connect(Callable(self, "_on_scene_button_pressed").bind(scene_path))
+	grid.add_child(btn)
+
+func _on_scene_button_pressed(scene_path: String) -> void:
+	var packed_scene := load(scene_path) as PackedScene
+	if not packed_scene:
+		print("Не удалось загрузить сцену: ", scene_path)
+		return
+	
+	var new_scene := packed_scene.instantiate()
+	get_tree().root.add_child(new_scene)
+	get_tree().current_scene.queue_free()
+	get_tree().current_scene = new_scene
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\editor\trampoline.gd]
+[============================================================]
+
+extends Node3D
+
+# Reference to the CollisionShape3D as given
+@onready var collision_shape_3d_2: CollisionShape3D = $JumpArea3D/CollisionShape3D2
+
+# The Area3D that actually detects bodies (parent of the shape)
+@onready var jump_area: Area3D = collision_shape_3d_2.get_parent()
+
+# How high the player should be launched (adjust in the inspector)
+@export var launch_strength: float = 15.0
+
+# Hardcoded path to the trampoline sound effect
+const TRAMPOLINE_SOUND_PATH = "res://Assets/Audio/cartoon-jump.wav"
+
+# Audio player reference (created at runtime)
+var audio_player: AudioStreamPlayer3D
+
+func _ready():
+	# Make sure the area can detect bodies
+	jump_area.monitoring = true
+	# Connect the signal
+	jump_area.body_entered.connect(_on_jump_area_body_entered)
+	
+	# Create and set up the audio player
+	audio_player = AudioStreamPlayer3D.new()
+	# Load the sound resource from the hardcoded path
+	var sound_stream = load(TRAMPOLINE_SOUND_PATH) as AudioStream
+	if sound_stream:
+		audio_player.stream = sound_stream
+	else:
+		push_error("Trampoline sound effect not found at: ", TRAMPOLINE_SOUND_PATH)
+	# Add it as a child so it processes in 3D space
+	add_child(audio_player)
+
+func _on_jump_area_body_entered(body: Node3D):
+	# Only affect the player
+	if not body.is_in_group("player"):
+		return
+	
+	# Launch upward depending on body type
+	if body is CharacterBody3D:
+		# For character bodies, set vertical velocity
+		body.velocity.y = launch_strength
+	elif body is RigidBody3D:
+		# For rigid bodies, apply an impulse
+		body.apply_central_impulse(Vector3.UP * launch_strength * body.mass)
+	else:
+		# Fallback: try to set linear_velocity if it exists (some custom bodies)
+		if body.has_method("set_linear_velocity"):
+			body.set_linear_velocity(Vector3.UP * launch_strength)
+	
+	# Play the trampoline sound effect
+	if audio_player and audio_player.stream:
+		audio_player.play()
+	
+	# Optional debug message
+	print("Trampoline launched ", body.name)
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\final_room.gd]
+[============================================================]
+
+extends Node3D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	await get_tree().create_timer(1).timeout
+	await MonologueSystem.play_and_wait_monologues(["final_room_intro1", "final_room_intro2"])
+	print("yada yada yada")
+	
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\final_room_button.gd]
+[============================================================]
+
+extends Interactable
+
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	LoadingScreen.start(3, "Шоутайм!")
+	await get_tree().create_timer(2.7).timeout
+	get_tree().change_scene_to_file("res://Scenes/level_editor.tscn")
+	LoadingScreen.allow_fade_out()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\finish_flag.gd]
+[============================================================]
+
+extends Node3D
+
+@onready var animation_player: AnimationPlayer = $CanvasLayer/AnimationPlayer
+
+func _ready():
+	$CanvasLayer/Control/ColorRect.modulate = Color("ffffff00")
+
+func _on_area_3d_body_entered(body: CharacterBody3D) -> void:
+	if body.is_in_group("player"):
+		MonologueSystem.play_monologue("T_good_job")
+		await MonologueSystem.monologue_finished
+		await get_tree().create_timer(1).timeout
+		animation_player.play("fade_in")
+		await animation_player.animation_finished
+		await get_tree().create_timer(2).timeout
+		get_tree().change_scene_to_file("res://Scenes/credits.tscn")
+		
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\googoogaga.gd]
+[============================================================]
+
+extends Node3D
+
+@export var speed: float = 26.0
+
+var lifetime: float = 0.0
+
+func _ready():
+	add_to_group("spawned_object")   # Add to group for counting
+
+func _physics_process(delta):
+	position.z -= speed * delta
+	lifetime += delta
+	if lifetime >= 20.0:
+		queue_free()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\googoogaga_interact.gd]
+[============================================================]
+
+extends Interactable
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	$"../DownloadMAX".play()
 
 
 ================================================================================
@@ -1634,6 +2110,743 @@ func _debug_print_node_recursive(node: Node, max_depth: int, current_depth: int,
 
 
 [============================================================]
+[Scripts\level_editor.gd]
+[============================================================]
+
+extends Node3D
+
+# Экспортируемые сцены — укажите свои пути!
+@export var wall_scene: PackedScene
+@export var ramp_scene: PackedScene
+@export var trampoline_scene: PackedScene
+@export var finish_scene: PackedScene
+@export var spawn_scene: PackedScene
+
+@onready var camera_pivot: Node3D = $CameraPivot
+@onready var camera: Camera3D = $CameraPivot/Camera3D
+@onready var grid_visual: Node3D = $GridVisual
+@onready var placed_objects: Node3D = $PlacedObjects
+@onready var grid_plane: StaticBody3D = $GridPlane
+
+# Переменные для управления камерой
+var camera_dragging: bool = false
+var mouse_sensitivity: float = 0.002
+var camera_speed: float = 10.0
+
+var grid: Array = []          # 3D-массив: для каждой ячейки список типов объектов по высоте
+var spawn_cell: Vector2i = Vector2i(-1, -1)   # ячейка спавна (только уровень 0)
+var finish_data = {           # данные финиша: ячейка и уровень
+	"cell": Vector2i(-1, -1),
+	"level": -1
+}
+var spawn_marker: Node3D
+var finish_object: Node3D
+var dragging_type: String = ""
+var preview_drag: Control = null
+
+var canvas_layer: CanvasLayer
+var palette_panel: PanelContainer
+
+var player_scene: PackedScene = preload("res://Scenes/player.tscn")
+var player_instance: CharacterBody3D
+
+# Параметры сетки
+const CELL_SIZE = 3.0
+const GRID_SIZE_X = 10
+const GRID_SIZE_Z = 15
+const MAX_HEIGHT_LEVELS = 10
+
+# Смещение сетки так, чтобы она была центрирована
+var grid_offset: Vector3
+
+func _ready():
+	add_to_group("editors")
+	calculate_grid_offset()
+	init_grid()
+	create_grid_visual()
+	create_ui()
+	update_special_visuals()
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	await get_tree().create_timer(1).timeout
+	MonologueSystem.play_and_wait_monologues([
+		"somewhat_of_a_redactor_1",
+		"somewhat_of_a_redactor_2",
+		"somewhat_of_a_redactor_3",
+		"somewhat_of_a_redactor_4",
+		"somewhat_of_a_redactor_5",
+	])
+
+func calculate_grid_offset():
+	grid_offset = Vector3(
+		-(GRID_SIZE_X - 1) * CELL_SIZE / 2.0,
+		0,
+		-(GRID_SIZE_Z - 1) * CELL_SIZE / 2.0
+	)
+
+func _input(event):
+	if player_instance != null:
+		if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed and not event.echo:
+			print("Выход из режима игры")
+			_return_to_editor()
+			return
+	if dragging_type != "":
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			var mouse_pos = get_viewport().get_mouse_position()
+			var ray_from = camera.project_ray_origin(mouse_pos)
+			var ray_to = ray_from + camera.project_ray_normal(mouse_pos) * 1000.0
+			var space_state = get_world_3d().direct_space_state
+			var query = PhysicsRayQueryParameters3D.create(ray_from, ray_to)
+			query.collision_mask = 1
+			query.collide_with_areas = false
+			query.collide_with_bodies = true
+			var result = space_state.intersect_ray(query)
+			
+			if result and result.collider == grid_plane:
+				var hit_pos = result.position
+				var cell = snap_to_grid(hit_pos)
+				place_item(cell, dragging_type)
+			else:
+				print("Размещение отменено: либо нет коллизии, либо collider не GridPlane")
+			
+			dragging_type = ""
+			if preview_drag:
+				preview_drag.queue_free()
+				preview_drag = null
+
+	if player_instance == null:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+			if event.pressed and dragging_type == "":
+				camera_dragging = true
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+			elif not event.pressed:
+				camera_dragging = false
+				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+		if event is InputEventMouseMotion and camera_dragging:
+			camera_pivot.rotate_y(-event.relative.x * mouse_sensitivity)
+			camera.rotate_x(-event.relative.y * mouse_sensitivity)
+			camera.rotation.x = clamp(camera.rotation.x, -PI/2, PI/2)
+
+	if event is InputEventKey and event.keycode == KEY_ENTER and event.pressed and not event.echo:
+		if player_instance == null:
+			start_play()
+
+func _process(delta):
+	if camera_dragging and player_instance == null:
+		var move_dir = Vector3()
+		var cam_basis = camera_pivot.global_transform.basis
+		if Input.is_key_pressed(KEY_W):
+			move_dir -= cam_basis.z
+		if Input.is_key_pressed(KEY_S):
+			move_dir += cam_basis.z
+		if Input.is_key_pressed(KEY_A):
+			move_dir -= cam_basis.x
+		if Input.is_key_pressed(KEY_D):
+			move_dir += cam_basis.x
+		if Input.is_key_pressed(KEY_Q):
+			move_dir -= Vector3.UP
+		if Input.is_key_pressed(KEY_E):
+			move_dir += Vector3.UP
+
+		if move_dir.length() > 0:
+			move_dir = move_dir.normalized() * camera_speed * delta
+			camera_pivot.global_position += move_dir
+
+func init_grid():
+	grid.resize(GRID_SIZE_Z)
+	for z in range(GRID_SIZE_Z):
+		grid[z] = []
+		grid[z].resize(GRID_SIZE_X)
+		for x in range(GRID_SIZE_X):
+			grid[z][x] = []
+
+func create_grid_visual():
+	for child in grid_visual.get_children():
+		child.queue_free()
+
+	for z in range(GRID_SIZE_Z):
+		for x in range(GRID_SIZE_X):
+			var floor_mesh = MeshInstance3D.new()
+			floor_mesh.mesh = BoxMesh.new()
+			floor_mesh.mesh.size = Vector3(CELL_SIZE, 0.15, CELL_SIZE)
+			floor_mesh.position = grid_pos(Vector2i(x, z), 0) + Vector3(0, -0.075, 0)
+			var mat = StandardMaterial3D.new()
+			mat.albedo_color = Color(0.5, 0.5, 0.5, 0.3)
+			floor_mesh.material_override = mat
+			grid_visual.add_child(floor_mesh)
+
+	var line_mat = StandardMaterial3D.new()
+	line_mat.albedo_color = Color.WHITE
+	line_mat.vertex_color_use_as_albedo = true
+
+	for i in range(GRID_SIZE_X + 1):
+		var x_pos = grid_offset.x + i * CELL_SIZE
+		var line = MeshInstance3D.new()
+		line.mesh = create_line_mesh(Vector3(x_pos, 0.02, grid_offset.z), Vector3(x_pos, 0.02, grid_offset.z + GRID_SIZE_Z * CELL_SIZE))
+		line.material_override = line_mat
+		grid_visual.add_child(line)
+
+	for i in range(GRID_SIZE_Z + 1):
+		var z_pos = grid_offset.z + i * CELL_SIZE
+		var line = MeshInstance3D.new()
+		line.mesh = create_line_mesh(Vector3(grid_offset.x, 0.02, z_pos), Vector3(grid_offset.x + GRID_SIZE_X * CELL_SIZE, 0.02, z_pos))
+		line.material_override = line_mat
+		grid_visual.add_child(line)
+
+func create_line_mesh(from: Vector3, to: Vector3) -> Mesh:
+	var mesh = ImmediateMesh.new()
+	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
+	mesh.surface_add_vertex(from)
+	mesh.surface_add_vertex(to)
+	mesh.surface_end()
+	return mesh
+
+func grid_pos(cell: Vector2i, level: int) -> Vector3:
+	return Vector3(
+		grid_offset.x + cell.x * CELL_SIZE + CELL_SIZE/2,
+		level * CELL_SIZE,
+		grid_offset.z + cell.y * CELL_SIZE + CELL_SIZE/2
+	)
+
+func snap_to_grid(pos: Vector3) -> Vector2i:
+	var local = pos - grid_offset
+	var x = int(floor(local.x / CELL_SIZE))
+	var z = int(floor(local.z / CELL_SIZE))
+	x = clamp(x, 0, GRID_SIZE_X - 1)
+	z = clamp(z, 0, GRID_SIZE_Z - 1)
+	return Vector2i(x, z)
+
+func get_cell_center(cell: Vector2i) -> Vector3:
+	return grid_pos(cell, 0)
+
+# Проверка, занята ли ячейка спавном (только уровень 0)
+func is_cell_occupied_by_spawn(cell: Vector2i) -> bool:
+	return cell == spawn_cell
+
+# Проверка, занят ли конкретный уровень в ячейке финишем
+func is_level_occupied_by_finish(cell: Vector2i, level: int) -> bool:
+	return finish_data.cell == cell and finish_data.level == level
+
+func place_item(cell: Vector2i, item_type: String):
+	print("place_item: ", item_type, " в ячейке ", cell)
+	
+	# Ластик
+	if item_type == "erase":
+		# Проверяем, не спавн ли это на уровне 0
+		if cell == spawn_cell:
+			if spawn_marker:
+				spawn_marker.queue_free()
+				spawn_marker = null
+			spawn_cell = Vector2i(-1, -1)
+			print("Спавн удалён")
+			return
+		
+		# Проверяем, не финиш ли это на каком-либо уровне
+		# Для этого надо знать уровень, на котором стоит финиш. Но при стирании мы не знаем уровень, просто ячейку.
+		# Решение: удаляем финиш, если он есть в этой ячейке (независимо от уровня), потому что финиш может быть только один.
+		if finish_data.cell == cell:
+			if finish_object:
+				finish_object.queue_free()
+				finish_object = null
+			finish_data.cell = Vector2i(-1, -1)
+			finish_data.level = -1
+			print("Финиш удалён")
+			return
+		
+		# Иначе удаляем верхний обычный объект в ячейке
+		if grid[cell.y][cell.x].size() > 0:
+			remove_top_object(cell)
+		else:
+			print("Нечего стирать в ячейке ", cell)
+		return
+
+	# Установка спавна (только уровень 0)
+	if item_type == "spawn":
+		# Проверяем, не занята ли ячейка блоками на уровне 0 (в grid на уровне 0 есть объект?)
+		if grid[cell.y][cell.x].size() > 0 and grid[cell.y][cell.x][0] != "":
+			print("Нельзя поставить спавн: ячейка занята блоком на уровне 0")
+			return
+		# Проверяем, не занята ли ячейка другим спецобъектом на уровне 0
+		if is_cell_occupied_by_spawn(cell) or (finish_data.cell == cell and finish_data.level == 0):
+			print("Нельзя поставить спавн: ячейка уже занята спавном или финишем на уровне 0")
+			return
+		
+		# Удаляем старый спавн
+		if spawn_cell != Vector2i(-1, -1):
+			if spawn_marker:
+				spawn_marker.queue_free()
+				spawn_marker = null
+		
+		spawn_cell = cell
+		update_special_visuals()
+		print("Спавн установлен на ", cell, " уровень 0")
+		return
+
+	# Установка финиша (можно на любой уровень)
+	if item_type == "finish":
+		# Определяем уровень, на который поставим финиш:
+		# Если в ячейке уже есть блоки, ставим на следующий свободный уровень (текущая высота)
+		# Если ячейка пуста, ставим на уровень 0.
+		var current_height = grid[cell.y][cell.x].size()
+		var target_level = current_height  # следующий свободный уровень
+		
+		# Проверяем, не занят ли целевой уровень финишем (если финиш уже есть в этой ячейке на другом уровне, можно переместить)
+		# Но финиш может быть только один, поэтому если в этой ячейке уже есть финиш на другом уровне, мы его переместим.
+		# Если финиш уже есть в другой ячейке, мы его удалим оттуда и поставим сюда.
+		
+		# Удаляем старый финиш, если он есть
+		if finish_data.cell != Vector2i(-1, -1):
+			if finish_object:
+				finish_object.queue_free()
+				finish_object = null
+		
+		finish_data.cell = cell
+		finish_data.level = target_level
+		update_special_visuals()
+		print("Финиш установлен на ", cell, " уровень ", target_level)
+		return
+
+	# Для обычных объектов (стена, рампа, батут)
+	# Проверяем, не занят ли уровень 0 спавном (если ставим на уровень 0)
+	var target_level = grid[cell.y][cell.x].size()  # следующий свободный уровень
+	if target_level == 0 and is_cell_occupied_by_spawn(cell):
+		print("Нельзя разместить объект на уровне 0: ячейка занята спавном")
+		return
+	# Проверяем, не занят ли целевой уровень финишем
+	if is_level_occupied_by_finish(cell, target_level):
+		print("Нельзя разместить объект на уровне ", target_level, ": ячейка занята финишем")
+		return
+	
+	if target_level >= MAX_HEIGHT_LEVELS:
+		print("Нельзя разместить больше объектов в ячейке ", cell, ", лимит высоты")
+		return
+
+	var obj = create_object(item_type)
+	if obj:
+		obj.position = grid_pos(cell, target_level)
+		placed_objects.add_child(obj)
+		grid[cell.y][cell.x].append(item_type)
+		print("Размещён объект ", item_type, " на уровне ", target_level)
+	else:
+		print("Ошибка: не удалось создать объект типа ", item_type)
+
+func remove_top_object(cell: Vector2i):
+	var list = grid[cell.y][cell.x]
+	if list.size() == 0:
+		return
+	var old_size = list.size()
+	list.pop_back()
+	var pos_to_remove = grid_pos(cell, old_size - 1)
+	for child in placed_objects.get_children():
+		if child.position.is_equal_approx(pos_to_remove):
+			child.queue_free()
+			break
+
+func create_object(item_type: String) -> Node3D:
+	var obj: Node3D
+	match item_type:
+		"wall":
+			obj = wall_scene.instantiate() if wall_scene else null
+		"ramp":
+			obj = ramp_scene.instantiate() if ramp_scene else null
+		"trampoline":
+			obj = trampoline_scene.instantiate() if trampoline_scene else null
+		_:
+			return null
+
+	if obj:
+		_set_object_physics_enabled(obj, false)
+	return obj
+
+func update_special_visuals():
+	# Спавн маркер (всегда на уровне 0)
+	if spawn_marker:
+		spawn_marker.queue_free()
+		spawn_marker = null
+	if spawn_scene and spawn_cell != Vector2i(-1, -1):
+		spawn_marker = spawn_scene.instantiate()
+		spawn_marker.position = grid_pos(spawn_cell, 0)
+		placed_objects.add_child(spawn_marker)
+
+	# Финиш
+	if finish_object:
+		finish_object.queue_free()
+		finish_object = null
+	if finish_scene and finish_data.cell != Vector2i(-1, -1):
+		finish_object = finish_scene.instantiate()
+		finish_object.position = grid_pos(finish_data.cell, finish_data.level)
+		placed_objects.add_child(finish_object)
+		if finish_object.has_method("set_editor"):
+			finish_object.set_editor(self)
+
+func create_ui():
+	canvas_layer = CanvasLayer.new()
+	add_child(canvas_layer)
+
+	palette_panel = PanelContainer.new()
+	palette_panel.anchor_left = 0.8
+	palette_panel.anchor_right = 1.0
+	palette_panel.anchor_top = 0.0
+	palette_panel.anchor_bottom = 1.0
+
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	palette_panel.add_child(scroll)
+
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	vbox.add_theme_constant_override("separation", 12)
+	scroll.add_child(vbox)
+
+	canvas_layer.add_child(palette_panel)
+
+	vbox.add_child(create_drag_panel("res://Assets/EditorIcons/wall_icon.png", "wall"))
+	vbox.add_child(create_drag_panel("res://Assets/EditorIcons/ramp_icon.png", "ramp"))
+	vbox.add_child(create_drag_panel("res://Assets/EditorIcons/trampoline_icon.png", "trampoline"))
+	vbox.add_child(create_drag_panel("res://Assets/EditorIcons/erase_icon.png", "erase"))
+	vbox.add_child(create_drag_panel("res://Assets/EditorIcons/spawn_icon.png", "spawn"))
+	vbox.add_child(create_drag_panel("res://Assets/EditorIcons/finish_icon.png", "finish"))
+
+	var play_btn = Button.new()
+	play_btn.text = "▶ Play!"
+	play_btn.custom_minimum_size = Vector2(0, 60)
+	play_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	play_btn.pressed.connect(Callable(self, "start_play"))
+	vbox.add_child(play_btn)
+
+	var clear_btn = Button.new()
+	clear_btn.text = "Очистить всё"
+	clear_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	clear_btn.pressed.connect(Callable(self, "clear_all"))
+	vbox.add_child(clear_btn)
+
+	var export_btn = Button.new()
+	export_btn.text = "Экспорт"
+	export_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	export_btn.pressed.connect(Callable(self, "_on_export_pressed"))
+	vbox.add_child(export_btn)
+
+	var import_btn = Button.new()
+	import_btn.text = "Импорт"
+	import_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	import_btn.pressed.connect(Callable(self, "_on_import_pressed"))
+	vbox.add_child(import_btn)
+
+	var title = Label.new()
+	title.text = "Элементы уровня"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 18)
+	vbox.add_child(title)
+
+func create_drag_panel(icon_path: String, d_type: String) -> Panel:
+	var panel = Panel.new()
+	panel.custom_minimum_size = Vector2(80, 80)
+
+	var tex = load(icon_path)
+	var tex_rect = TextureRect.new()
+	tex_rect.texture = tex
+	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tex_rect.anchor_right = 1.0
+	tex_rect.anchor_bottom = 1.0
+	panel.add_child(tex_rect)
+
+	var s = load("res://Scripts/DragPanel.gd")
+	panel.set_script(s)
+	panel.drag_type = d_type
+	panel.icon = tex
+
+	return panel
+
+func start_dragging(d_type: String):
+	dragging_type = d_type
+
+func start_play():
+	_start_playing()
+
+func _start_playing():
+	# Проверка наличия спавна
+	if spawn_cell == Vector2i(-1, -1):
+		print("Предупреждение: точка спавна не установлена, игрок появится в (0,0)")
+		var start_pos = Vector3(0, CELL_SIZE, 0)
+	else:
+		var start_pos = grid_pos(spawn_cell, 0) + Vector3(0, CELL_SIZE, 0)
+	
+	if finish_data.cell == Vector2i(-1, -1):
+		print("Предупреждение: финиш не установлен, уровень невозможно завершить")
+
+	set_process(false)
+	set_process_input(false)
+
+	if canvas_layer:
+		canvas_layer.visible = false
+
+	camera.current = false
+
+	for obj in placed_objects.get_children():
+		_set_object_physics_enabled(obj, true)
+
+	player_instance = player_scene.instantiate()
+	if spawn_cell == Vector2i(-1, -1):
+		player_instance.position = Vector3(0, CELL_SIZE, 0)
+	else:
+		player_instance.position = grid_pos(spawn_cell, 0) + Vector3(0, CELL_SIZE, 0)
+	add_child(player_instance)
+	player_instance.add_to_group("player")
+
+	var player_cam = player_instance.find_child("Camera3D", true, false)
+	if player_cam:
+		player_cam.current = true
+
+func _set_object_physics_enabled(obj: Node3D, enabled: bool):
+	if obj is StaticBody3D or obj is Area3D:
+		obj.collision_layer = 1 if enabled else 0
+		obj.collision_mask = 1 if enabled else 0
+	for child in obj.get_children():
+		if child is Node3D:
+			_set_object_physics_enabled(child, enabled)
+
+func on_win():
+	print("Уровень пройден!")
+	camera.current = true
+	set_process(true)
+	set_process_input(true)
+
+	if player_instance:
+		player_instance.queue_free()
+		player_instance = null
+
+	for obj in placed_objects.get_children():
+		_set_object_physics_enabled(obj, false)
+
+	if canvas_layer:
+		canvas_layer.visible = true
+
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	camera_dragging = false
+
+func clear_all():
+	init_grid()
+	for child in placed_objects.get_children():
+		child.queue_free()
+	spawn_cell = Vector2i(-1, -1)
+	finish_data.cell = Vector2i(-1, -1)
+	finish_data.level = -1
+	print("Уровень полностью очищен")
+
+# ========== ЭКСПОРТ ==========
+func _on_export_pressed():
+	var filters = PackedStringArray(["*.json ; JSON files"])
+	DisplayServer.file_dialog_show(
+		"Сохранить уровень",
+		"",
+		"level.json",
+		false,
+		DisplayServer.FILE_DIALOG_MODE_SAVE_FILE,
+		filters,
+		Callable(self, "_on_export_file_selected")
+	)
+
+func _on_export_file_selected(status: bool, selected_paths: PackedStringArray, _selected_filter: int = 0):
+	if status and selected_paths.size() > 0:
+		save_level_to_file(selected_paths[0])
+
+
+func save_level_to_file(path: String):
+	# Формируем данные для сохранения
+	var data = {
+		"spawn_cell": [spawn_cell.x, spawn_cell.y] if spawn_cell != Vector2i(-1, -1) else null,
+		"finish_data": {
+			"cell": [finish_data.cell.x, finish_data.cell.y] if finish_data.cell != Vector2i(-1, -1) else null,
+			"level": finish_data.level
+		},
+		"grid": []
+	}
+	
+	# Преобразуем трёхмерный массив grid в формат JSON
+	for z in range(GRID_SIZE_Z):
+		var row = []
+		for x in range(GRID_SIZE_X):
+			row.append(grid[z][x].duplicate())	# копируем список типов объектов в ячейке
+		data.grid.append(row)
+	
+	# Запись в файл
+	var json_string = JSON.stringify(data, "\t")	# с отступами для читаемости
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if file:
+		file.store_string(json_string)
+		print("Уровень сохранён в ", path)
+	else:
+		print("Ошибка сохранения файла")
+
+# ========== ИМПОРТ ==========
+func _on_import_pressed():
+	var filters = PackedStringArray(["*.json ; JSON files"])
+	DisplayServer.file_dialog_show(
+		"Загрузить уровень",
+		"",
+		"",
+		false,
+		DisplayServer.FILE_DIALOG_MODE_OPEN_FILE,
+		filters,
+		Callable(self, "_on_import_file_selected")
+	)
+
+func _on_import_file_selected(status: bool, selected_paths: PackedStringArray, _selected_filter: int = 0):
+	if status and selected_paths.size() > 0:
+		load_level_from_file(selected_paths[0])
+
+func load_level_from_file(path: String):
+	# Чтение файла
+	var file = FileAccess.open(path, FileAccess.READ)
+	if not file:
+		print("Ошибка открытия файла")
+		return
+	
+	var json_string = file.get_as_text()
+	var json = JSON.new()
+	var error = json.parse(json_string)
+	if error != OK:
+		print("Ошибка парсинга JSON: ", json.get_error_message())
+		return
+	
+	var data = json.data
+	if not (data is Dictionary):
+		print("Неверный формат данных: ожидается словарь")
+		return
+	
+	if not data.has("grid"):
+		print("В файле отсутствует поле grid")
+		return
+	
+	# Очищаем текущий уровень
+	clear_all()
+	
+	# Восстанавливаем spawn_cell
+	if data.has("spawn_cell") and data.spawn_cell != null:
+		var sc = data.spawn_cell
+		if sc is Array and sc.size() == 2:
+			spawn_cell = Vector2i(sc[0], sc[1])
+		else:
+			spawn_cell = Vector2i(-1, -1)
+	else:
+		spawn_cell = Vector2i(-1, -1)
+	
+	# Восстанавливаем finish_data
+	if data.has("finish_data") and data.finish_data != null:
+		var fd = data.finish_data
+		if fd is Dictionary:
+			if fd.has("cell") and fd.cell != null and fd.cell is Array and fd.cell.size() == 2:
+				finish_data.cell = Vector2i(fd.cell[0], fd.cell[1])
+			else:
+				finish_data.cell = Vector2i(-1, -1)
+			finish_data.level = fd.get("level", -1) if fd.has("level") else -1
+		else:
+			finish_data.cell = Vector2i(-1, -1)
+			finish_data.level = -1
+	else:
+		finish_data.cell = Vector2i(-1, -1)
+		finish_data.level = -1
+	
+	# Проверка размерности сетки
+	if not (data.grid is Array and data.grid.size() == GRID_SIZE_Z):
+		print("Ошибка: несоответствие размеров сетки (ожидалось ", GRID_SIZE_Z, " рядов)")
+		clear_all()
+		return
+	
+	# Восстанавливаем обычные объекты из grid
+	for z in range(GRID_SIZE_Z):
+		var row_data = data.grid[z]
+		if not (row_data is Array and row_data.size() == GRID_SIZE_X):
+			print("Ошибка: несоответствие размеров сетки по X в ряду ", z)
+			clear_all()
+			return
+		
+		for x in range(GRID_SIZE_X):
+			var cell_data = row_data[x]
+			if cell_data is Array:
+				for level in range(cell_data.size()):
+					var item_type = cell_data[level]
+					if item_type is String:
+						var obj = create_object(item_type)
+						if obj:
+							obj.position = grid_pos(Vector2i(x, z), level)
+							placed_objects.add_child(obj)
+							grid[z][x].append(item_type)
+						else:
+							print("Неизвестный тип объекта: ", item_type, " в [", z, ",", x, "] ур. ", level)
+	
+	# Обновляем визуальные маркеры спавна и финиша
+	update_special_visuals()
+	print("Уровень загружен из ", path)
+
+func _return_to_editor():
+	camera.current = true
+	set_process(true)
+	set_process_input(true)
+
+	if player_instance:
+		player_instance.queue_free()
+		player_instance = null
+
+	for obj in placed_objects.get_children():
+		_set_object_physics_enabled(obj, false)
+
+	if canvas_layer:
+		canvas_layer.visible = true
+
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	camera_dragging = false
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\main.gd]
+[============================================================]
+
+extends Node3D
+
+# The scene to spawn (assign in the inspector)
+@export var scene_to_spawn: PackedScene
+# Spawn interval in seconds
+@export var spawn_interval: float = 2.0
+# Coordinates where the scene will be spawned (local to this node)
+@export var spawn_position: Vector3 = Vector3(-17, 0, 165)
+
+@onready var timer: Timer = $Timer
+
+func _ready():
+	timer.wait_time = spawn_interval
+	timer.timeout.connect(_on_timer_timeout)
+	timer.start()
+	await get_tree().create_timer(1).timeout
+	MonologueSystem.play_and_wait_monologues([
+		"debug_room_1",
+		"debug_room_2",
+		"debug_room_3",
+		"debug_room_4",
+		"debug_room_5",
+		"try_to_kill_yourself",
+		"you_cant_die_in_this_game"
+	])
+
+func _on_timer_timeout():
+	# Check if there is already an instance of the spawned object in the scene
+	var instances = get_tree().get_nodes_in_group("spawned_object")
+	if instances.is_empty():   # Only spawn if none exist
+		if scene_to_spawn:
+			var instance = scene_to_spawn.instantiate()
+			add_child(instance)
+			instance.position = spawn_position
+	# If an instance exists, do nothing (skip spawning)
+
+
+================================================================================
+
+
+[============================================================]
 [Scripts\main_menu.gd]
 [============================================================]
 
@@ -1642,20 +2855,19 @@ extends Node2D
 @onready var canvas_layer: CanvasLayer = $CanvasLayer
 
 func _ready() -> void:
-	pass
+	if PunishmentManager.punishment_active and not PunishmentManager.video_completed:
+		get_tree().change_scene_to_file("res://Scenes/punishment_room.tscn")
 
 func _on_start_button_pressed() -> void:
 	canvas_layer.visible = false
 	LoadingScreen.start(
-		4.0,
+		6.0,
 		"Совет: Чтобы идти вперёд, идите вперёд."
 	)
 	
-	await get_tree().create_timer(5.2).timeout
-	
-	LoadingScreen.allow_fade_out()
+	await get_tree().create_timer(5.3).timeout
 	get_tree().change_scene_to_file("res://Scenes/start_room.tscn")
-
+	LoadingScreen.allow_fade_out()
 
 func _on_options_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://Scenes/settings_scene.tscn")
@@ -1677,174 +2889,421 @@ func fade_out_canvas_layer() -> void:
 
 
 [============================================================]
+[Scripts\painting.gd]
+[============================================================]
+
+extends Interactable
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	MonologueSystem.play_and_wait_monologues(["painting_1", "painting_2", "painting_3", "painting_4"])
+
+
+================================================================================
+
+
+[============================================================]
 [Scripts\player.gd]
 [============================================================]
 
 extends CharacterBody3D
 
+# ===== ЭКСПОРТИРУЕМЫЕ ПАРАМЕТРЫ =====
+
+# Движение
 @export var walk_speed := 4.0
 @export var sprint_speed := 7.0
 @export var jump_force := 5.0
-@export var mouse_sensitivity_horizontal := 0.1
-@export var mouse_sensitivity_vertical := 4.5  # Simplified sensitivity
 @export var gravity := 9.8
 
-@onready var camera := $Camera3D
+# Камера и ввод
+@export var mouse_sensitivity_horizontal := 0.1
+@export var mouse_sensitivity_vertical := 4.5
+@export var camera_distance := 0.5
+@export var camera_collision_layer := 2
+@export var camera_min_distance := 0.1
 
-@onready var interaction_ui: Control = $InteractionUI
-@onready var subtitles: CanvasLayer = $Subtitles
-@onready var crosshair: Label = $Crosshair/Control/Label
-@onready var respawn_anim: AnimatedSprite2D = $AnimatedSprite2D
+# Взаимодействие с физикой
+@export var push_force: float = 150.0
+@export var push_layers: int = 1 << 5      # Слой 6
+@export var max_push_distance: float = 1.5
+@export var player_mass: float = 60.0
 
-
-@export var push_force: float = 150.0           # Tune: higher = stronger push (try 100-300)
-@export var push_layers: int = 1 << 5           # Layer 6 (bitshift: 1<<5 = 32 = layer 6)
-@export var max_push_distance: float = 1.5      # How far player can push (raycast limit)
-@export var player_mass: float = 60.0           # "Player weight" for heavy box resistance
-	
-	
+# Сохранение и респаун
 @export var save_interval := 10.0
 @export var fall_limit_y := -50.0
 @export var respawn_sound: AudioStream
 
+# Управление с геймпада
+@export var gamepad_deadzone := 0.15
+@export var gamepad_sensitivity_horizontal := 2.0
+@export var gamepad_sensitivity_vertical := 1.5
+@export var touchpad_sensitivity := 3.0
+
+# ===== ССЫЛКИ НА УЗЛЫ =====
+
+@onready var camera := $SpringArm3D/Camera3D
+@onready var spring_arm: SpringArm3D = $SpringArm3D
+@onready var interaction_ui: Control = $InteractionUI
+@onready var subtitles: CanvasLayer = $Subtitles
+@onready var crosshair: Label = $Crosshair/Control/Label
+@onready var respawn_anim: AnimatedSprite2D = $AnimatedSprite2D
+@onready var sfx_player := AudioStreamPlayer3D.new()
+
+# Меню паузы (дочерние узлы Crosshair)
+@onready var pause_menu: Control = $Crosshair/Pause
+@onready var resume_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/ResumeButton
+@onready var main_menu_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/MainMenuButton
+@onready var fun_button: Button = $Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/FunButton
+
+# Шаги
+@export var footstep_sound_path: String = "res://Assets/Audio/footsteps.wav"
+@export var footstep_volume_db: float = 0.0
+@export var footstep_max_distance: float = 9999.9
+
+# ===== ВНУТРЕННИЕ ПЕРЕМЕННЫЕ СОСТОЯНИЯ =====
+
+# Камера
+var current_camera_distance := camera_distance
+var camera_base_rotation := Vector3.ZERO
+var camera_shake_strength := 0.0
+var pitch := 0.0
+
+# Управление возможностями
+var can_move := true
+var can_jump := true
+var can_sprint := true
+var can_look := true
+var controls_locked := false
+
+# Система ввода
+var using_gamepad := false
+var last_input_type := "keyboard"
+var input_delay := 0.0
+var input_queue := []
+
+# Система бездействия (монологи)
+var idle_timer: float = 0.0
+var current_idle_stage: int = 0
+var is_playing_monologue := false
+var idle_stages = [
+	{ "time": 900.0,  "monologue": "idle_1" },
+	{ "time": 1200.0, "monologue": ["what_if_u_died_1", "what_if_u_died_2", "what_if_u_died_3", "what_if_u_died_4"] },
+	{ "time": 1500.0, "monologue": "idle_3" }
+]
+
+# Сохранение чекпоинта
 var save_timer := 0.0
 var saved_position: Vector3
 var saved_rotation: Vector3
 var has_saved := false
 
-@onready var sfx_player := AudioStreamPlayer3D.new()
-
-# Для настроек
+# Настройки (из Settings)
 var epileptic_mode_enabled := false
 var slippery_world_enabled := false
 var temperature_mode := "20с"
 
-var input_delay := 0.0
-var input_queue := []
+# Состояние паузы
+var is_paused := false
 
-var camera_shake_strength := 0.0
-var camera_base_rotation := Vector3.ZERO
+# Пасхалка с счётчиком прыжков
+var jump_count_standing := 0
+var gravity_test_triggered := false
 
+# Шаги
+var footstep_player: AudioStreamPlayer3D
+var was_moving_on_ground: bool = false
+var is_sprinting: bool = false
 
-# Флаги возможностей
-var can_move := true
-var can_jump := true
-var can_sprint := true
-var can_look := true
-
-var controls_locked := false
-
-var pitch := 0.0
+# ===== МЕТОДЫ ЖИЗНЕННОГО ЦИКЛА =====
 
 func _ready():
+	# Инициализация
 	add_to_group("player")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	
 	respawn_anim.visible = false
 	camera_base_rotation = camera.rotation
-
 	
 	sfx_player.stream = respawn_sound
 	add_child(sfx_player)
 
-	# Initial checkpoint save on game start
+	# Начальный чекпоинт
 	saved_position = global_position
 	saved_rotation = rotation
 	has_saved = true
 	apply_misc_settings()
-	print("Checkpoint saved on game start at: ", saved_position)
+	print("Чекпоинт сохранён при старте: ", saved_position)
+	
+	# Настройка меню паузы
+	pause_menu.visible = false
+	pause_menu.process_mode = PROCESS_MODE_ALWAYS  # Чтобы работало при заморозке дерева
+	resume_button.pressed.connect(_on_resume_button_pressed)
+	main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+	fun_button.pressed.connect(_on_fun_button_pressed)
+	pause_menu.gui_input.connect(_on_pause_menu_gui_input)
 
+	# --- NEW: Footstep audio player setup ---
+	footstep_player = AudioStreamPlayer3D.new()
+	footstep_player.finished.connect(_on_footstep_finished)
+	var footstep_stream = load(footstep_sound_path) as AudioStream
+	if footstep_stream:
+		footstep_player.stream = footstep_stream
+		footstep_player.volume_db = footstep_volume_db
+		footstep_player.max_distance = footstep_max_distance
+		footstep_player.bus = "SFX"  # Change to your sound bus if needed
+	else:
+		push_error("Footstep sound not found at: ", footstep_sound_path)
+	add_child(footstep_player)
 
+func _input(event):
+	# Обработка нажатия Escape для возврата в редактор или открытия меню паузы
+	if event.is_action_pressed("ui_cancel"):
+		var editor = get_tree().get_first_node_in_group("editors")
+		if editor:
+			editor._return_to_editor()
+		else:
+			toggle_pause()
 
 func _unhandled_input(event):
+	# Сбрасываем таймер бездействия при любом вводе
+	idle_timer = 0.0
+	current_idle_stage = 0
 	
+	# Определяем тип последнего ввода
+	if (event is InputEventKey or event is InputEventMouse or 
+		event is InputEventMouseMotion):
+		last_input_type = "keyboard"
+		using_gamepad = false
+	elif (event is InputEventJoypadButton or 
+		  event is InputEventJoypadMotion):
+		last_input_type = "gamepad"
+		using_gamepad = true
+
+	# Режим «эпилепсия» — добавляем события в очередь с задержкой
 	if epileptic_mode_enabled:
 		input_queue.append({ "event": event, "time": Time.get_ticks_msec() + randi_range(500, 700) })
 
 	if controls_locked or not can_look:
 		return
-	if not can_look:
-		return
 
-	if event is InputEventMouseMotion:
-		# Rotate player horizontally (yaw)
+	# Обработка мыши (только если не используется геймпад)
+	if event is InputEventMouseMotion and (not using_gamepad or last_input_type == "keyboard"):
 		rotate_y(-event.relative.x * mouse_sensitivity_horizontal * 0.01)
-		
-		# Rotate camera vertically (pitch)
 		pitch -= event.relative.y * mouse_sensitivity_vertical * 0.01
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
+	
+	# Обработка сенсорной панели DualShock
+	elif event is InputEventScreenDrag and event.index == 0:
+		rotate_y(-event.relative.x * touchpad_sensitivity * 0.01)
+		pitch -= event.relative.y * touchpad_sensitivity * 0.01
 		pitch = clamp(pitch, -85.0, 85.0)
 		camera.rotation.x = deg_to_rad(pitch)
 
 func _physics_process(delta):
+	# Обработка ввода с геймпада (правый стик)
+	_process_gamepad_input(delta)
+	
+	# Обновление коллизии камеры
+	_update_camera_collision()
+	
+	# Очередь ввода для эпилептического режима
 	if epileptic_mode_enabled:
 		_process_input_queue()
+	
 	# Гравитация
 	if not is_on_floor():
 		var grav = ProjectSettings.get_setting("physics/3d/default_gravity")
 		velocity.y -= grav * delta
 
-
+	# Управление движением
 	if controls_locked or not can_move:
 		velocity.x = 0
 		velocity.z = 0
 	else:
 		handle_movement(delta)
+	
+	# Взаимодействие с физическими телами (толкание)
 	_push_rigidbodies(delta)
+	
 	move_and_slide()
+	
+	var is_moving_on_ground = is_on_floor() and Vector2(velocity.x, velocity.z).length_squared() > 0.01
+
+	if is_moving_on_ground:
+		# Set pitch based on sprint state (1.7x when sprinting)
+		footstep_player.pitch_scale = 1.5 if is_sprinting else 1.0
+		if not footstep_player.playing:
+			footstep_player.play()
+	else:
+		if footstep_player.playing:
+			footstep_player.stop()
+
+	was_moving_on_ground = is_moving_on_ground
+	# --- END of footstep logic ---
+
+	# Таймер бездействия (только если стоим на месте)
+	if is_on_floor() and velocity.length_squared() < 0.01:
+		idle_timer += delta
+	else:
+		idle_timer = 0.0
+		current_idle_stage = 0
+
+	# Запуск монолога бездействия, если не играется другой
+	if not is_playing_monologue:
+		if current_idle_stage < idle_stages.size() and idle_timer >= idle_stages[current_idle_stage]["time"]:
+			start_idle_monologue(idle_stages[current_idle_stage]["monologue"])
+	
+	# Автосохранение чекпоинта (только если не падаем)
 	save_timer += delta
 	if save_timer >= save_interval:
 		save_timer = 0.0
-		
 		if velocity.y >= 0.0:
 			saved_position = global_position
 			saved_rotation = rotation
 			has_saved = true
-			print("Checkpoint updated at: ", saved_position, " | velocity.y = ", velocity.y)
+			print("Чекпоинт обновлён: ", saved_position, " | velocity.y = ", velocity.y)
 		else:
-			print("Checkpoint skipped - falling | velocity.y = ", velocity.y)
+			print("Чекпоинт пропущен (падение): velocity.y = ", velocity.y)
 
+	# Эффект дрожания камеры
 	_apply_camera_shake(delta)
-	# Teleport if fallen too low
+	
+	# Телепортация при падении ниже лимита
 	if has_saved and global_position.y <= fall_limit_y:
 		_teleport_to_saved()
 
+# ===== ОБРАБОТКА ВВОДА =====
+
+func _on_joy_connection_changed(device_id: int, connected: bool):
+	# Обновляем флаг наличия геймпада
+	if connected:
+		print("Геймпад подключён: ", Input.get_joy_name(device_id))
+		using_gamepad = true
+	else:
+		print("Геймпад отключён")
+		var joypads = Input.get_connected_joypads()
+		using_gamepad = joypads.size() > 0
+
+func _process_gamepad_input(delta):
+	# Вращение камеры правым стиком геймпада
+	if not using_gamepad or controls_locked or not can_look:
+		return
+	
+	var right_stick_x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
+	var right_stick_y = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+	
+	# Мёртвая зона
+	if abs(right_stick_x) < gamepad_deadzone:
+		right_stick_x = 0
+	if abs(right_stick_y) < gamepad_deadzone:
+		right_stick_y = 0
+	
+	if right_stick_x != 0:
+		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)
+	
+	if right_stick_y != 0:
+		pitch += right_stick_y * gamepad_sensitivity_vertical * delta
+		pitch = clamp(pitch, -85.0, 85.0)
+		camera.rotation.x = deg_to_rad(pitch)
+
+# ===== ДВИЖЕНИЕ И ФИЗИКА =====
+
 func handle_movement(delta):
-	# Get input based on camera direction
+	# Направления камеры
 	var camera_forward = camera.global_transform.basis.z
 	var camera_right = camera.global_transform.basis.x
 	
 	var input_dir := Vector2.ZERO
-	input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
-	input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
 	
-	# Calculate direction relative to camera
+	# Получение ввода в зависимости от типа управления
+	if using_gamepad:
+		# Левый стик
+		var left_stick_x = Input.get_joy_axis(0, JOY_AXIS_LEFT_X)
+		var left_stick_y = Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+		
+		if abs(left_stick_x) < gamepad_deadzone:
+			left_stick_x = 0
+		if abs(left_stick_y) < gamepad_deadzone:
+			left_stick_y = 0
+		
+		input_dir.x = left_stick_x
+		input_dir.y = -left_stick_y  # Инверсия для соответствия WASD
+		
+		# D-pad (крестовина)
+		if Input.is_action_pressed("gamepad_dpad_right"):
+			input_dir.x = 1.0
+		elif Input.is_action_pressed("gamepad_dpad_left"):
+			input_dir.x = -1.0
+		
+		if Input.is_action_pressed("gamepad_dpad_up"):
+			input_dir.y = 1.0
+		elif Input.is_action_pressed("gamepad_dpad_down"):
+			input_dir.y = -1.0
+	else:
+		# Клавиатура
+		input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
+		input_dir.y = Input.get_action_strength("move_forward") - Input.get_action_strength("move_backward")
+	
+	# Направление движения относительно камеры
 	var direction = Vector3.ZERO
 	direction += camera_forward * input_dir.y
 	direction += camera_right * input_dir.x
 	direction.y = 0
-	direction = direction.normalized()
+	if direction.length() > 0:
+		direction = direction.normalized()
 
+	# Выбор скорости (ходьба / спринт)
 	var speed := walk_speed
-	if can_sprint and Input.is_action_pressed("sprint"):
-		speed = sprint_speed
+	var sprint_input = false
+	if using_gamepad:
+		sprint_input = (Input.is_action_pressed("gamepad_sprint") or Input.is_action_pressed("gamepad_left_stick_click"))
+		if can_sprint and sprint_input:
+			speed = sprint_speed
+	else:
+		sprint_input = Input.is_action_pressed("sprint")
+		if can_sprint and sprint_input:
+			speed = sprint_speed
 
+	# --- NEW: Track sprint state for footstep pitch ---
+	is_sprinting = sprint_input and direction.length() > 0  # only sprint when actually moving
+	# ----------------------------------------------------
+
+	# Применение скорости к velocity
 	var target_x = direction.x * speed
 	var target_z = direction.z * speed
 
-	var factor = 0.08
 	if slippery_world_enabled:
+		# Плавное ускорение (скользкий мир)
+		var factor = 0.03
 		velocity.x = lerp(velocity.x, target_x, factor * delta * 60)
 		velocity.z = lerp(velocity.z, target_z, factor * delta * 60)
 	else:
+		# Мгновенное изменение скорости
 		velocity.x = target_x
 		velocity.z = target_z
 
-
-	if can_jump and Input.is_action_just_pressed("jump") and is_on_floor():
+	# Прыжок
+	var jump_pressed = false
+	if using_gamepad:
+		jump_pressed = Input.is_action_just_pressed("gamepad_jump")
+	else:
+		jump_pressed = Input.is_action_just_pressed("jump")
+	
+	if can_jump and jump_pressed and is_on_floor():
 		velocity.y = jump_force
 
-# Add this function to your player.gd
 func _push_rigidbodies(delta: float) -> void:
+	# Толкание RigidBody при столкновении
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
@@ -1852,11 +3311,11 @@ func _push_rigidbodies(delta: float) -> void:
 		if collider is RigidBody3D:
 			var normal = collision.get_normal()
 			
-			# Skip pushing if mostly standing on top (prevents downward torque on landing)
-			if normal.y > 0.65:	# ← tune 0.6–0.8; higher = more strict
+			# Не толкаем, если игрок стоит сверху (чтобы не создавать крутящий момент при приземлении)
+			if normal.y > 0.65:
 				continue
 			
-			# Also skip if almost vertical (side hits only)
+			# Пропускаем почти вертикальные столкновения
 			if abs(normal.y) > 0.9:
 				continue
 			
@@ -1866,6 +3325,7 @@ func _push_rigidbodies(delta: float) -> void:
 				continue
 			push_dir = push_dir.normalized()
 			
+			# Учитываем соотношение масс
 			var mass_ratio = min(player_mass / collider.mass, 1.0)
 			if mass_ratio < 0.25:
 				continue
@@ -1875,33 +3335,66 @@ func _push_rigidbodies(delta: float) -> void:
 			
 			collider.apply_impulse(impulse, contact_pos_local)
 			
-			# Optional: tiny slowdown only when actually pushing side
+			# Небольшое замедление игрока при толкании
 			velocity.x *= 0.9
 			velocity.z *= 0.9
 
-# ===== Методы управления возможностями =====
+# ===== КАМЕРА =====
 
-func set_can_move(value: bool):
-	can_move = value
-
-func set_can_jump(value: bool):
-	can_jump = value
-
-func set_can_sprint(value: bool):
-	can_sprint = value
-
-func set_can_look(value: bool):
-	can_look = value
+func _update_camera_collision():
+	# Корректировка расстояния камеры при столкновении с препятствиями
+	var space_state = get_world_3d().direct_space_state
 	
-func lock_controls():
-	controls_locked = true
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-
-func unlock_controls():
-	controls_locked = false
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	var from = global_position + Vector3(0, 1.5, 0)  # Точка на уровне глаз
+	var to = from - camera.global_transform.basis.z * camera_distance
 	
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.collision_mask = camera_collision_layer
+	query.exclude = [self]
+	
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		var collision_point = result.position
+		var new_distance = from.distance_to(collision_point) - 0.1
+		current_camera_distance = max(new_distance, camera_min_distance)
+	else:
+		# Плавное возвращение к нормальному расстоянию
+		current_camera_distance = lerp(current_camera_distance, camera_distance, 0.1)
+	
+	camera.position.z = -current_camera_distance
+
+func _apply_camera_shake(_delta):
+	# Дрожание камеры (например, от холода)
+	if camera_shake_strength <= 0.0:
+		return
+	var shake_x = randf_range(-camera_shake_strength, camera_shake_strength)
+	var shake_y = randf_range(-camera_shake_strength, camera_shake_strength)
+	var shake_z = randf_range(-camera_shake_strength, camera_shake_strength)
+
+	camera.rotation = camera_base_rotation + Vector3(shake_x, shake_y, shake_z)
+	
+	# Обновляем базовый поворот, чтобы дрожание накапливалось правильно
+	camera_base_rotation.x = camera.rotation.x
+	camera_base_rotation.y = camera.rotation.y
+	camera_base_rotation.z = camera.rotation.z
+
+# ===== УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ =====
+
+func hide_game_ui():
+	# Скрываем элементы интерфейса
+	_fade_node(interaction_ui, 0.0)
+	_fade_node(subtitles, 0.0)
+	_fade_node(crosshair, 0.0)
+
+func show_game_ui():
+	# Показываем элементы интерфейса
+	_fade_node(interaction_ui, 1.0)
+	_fade_node(subtitles, 1.0)
+	_fade_node(crosshair, 1.0)
+
 func _fade_node(node: Node, target_alpha: float, duration := 1.0):
+	# Плавное изменение прозрачности узла
 	if node == null:
 		return
 
@@ -1917,38 +3410,34 @@ func _fade_node(node: Node, target_alpha: float, duration := 1.0):
 		track.set_trans(Tween.TRANS_SINE)
 		track.set_ease(Tween.EASE_IN_OUT)
 
-
-func hide_game_ui():
-	_fade_node(interaction_ui, 0.0)
-	_fade_node(subtitles, 0.0)
-	_fade_node(crosshair, 0.0)
-
-func show_game_ui():
-	_fade_node(interaction_ui, 1.0)
-	_fade_node(subtitles, 1.0)
-	_fade_node(crosshair, 1.0)
+# ===== СОХРАНЕНИЕ И РЕСПАУН =====
 
 func _teleport_to_saved():
+	# Телепортация к последнему чекпоинту
 	global_position = saved_position
 	rotation = saved_rotation
 	velocity = Vector3.ZERO
 	
 	sfx_player.global_position = global_position
 	
+	# Анимация и звук респауна
 	respawn_anim.visible = true
 	respawn_anim.frame = 0
 	respawn_anim.play()
 	
 	if sfx_player.stream:
-		print("Playing respawn sound")
+		print("Воспроизведение звука респауна")
 		sfx_player.play()
 	else:
-		print("ERROR: No audio stream assigned")
+		print("ОШИБКА: Не назначен аудиопоток")
 	
 	await respawn_anim.animation_finished
 	respawn_anim.visible = false
 
+# ===== НАСТРОЙКИ =====
+
 func apply_misc_settings():
+	# Применение настроек из глобального объекта Settings
 	var m = Settings.settings["misc"]
 
 	epileptic_mode_enabled = m["epileptic_mode"]
@@ -1958,37 +3447,201 @@ func apply_misc_settings():
 	_apply_temperature()
 
 func _apply_temperature():
+	# Установка силы дрожания камеры в зависимости от температуры
 	match temperature_mode:
 		"26с":
 			camera_shake_strength = 0.0
-		"20с":
-			camera_shake_strength = 0.03
-		"15с":
+		"-20с":
 			camera_shake_strength = 0.1
+		"-15с":
+			camera_shake_strength = 0.03
 		"Ниже нуля":
-			camera_shake_strength = 0.15
+			camera_shake_strength = 0.01
 
-func _apply_camera_shake(delta):
-	if camera_shake_strength <= 0.0:
-		return
-	var shake_x = randf_range(-camera_shake_strength, camera_shake_strength)
-	var shake_y = randf_range(-camera_shake_strength, camera_shake_strength)
-	var shake_z = randf_range(-camera_shake_strength, camera_shake_strength)
-
-	camera.rotation = camera_base_rotation + Vector3(shake_x, shake_y, shake_z)
-	
-	camera_base_rotation.x = camera.rotation.x
-	camera_base_rotation.y = camera.rotation.y
-	camera_base_rotation.z = camera.rotation.z
-
+# ===== ОЧЕРЕДЬ ВВОДА (ЭПИЛЕПТИЧЕСКИЙ РЕЖИМ) =====
 
 func _process_input_queue():
+	# Обработка отложенных событий ввода
 	var now = Time.get_ticks_msec()
 
 	for i in range(input_queue.size() - 1, -1, -1):
 		if input_queue[i]["time"] <= now:
 			_unhandled_input(input_queue[i]["event"])
 			input_queue.remove_at(i)
+
+# ===== МОНОЛОГИ БЕЗДЕЙСТВИЯ =====
+
+func start_idle_monologue(monologue_data):
+	# Запуск монолога, если ещё не играется другой
+	if is_playing_monologue:
+		return
+	is_playing_monologue = true
+	_play_monologue_async(monologue_data)
+
+func _play_monologue_async(monologue_data):
+	# Воспроизведение одного или нескольких монологов через глобальную систему
+	if monologue_data is String:
+		await MonologueSystem.play_and_wait_monologues([monologue_data])
+	elif monologue_data is Array:
+		await MonologueSystem.play_and_wait_monologues(monologue_data)
+	is_playing_monologue = false
+	current_idle_stage += 1  # Переход к следующему этапу
+
+# ===== УПРАВЛЕНИЕ ВОЗМОЖНОСТЯМИ =====
+
+func set_can_move(value: bool):
+	can_move = value
+
+func set_can_jump(value: bool):
+	can_jump = value
+
+func set_can_sprint(value: bool):
+	can_sprint = value
+
+func set_can_look(value: bool):
+	can_look = value
+
+func lock_controls():
+	# Блокировка управления и показ курсора
+	controls_locked = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func unlock_controls():
+	# Разблокировка управления и захват мыши
+	controls_locked = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+# ===== МЕНЮ ПАУЗЫ =====
+
+func toggle_pause():
+	# Переключение состояния паузы
+	if is_paused:
+		unpause_game()
+	else:
+		pause_game()
+
+func pause_game():
+	# Постановка игры на паузу
+	is_paused = true
+	pause_menu.visible = true
+	lock_controls()                # Блокируем ввод игрока
+	get_tree().paused = true        # Замораживаем всё, кроме узлов с process_mode = ALWAYS
+
+func unpause_game():
+	# Снятие игры с паузы
+	is_paused = false
+	pause_menu.visible = false
+	unlock_controls()               # Возвращаем ввод игроку
+	get_tree().paused = false       # Размораживаем дерево
+
+func _on_resume_button_pressed() -> void:
+	unpause_game()
+
+func _on_main_menu_button_pressed() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
+
+func _on_fun_button_pressed() -> void:
+	#fun_button.text = "НЕЕЕЕЕТТ"
+	$Crosshair/Pause/AudioStreamPlayer3D.play()
+	await $Crosshair/Pause/AudioStreamPlayer3D.finished
+	fun_button.text = "ПРОШУ НЕ НАЖИМАЙ СЮДА"
+	
+func _on_pause_menu_gui_input(event: InputEvent):
+	if event.is_action_pressed("ui_cancel"):
+		unpause_game()
+
+func _on_footstep_finished():
+	# If the player is still moving on ground, restart the sound
+	if is_on_floor() and Vector2(velocity.x, velocity.z).length_squared() > 0.01:
+		footstep_player.play()
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\potted_plant.gd]
+[============================================================]
+
+extends Interactable
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	MonologueSystem.play_monologue("this_plant_is_so_huge")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\punishment_room.gd]
+[============================================================]
+
+extends Node
+
+@onready var texture_rect_on: TextureRect = $TextureRect_on
+@onready var texture_rect_off: TextureRect = $TextureRect_off
+@onready var video_stream_player: VideoStreamPlayer = $VideoStreamPlayer
+@onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
+
+# Путь к монологам
+var first_monologue = "res://Assets/Audio/Monologues/serious_room.wav"
+var second_monologue = "res://Assets/Audio/Monologues/serious_room_2.wav"
+var reward_monologue = "res://Assets/Audio/Monologues/serious_room_3.wav"
+
+func _ready():
+	# Телевизор выключен
+	texture_rect_on.visible = false
+	texture_rect_off.visible = true
+	
+	# Выбираем первый или второй монолог
+	var monologue_path = first_monologue
+	if PunishmentManager.punishment_active and not PunishmentManager.video_completed:
+		monologue_path = second_monologue
+	
+	_play_monologue(monologue_path, "_on_start_monologue_finished")
+
+
+func _play_monologue(path: String, callback_name: String):
+	audio_stream_player_2d.stream = load(path)
+	audio_stream_player_2d.play()
+	audio_stream_player_2d.connect("finished", Callable(self, callback_name))
+
+
+func _on_start_monologue_finished():
+	# Включаем телевизор и запускаем видео
+	texture_rect_off.visible = false
+	texture_rect_on.visible = true
+	video_stream_player.visible = true
+	video_stream_player.play()
+	
+	PunishmentManager.start_punishment()
+	
+	# Ждем окончания видео
+	video_stream_player.connect("finished", Callable(self, "_on_video_finished"))
+
+
+func _on_video_finished():
+	# Проигрываем монолог награды после видео
+	_play_monologue(reward_monologue, "_on_reward_monologue_finished")
+
+
+func _on_reward_monologue_finished():
+	PunishmentManager.finish_video()
+	# Здесь можно добавить переход обратно в игру, если нужно
+	await get_tree().create_timer(1.0).timeout
+	LoadingScreen.start(3, "Извини что тебе пришлось это увидеть.")
+	await get_tree().create_timer(3.0).timeout
+	LoadingScreen.allow_fade_out()
+	get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
+	#get_tree().quit()
 
 
 ================================================================================
@@ -1999,6 +3652,9 @@ func _process_input_queue():
 [============================================================]
 
 extends Interactable
+
+# Hardcoded switch: set to false to disable the screamer effect
+const FunnyPicture_ENABLED := false
 
 var sfx_player: AudioStreamPlayer
 
@@ -2012,10 +3668,7 @@ var sfx_player: AudioStreamPlayer
 func _ready():
 	super._ready()
 	update_interaction_text()
-	_setup_sfx()
-	if screen_image:
-		screen_image.visible = false
-		screen_image.modulate.a = 1.0
+	screen_image.visible = false
 
 func update_interaction_text():
 	interaction_text = interaction_text
@@ -2027,9 +3680,17 @@ func _setup_sfx():
 
 func perform_interaction():
 	print("From polka")
-	if not sfx_player.playing:
-		sfx_player.play()
-		_show_image_with_fade()
+	
+	if FunnyPicture_ENABLED:
+		_setup_sfx()
+		if screen_image:
+			screen_image.visible = false
+			screen_image.modulate.a = 1.0
+	else:
+		MonologueSystem.play_monologue("dont_touch_this_closet_1")
+		await MonologueSystem.monologue_finished
+		MonologueSystem.play_monologue("dont_touch_this_closet_2")
+		await MonologueSystem.monologue_finished
 
 func _show_image_with_fade():
 	if not screen_image:
@@ -2053,6 +3714,61 @@ func _show_image_with_fade():
 
 	screen_image.visible = false
 	screen_image.modulate.a = 1.0  # reset alpha for next time
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\puzzle_room.gd]
+[============================================================]
+
+extends Node3D
+
+@onready var cubick: RigidBody3D = $RigidBody3D
+var _is_handling_fall := false
+var _first_fall_done := false
+
+func _ready() -> void:
+	_lock_player_controls()
+	await get_tree().create_timer(1.0).timeout
+	await MonologueSystem.play_and_wait_monologues(["puzzle_room_intro_1", "puzzle_room_intro_2", "puzzle_room_intro_3"])
+	_unlock_player_controls()
+	
+
+func _process(_delta: float) -> void:
+	if cubick.position.y < -20 and not _is_handling_fall:
+		_is_handling_fall = true
+		_handle_fall()
+
+func _handle_fall() -> void:
+	await get_tree().create_timer(1.0).timeout
+
+	if cubick.position.y >= -20:
+		_is_handling_fall = false
+		return
+
+	if not _first_fall_done:
+		MonologueSystem.play_monologue("how_could_you_lose_a_cube")
+		await MonologueSystem.monologue_finished
+		await get_tree().create_timer(1.0).timeout
+		_first_fall_done = true
+	else:
+		await get_tree().create_timer(1.0).timeout
+	cubick.position = Vector3(-5.16, 0.78, -5.53)
+	_is_handling_fall = false
+
+func _lock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("lock_controls"):
+			p.lock_controls()
+
+func _unlock_player_controls():
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("unlock_controls"):
+			p.unlock_controls()
 
 
 ================================================================================
@@ -2224,12 +3940,47 @@ func _on_no_button_pressed() -> void:
 
 
 [============================================================]
+[Scripts\start_door_script.gd]
+[============================================================]
+
+extends Interactable
+
+var opened := false
+@onready var animation_player: AnimationPlayer = $"../AnimationPlayer"
+
+func _ready():
+	super._ready()
+	update_interaction_text()
+
+func update_interaction_text():
+	interaction_text = interaction_text
+
+func perform_interaction():
+	if !opened:
+		animation_player.play("start_door_open")
+		var sound = AudioStreamPlayer2D.new()
+		sound.stream = preload("res://Assets/Audio/door_open.wav")
+		sound.volume_db = 2
+		add_child(sound)
+		sound.play()
+		await sound.finished
+		sound.queue_free()
+		opened = true
+		interaction_text = "Дверь заклинило в этом положении, закрыть обратно нельзя."
+	else:
+		interaction_text = "Дверь заклинило в этом положении, закрыть обратно нельзя."
+
+
+================================================================================
+
+
+[============================================================]
 [Scripts\start_room.gd]
 [============================================================]
 
 extends Node3D
 
-@export var enable_intro_sequence: bool = false  # hardcoded switch
+@export var enable_intro_sequence: bool = true  # hardcoded switch
 
 @onready var player_animation_player: AnimationPlayer = $Player/AnimationPlayer
 @onready var animation_player: AnimationPlayer = $Player/Y/AnimationPlayer
@@ -2250,8 +4001,7 @@ func _ready() -> void:
 func _play_intro_sequence() -> void:
 	_lock_player_controls()
 	LoadingScreen.fade_time = 0
-	LoadingScreen.start(4, "Совет: чтобы прыгать, прыгните")
-	
+	LoadingScreen.start(3, "Совет: чтобы прыгать, прыгните")
 	MaterialManager.make_objects_white()
 	camera_animation_player.play("CameraPickup")
 	camera_animation_player.stop()
@@ -2259,26 +4009,24 @@ func _play_intro_sequence() -> void:
 	animation_player.play("wakeup")
 	animation_player.stop()
 	animation_player.seek(0.0, true)
-	
-	await get_tree().create_timer(5.2).timeout
+	await get_tree().create_timer(4.0).timeout
 	LoadingScreen.fade_time = 1
 	LoadingScreen.allow_fade_out()
-	await get_tree().create_timer(1).timeout
-	_lock_player_controls()
 	await get_tree().create_timer(1.5).timeout
+	_lock_player_controls()
+	await get_tree().create_timer(2.0).timeout
 	MonologueSystem.play_monologue("1a_Y_wake_up")
 	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	MonologueSystem.play_monologue("1a_no_anim")
 	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	Console.open_console()
 	Console.type_message("engine.TheYParable.Characters.Y.animated = true;")
 	await Console.typing_completed
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	Console.print_instant("[color=green]Variable `engine.TheYParable.Characters.Y.animated` changed to `true`.[/color]")
-	await get_tree().create_timer(1.0).timeout
-	
+	await get_tree().create_timer(1.5).timeout
 	Console.close()
 	MonologueSystem.play_monologue("1a_now_you_can_move")
 	await MonologueSystem.monologue_finished
@@ -2289,16 +4037,32 @@ func _play_intro_sequence() -> void:
 	player_animation_player.seek(0.0, true)
 	MonologueSystem.play_monologue("1a_see_that_camera")
 	await MonologueSystem.monologue_finished
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.5).timeout
 	player_animation_player.play("walk_up")
 	await player_animation_player.animation_finished
 	camera_animation_player.play("CameraPickup")
 	await camera_animation_player.animation_finished
-	print("done")
 	_unlock_player_controls()
-	
-	await get_tree().create_timer(2.0).timeout
-
+	await get_tree().create_timer(3.0).timeout
+	await MonologueSystem.play_and_wait_monologues([
+		"2a_just_look_at_that",
+		"2a_adult_joke",
+		"2a_being_serious_now",
+		"2a_now_we_will_meet_aspect"
+	])
+	await get_tree().create_timer(1.8).timeout
+	VisualisationDirector.show_slide("materials")
+	await VisualisationDirector.slides_finished
+	await get_tree().create_timer(1.5).timeout
+	Console.open_console()
+	Console.type_message("engine.TheYParable.Objects.Materials.SelfModulate = #232323;")
+	await Console.typing_completed
+	await get_tree().create_timer(1.5).timeout
+	Console.print_instant("[color=green]Variable `engine.TheYParable.Objects.Materials.SelfModulate` changed to `#232323`.[/color]")
+	await get_tree().create_timer(1.5).timeout
+	Console.close()
+	MaterialManager.revert_objects()
+	await get_tree().create_timer(1.5).timeout
 
 func _lock_player_controls():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -2378,6 +4142,273 @@ func perform_interaction():
 
 
 [============================================================]
+[Scripts\trigger_T_afk_location.gd]
+[============================================================]
+
+# LocationAFKTrigger.gd
+extends BaseTrigger
+class_name LocationAFKTrigger
+
+# Array of stages, each with a "time" (float) and a "monologue" (String or Array[String])
+@export var idle_stages: Array[Dictionary] = [
+	{ "time": 5.0,  "monologue": ["t_corridor_idle_1", "t_corridor_idle_2", "t_corridor_idle_3", "t_corridor_idle_4"] },
+	{ "time": 25.0, "monologue": ["t_corridor_idle_5", "t_corridor_idle_6"] },
+	{ "time": 50.0, "monologue": ["u_should_explore_1", "u_should_explore_2", "u_should_explore_3", "u_should_explore_4"] }
+]
+
+var player: CharacterBody3D = null
+var idle_timer: float = 0.0
+var current_stage_index: int = 0
+var is_playing_monologue: bool = false
+var monitoring2: bool = false
+
+func _ready():
+	super._ready()
+	body_exited.connect(_on_body_exited)
+	# Ensure stages are sorted by time (just in case)
+	idle_stages.sort_custom(func(a, b): return a["time"] < b["time"])
+
+func _on_body_entered(body: Node3D):
+	# Let the base class filter by group and one‑shot setting
+	super._on_body_entered(body)
+
+func on_trigger_enter(body: CharacterBody3D):
+	# Called only if base class conditions are met
+	player = body
+	idle_timer = 0.0
+	current_stage_index = 0
+	is_playing_monologue = false
+	monitoring2 = true
+
+func _on_body_exited(body: Node3D):
+	if body == player:
+		# Player left the area – stop monitoring2 and reset
+		monitoring2 = false
+		player = null
+		idle_timer = 0.0
+		current_stage_index = 0
+		is_playing_monologue = false
+
+func _process(delta: float):
+	if not monitoring2 or player == null:
+		return
+
+	# Determine if player is idle: on floor and not moving horizontally
+	var is_idle = player.is_on_floor() and Vector2(player.velocity.x, player.velocity.z).length_squared() < 0.01
+
+	if is_idle:
+		idle_timer += delta
+	else:
+		# Movement resets everything – idle chain broken
+		idle_timer = 0.0
+		current_stage_index = 0
+		# If a monologue was playing, it will continue, but the stage index is reset,
+		# so after it finishes we won't accidentally advance further.
+		# (You could also cancel the monologue here, but that's optional.)
+
+	# Check if we've reached the next stage and are not already playing one
+	while current_stage_index < idle_stages.size() and idle_timer >= idle_stages[current_stage_index]["time"]:
+		if not is_playing_monologue:
+			_play_stage_monologue(idle_stages[current_stage_index]["monologue"])
+			# _play_stage_monologue is async; it will advance the index when done.
+			# We break here to avoid multiple triggers in the same frame.
+			break
+		else:
+			# If we are already playing, just wait – the index will advance after the monologue ends.
+			break
+
+func _play_stage_monologue(monologue_data):
+	is_playing_monologue = true
+
+	# Convert monologue_data to an Array[String]
+	var monologue_array: Array[String]
+	if monologue_data is String:
+		monologue_array = [monologue_data]
+	elif monologue_data is Array:
+		# Ensure all elements are strings (convert if necessary)
+		monologue_array = []
+		for item in monologue_data:
+			monologue_array.append(str(item))  # Convert to string just in case
+	else:
+		push_error("Invalid monologue data type: ", typeof(monologue_data))
+		is_playing_monologue = false
+		return
+
+	# Play all monologues in sequence and wait for completion
+	await MonologueSystem.play_and_wait_monologues(monologue_array)
+
+	# After the monologue(s) finish, advance to the next stage
+	current_stage_index += 1
+	is_playing_monologue = false
+
+	# Note: the idle timer continues accumulating while the monologue played,
+	# so if the player remained idle, we might already be past the next stage's time.
+	# The _process loop will catch that in the next frame because we reset is_playing_monologue.
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\trigger_collision.gd]
+[============================================================]
+
+extends BaseTrigger
+@onready var playa_stopper: CollisionShape3D = $"../../../StaticBody3D3/playa_stopper"
+
+func _ready() -> void:
+	super._ready()
+	one_shot = true
+	pass
+
+func on_trigger_enter(body: CharacterBody3D) -> void:
+	playa_stopper.disabled = false
+	await MonologueSystem.play_and_wait_monologues(["collision_expl1", 
+	"collision_expl2", 
+	"collision_expl3", 
+	"collision_expl4", 
+	"collision_expl5", 
+	"collision_expl7"])
+	playa_stopper.disabled = true
+	await get_tree().create_timer(1.0).timeout
+	
+	
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\trigger_puzzle_room_exit.gd]
+[============================================================]
+
+extends BaseTrigger
+
+func on_trigger_enter(_body):
+	MonologueSystem.play_monologue("T_good_job")
+	await MonologueSystem.monologue_finished
+	await get_tree().create_timer(1).timeout
+	LoadingScreen.start(3, "Пора поменяться местами ;)")
+	await get_tree().create_timer(1.5).timeout
+	await MonologueSystem.play_and_wait_monologues(["puzzle_room_outro_1", "puzzle_room_outro_2", "puzzle_room_outro_3"])
+	await get_tree().create_timer(1).timeout
+	LoadingScreen.allow_fade_out()
+	get_tree().change_scene_to_file("res://Scenes/final_room.tscn")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\trigger_stroom_left.gd]
+[============================================================]
+
+extends BaseTrigger
+
+@export var monologue_id: String = "intro_01"
+
+func on_trigger_enter(body):
+	MonologueSystem.play_monologue("T_good_job")
+	await MonologueSystem.monologue_finished
+	await get_tree().create_timer(1).timeout
+	LoadingScreen.start(3, "А ты любишь головоломки?")
+	await get_tree().create_timer(3).timeout
+	LoadingScreen.allow_fade_out()
+	get_tree().change_scene_to_file("res://Scenes/puzzle_room.tscn")
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\trigger_stroom_right.gd]
+[============================================================]
+
+extends BaseTrigger
+
+@export var target_position: Vector3 = Vector3(-15.2, 1.05, -0.5)
+@onready var neon_sign: Node3D = $"../../../neon_sign"
+@onready var video_stream_player: VideoStreamPlayer = $VideoStreamPlayer
+
+var counter := -1
+var can_interact := true
+
+func _ready() -> void:
+	super._ready()
+	one_shot = false
+
+func on_trigger_enter(body):
+	if can_interact:
+		pass
+	else:
+		return
+	# Телепорт игрока
+	body.global_position = target_position
+	
+	# Повернуть игрока строго в -X
+	body.look_at(body.global_position + Vector3.LEFT, Vector3.UP)
+	
+	if counter <= 1:
+		MonologueSystem.play_monologue("T_corridor_we_dont_have_a_lot_of_time")
+	elif counter == 2:
+		neon_sign.visible = true
+		MonologueSystem.play_monologue("T_you_should_stop")
+	elif counter == 4:
+		MonologueSystem.play_monologue("T_last_warning")
+	elif counter >= 7:
+		can_interact = false
+		MonologueSystem.play_monologue("T_youre_cooked")
+		await MonologueSystem.monologue_finished
+		await get_tree().create_timer(1.0).timeout
+		LoadingScreen.start(3, "Айайяй, Игрик.")
+		await get_tree().create_timer(3.0).timeout
+		LoadingScreen.allow_fade_out()
+		get_tree().change_scene_to_packed(preload("res://Scenes/punishment_room.tscn"))
+	else:
+		pass
+	counter += 1
+	
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\trigger_stroom_right_second_one.gd]
+[============================================================]
+
+extends BaseTrigger
+
+func _ready() -> void:
+	super._ready()
+	one_shot = false
+
+func _on_trigger_enter(body: CharacterBody3D):
+	body.position.y -= 10
+
+
+================================================================================
+
+
+[============================================================]
+[Scripts\trigger_turn_left_here.gd]
+[============================================================]
+
+extends BaseTrigger
+
+func _ready() -> void:
+	super._ready()
+	one_shot = true
+	pass
+
+func on_trigger_enter(_body: CharacterBody3D) -> void:
+	MonologueSystem.play_monologue("T_corridor_to_the_left")
+
+
+================================================================================
+
+
+[============================================================]
 [Scripts\y_tumbochka.gd]
 [============================================================]
 
@@ -2393,8 +4424,8 @@ func update_interaction_text():
 	interaction_text = interaction_text
 
 func perform_interaction():
-	MonologueSystem.play_monologue("1a_no_anim")
+	$AudioStreamPlayer3D.play()
 
 
 ==================================================
-Total .gd files found: 29
+Total .gd files found: 56
