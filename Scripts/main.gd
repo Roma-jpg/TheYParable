@@ -14,15 +14,15 @@ func _ready():
 	timer.timeout.connect(_on_timer_timeout)
 	timer.start()
 	await get_tree().create_timer(1).timeout
-	MonologueSystem.play_and_wait_monologues([
-		"debug_room_1",
-		"debug_room_2",
-		"debug_room_3",
-		"debug_room_4",
-		"debug_room_5",
-		"try_to_kill_yourself",
-		"you_cant_die_in_this_game"
-	])
+	#MonologueSystem.play_and_wait_monologues([
+		#"debug_room_1",
+		#"debug_room_2",
+		#"debug_room_3",
+		#"debug_room_4",
+		#"debug_room_5",
+		#"try_to_kill_yourself",
+		#"you_cant_die_in_this_game"
+	#])
 
 func _on_timer_timeout():
 	# Check if there is already an instance of the spawned object in the scene

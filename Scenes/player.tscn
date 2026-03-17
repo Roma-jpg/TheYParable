@@ -1,4 +1,4 @@
-[gd_scene load_steps=50 format=3 uid="uid://bq3np8buadnid"]
+[gd_scene load_steps=51 format=3 uid="uid://bq3np8buadnid"]
 
 [ext_resource type="Script" uid="uid://b72n47ccqvnsw" path="res://Scripts/player.gd" id="1_4flbx"]
 [ext_resource type="Script" uid="uid://bk7o521qvk5po" path="res://Scripts/InteractionManager.gd" id="2_i3pqv"]
@@ -45,6 +45,7 @@
 [ext_resource type="Texture2D" uid="uid://v064s8bmobur" path="res://Assets/Pictures/totemo/frame_35_delay-0.05s.png" id="41_pg0gw"]
 [ext_resource type="Texture2D" uid="uid://h41jus0m05ee" path="res://Assets/Pictures/totemo/frame_36_delay-0.05s.png" id="42_qavoy"]
 [ext_resource type="Texture2D" uid="uid://o3nem22wcgg8" path="res://Assets/Pictures/totemo/frame_37_delay-0.75s.png" id="43_w4w4b"]
+[ext_resource type="PackedScene" uid="uid://bolodsplnqnqu" path="res://addons/virtual_joystick/virtual_joystick.tscn" id="46_ax3m3"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sh265"]
 radius = 0.30908203
@@ -325,6 +326,8 @@ metadata/_custom_type_script = "uid://bk7o521qvk5po"
 
 [node name="RayCast3D" type="RayCast3D" parent="SpringArm3D/Camera3D" groups=["player"]]
 target_position = Vector3(0, 0, -1.74)
+
+[node name="VirtualJoystick" parent="." instance=ExtResource("46_ax3m3")]
 
 [connection signal="pressed" from="Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/ResumeButton" to="." method="_on_resume_button_pressed"]
 [connection signal="pressed" from="Crosshair/Pause/PanelContainer/MarginContainer/VBoxContainer2/MarginContainer/VBoxContainer/MainMenuButton" to="." method="_on_main_menu_button_pressed"]

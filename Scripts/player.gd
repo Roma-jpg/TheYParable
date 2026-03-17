@@ -29,7 +29,7 @@ extends CharacterBody3D
 # Управление с геймпада
 @export var gamepad_deadzone := 0.15
 @export var gamepad_sensitivity_horizontal := 2.0
-@export var gamepad_sensitivity_vertical := 1.5
+@export var gamepad_sensitivity_vertical := 100.5
 @export var touchpad_sensitivity := 3.0
 
 # ===== ССЫЛКИ НА УЗЛЫ =====
@@ -295,12 +295,12 @@ func _process_gamepad_input(delta):
 		right_stick_y = 0
 	
 	if right_stick_x != 0:
-		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)
-	
+		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)	 # yaw usually stays like this
+
 	if right_stick_y != 0:
-		pitch += right_stick_y * gamepad_sensitivity_vertical * delta
+		pitch -= right_stick_y * gamepad_sensitivity_vertical * delta
 		pitch = clamp(pitch, -85.0, 85.0)
-		camera.rotation.x = deg_to_rad(pitch)
+		camera.rotation.x = deg_to_rad(pitch)   # ← add this
 
 # ===== ДВИЖЕНИЕ И ФИЗИКА =====
 
@@ -323,7 +323,7 @@ func handle_movement(delta):
 			left_stick_y = 0
 		
 		input_dir.x = left_stick_x
-		input_dir.y = -left_stick_y  # Инверсия для соответствия WASD
+		input_dir.y = left_stick_y  # Инверсия для соответствия WASD
 		
 		# D-pad (крестовина)
 		if Input.is_action_pressed("gamepad_dpad_right"):
@@ -352,7 +352,7 @@ func handle_movement(delta):
 	var speed := walk_speed
 	var sprint_input = false
 	if using_gamepad:
-		sprint_input = (Input.is_action_pressed("gamepad_sprint") or Input.is_action_pressed("gamepad_left_stick_click"))
+		sprint_input = (Input.is_action_pressed("sprint"))
 		if can_sprint and sprint_input:
 			speed = sprint_speed
 	else:
