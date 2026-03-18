@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ci7rd66cob8hf" path="res://Scripts/punishment_room.gd" id="1_gy6i6"]
 [ext_resource type="Texture2D" uid="uid://cx5gvlvet3qie" path="res://Assets/Pictures/tv_turned_off.png" id="1_oe7jf"]
 [ext_resource type="Texture2D" uid="uid://cej1l3hhvtxgu" path="res://Assets/Pictures/tv_turned_on.png" id="2_4x8ue"]
-[ext_resource type="VideoStream" uid="uid://ya12dm2dwpqn" path="res://Assets/Pictures/Download (9).ogv" id="4_gy6i6"]
+[ext_resource type="VideoStream" uid="uid://c7l1wj58etniw" path="res://Assets/Pictures/output1.ogv" id="4_gy6i6"]
 
 [node name="PunishmentRoom" type="Node3D"]
 script = ExtResource("1_gy6i6")

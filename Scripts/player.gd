@@ -383,7 +383,7 @@ func handle_movement(delta):
 	# Прыжок
 	var jump_pressed = false
 	if using_gamepad:
-		jump_pressed = Input.is_action_just_pressed("gamepad_jump")
+		jump_pressed = Input.is_action_just_pressed("jump")
 	else:
 		jump_pressed = Input.is_action_just_pressed("jump")
 	

@@ -1,4 +1,4 @@
-Scanning for .gd files in: C:\Users\annak\OneDrive\Документы\the-y-parable
+Scanning for .gd files in: C:\Users\Ромэо\Documents\the-y-parable
 Ignoring folders: addons, .git, node_modules, __pycache__, .venv, venv
 --------------------------------------------------
 
@@ -2166,7 +2166,7 @@ func _ready():
 	create_grid_visual()
 	create_ui()
 	update_special_visuals()
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	await get_tree().create_timer(1).timeout
 	MonologueSystem.play_and_wait_monologues([
 		"somewhat_of_a_redactor_1",
@@ -2565,7 +2565,14 @@ func start_play():
 	_start_playing()
 
 func _start_playing():
+	palette_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Проверка наличия спавна
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	
+	if canvas_layer:
+		canvas_layer.visible = false
+		
+	
 	if spawn_cell == Vector2i(-1, -1):
 		print("Предупреждение: точка спавна не установлена, игрок появится в (0,0)")
 		var start_pos = Vector3(0, CELL_SIZE, 0)
@@ -2593,6 +2600,8 @@ func _start_playing():
 		player_instance.position = grid_pos(spawn_cell, 0) + Vector3(0, CELL_SIZE, 0)
 	add_child(player_instance)
 	player_instance.add_to_group("player")
+	if player_instance.has_method("unlock_controls"):
+		player_instance.unlock_controls()
 
 	var player_cam = player_instance.find_child("Camera3D", true, false)
 	if player_cam:
@@ -2822,15 +2831,15 @@ func _ready():
 	timer.timeout.connect(_on_timer_timeout)
 	timer.start()
 	await get_tree().create_timer(1).timeout
-	MonologueSystem.play_and_wait_monologues([
-		"debug_room_1",
-		"debug_room_2",
-		"debug_room_3",
-		"debug_room_4",
-		"debug_room_5",
-		"try_to_kill_yourself",
-		"you_cant_die_in_this_game"
-	])
+	#MonologueSystem.play_and_wait_monologues([
+		#"debug_room_1",
+		#"debug_room_2",
+		#"debug_room_3",
+		#"debug_room_4",
+		#"debug_room_5",
+		#"try_to_kill_yourself",
+		#"you_cant_die_in_this_game"
+	#])
 
 func _on_timer_timeout():
 	# Check if there is already an instance of the spawned object in the scene
@@ -2943,7 +2952,7 @@ extends CharacterBody3D
 # Управление с геймпада
 @export var gamepad_deadzone := 0.15
 @export var gamepad_sensitivity_horizontal := 2.0
-@export var gamepad_sensitivity_vertical := 1.5
+@export var gamepad_sensitivity_vertical := 100.5
 @export var touchpad_sensitivity := 3.0
 
 # ===== ССЫЛКИ НА УЗЛЫ =====
@@ -3074,6 +3083,8 @@ func _input(event):
 			toggle_pause()
 
 func _unhandled_input(event):
+	if event is InputEventMouseMotion:
+		print("Mouse move detected!")
 	# Сбрасываем таймер бездействия при любом вводе
 	idle_timer = 0.0
 	current_idle_stage = 0
@@ -3209,12 +3220,12 @@ func _process_gamepad_input(delta):
 		right_stick_y = 0
 	
 	if right_stick_x != 0:
-		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)
-	
+		rotate_y(-right_stick_x * gamepad_sensitivity_horizontal * delta)	 # yaw usually stays like this
+
 	if right_stick_y != 0:
-		pitch += right_stick_y * gamepad_sensitivity_vertical * delta
+		pitch -= right_stick_y * gamepad_sensitivity_vertical * delta
 		pitch = clamp(pitch, -85.0, 85.0)
-		camera.rotation.x = deg_to_rad(pitch)
+		camera.rotation.x = deg_to_rad(pitch)   # ← add this
 
 # ===== ДВИЖЕНИЕ И ФИЗИКА =====
 
@@ -3237,7 +3248,7 @@ func handle_movement(delta):
 			left_stick_y = 0
 		
 		input_dir.x = left_stick_x
-		input_dir.y = -left_stick_y  # Инверсия для соответствия WASD
+		input_dir.y = left_stick_y  # Инверсия для соответствия WASD
 		
 		# D-pad (крестовина)
 		if Input.is_action_pressed("gamepad_dpad_right"):
@@ -3266,7 +3277,7 @@ func handle_movement(delta):
 	var speed := walk_speed
 	var sprint_input = false
 	if using_gamepad:
-		sprint_input = (Input.is_action_pressed("gamepad_sprint") or Input.is_action_pressed("gamepad_left_stick_click"))
+		sprint_input = (Input.is_action_pressed("sprint"))
 		if can_sprint and sprint_input:
 			speed = sprint_speed
 	else:
