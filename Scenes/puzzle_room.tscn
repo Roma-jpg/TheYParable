@@ -1,8 +1,8 @@
-[gd_scene load_steps=45 format=4 uid="uid://pm7rk1u7k0ol"]
+[gd_scene load_steps=48 format=4 uid="uid://pm7rk1u7k0ol"]
 
 [ext_resource type="PackedScene" uid="uid://cp1ksqldgf41b" path="res://Assets/3DModels/Y_lamp_nocover.glb" id="1_dnawa"]
 [ext_resource type="PackedScene" uid="uid://bcfot4h2lej4j" path="res://Assets/3DModels/puzzle_roo.glb" id="1_psrkm"]
-[ext_resource type="Script" uid="uid://bnlp0t5663b1o" path="res://Scripts/puzzle_room.gd" id="1_w8wcq"]
+[ext_resource type="Script" uid="uid://biitt7b4jvskr" path="res://Scripts/puzzle_room.gd" id="1_w8wcq"]
 [ext_resource type="PackedScene" uid="uid://bq3np8buadnid" path="res://Scenes/player.tscn" id="2_dnawa"]
 [ext_resource type="Texture2D" uid="uid://ber4m6i5ohyu7" path="res://Assets/Skies/citrus_orchard_road_puresky_2k.exr" id="4_yskdw"]
 [ext_resource type="PackedScene" uid="uid://bp31d3qoky80n" path="res://Assets/3DModels/door.glb" id="5_bjwkx"]
@@ -14,11 +14,13 @@
 [ext_resource type="PackedScene" uid="uid://b6ohytjhtl2hj" path="res://Assets/3DModels/polka.glb" id="11_bjwkx"]
 [ext_resource type="PackedScene" uid="uid://bbwu7pb6eronq" path="res://Scenes/batton.tscn" id="11_sngpb"]
 [ext_resource type="Script" uid="uid://dv3j33i3a0d27" path="res://Scripts/puzzle_polka.gd" id="12_mtnun"]
+[ext_resource type="Texture2D" uid="uid://ck1f8qeckfabb" path="res://Assets/3DModels/evil_cubick.png" id="12_n5pdd"]
 [ext_resource type="Texture2D" uid="uid://bhf07lkngcd36" path="res://Assets/Pictures/fuckin_train.jpg" id="13_srax6"]
 [ext_resource type="PackedScene" uid="uid://drg5ei1o6f1wd" path="res://Assets/3DModels/Y_corridor_part.glb" id="15_ivfha"]
 [ext_resource type="PackedScene" uid="uid://8mmthorfrgab" path="res://Scenes/base_trigga.tscn" id="16_pfuln"]
 [ext_resource type="Script" uid="uid://osuao3lefhl3" path="res://Scripts/trigger_puzzle_room_exit.gd" id="17_w8wcq"]
-[ext_resource type="Texture2D" uid="uid://y544cchgo163" path="res://Assets/Pictures/HappyEndTitleScreen.png" id="19_83gqx"]
+[ext_resource type="Script" uid="uid://cxpjxds43ctkh" path="res://Scripts/batton2.gd" id="17_xd6b7"]
+[ext_resource type="Texture2D" uid="uid://gp6eh806b4o0" path="res://Assets/Pictures/HappyEndTitleScreen.png" id="19_83gqx"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_dnawa"]
 points = PackedVector3Array(1.0158731, -0.9841332, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, -1.0158731, -1.0158731, -1.0158731, 1.0158731, -1.0158731, -0.9841332, 1.0158731, 1.0158731, -0.9841332, -1.0158731, 1.0158731, -1.0158731, 1.0158731)
@@ -503,6 +505,9 @@ _data = {
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_xd6b7"]
 points = PackedVector3Array(-0.8698758, -0.8698727, -0.9942515, 0.86978245, 0.8698229, 0.99419457, -0.8698433, 0.8698402, 0.99421436, -0.8698744, 0.99424994, -0.8698713, 0.99409974, -0.8699479, -0.8699479, -0.8698447, -0.9942159, 0.8698416, 0.8697839, 0.8698243, -0.9941962, 0.8698136, -0.86985403, 0.99423015, -0.9940934, -0.8699044, 0.8699044, 0.86978245, 0.99419457, 0.8698229, 0.869815, -0.9942317, -0.8698554, 0.9940286, 0.8698856, 0.8698856, -0.9940934, 0.8699044, -0.8699044, 0.8698136, 0.99423015, -0.86985403, -0.8698758, -0.9942515, -0.8698727, -0.8698433, 0.99421436, 0.8698402, -0.8698744, -0.8698713, 0.99424994, 0.8697839, -0.9941962, 0.8698243, -0.8698447, 0.8698416, -0.9942159, -0.994129, -0.8699355, -0.8699355, 0.869815, -0.8698554, -0.9942317, 0.9940642, -0.8699168, 0.8699168, 0.9940642, 0.8699168, -0.8699168, -0.9940579, 0.8698733, 0.8698733)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7s7d3"]
+albedo_texture = ExtResource("12_n5pdd")
+
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_sngpb"]
 points = PackedVector3Array(0.32621336, 0.026306435, 0.3245821, -0.3367619, -0.005255726, -0.2962011, -0.3367619, -0.005255726, 0.31400883, 0.3367619, -0.005255726, -0.2962011, -0.3367619, 0.026306435, -0.2962011, 0.3367619, 0.026306435, -0.2962011, 0.3367619, -0.005255726, 0.31400883, -0.32621336, 0.026306435, 0.3245821, -0.32621336, -0.005255726, 0.3245821, 0.32621336, -0.005255726, 0.3245821, -0.3367619, 0.026306435, 0.31400883, 0.3367619, 0.026306435, 0.31400883)
 
@@ -536,8 +541,10 @@ size = Vector3(15.216797, 0.45507813, 63.267944)
 [sub_resource type="BoxShape3D" id="BoxShape3D_5jnx6"]
 size = Vector3(3.609375, 5.754883, 1)
 
-[node name="PuzzleRoom" type="Node3D"]
+[node name="PuzzleRoom" type="Node3D" node_paths=PackedStringArray("cube_normal", "cube_black")]
 script = ExtResource("1_w8wcq")
+cube_normal = NodePath("RigidBody3D")
+cube_black = NodePath("RigidBody3D2")
 
 [node name="Y_lamp_nocover" parent="." instance=ExtResource("1_dnawa")]
 transform = Transform3D(0.2, 0, -9.536744e-09, 0, 0.2, 0, 9.536744e-09, 0, 0.2, 0, 6.326564, 0)
@@ -617,6 +624,8 @@ environment = SubResource("Environment_83gqx")
 [node name="door" parent="." instance=ExtResource("5_bjwkx")]
 transform = Transform3D(-2.6008276e-08, 0, 0.595, 0, 0.595, 0, -0.595, 0, -2.6008276e-08, -7.6777782, 0.22234248, 0.048285007)
 script = ExtResource("6_mtnun")
+button1_path = NodePath("../batton")
+button2_path = NodePath("../batton2")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="door/Door White 2/J_2b03" index="0"]
 
@@ -638,13 +647,26 @@ libraries = {
 &"": SubResource("AnimationLibrary_mtnun")
 }
 
-[node name="RigidBody3D" type="RigidBody3D" parent="." groups=["cube"]]
+[node name="RigidBody3D" type="RigidBody3D" parent="." groups=["cube_normal"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.160645, 0.77466464, -5.536539)
 
 [node name="cubick" parent="RigidBody3D" instance=ExtResource("10_b7kfe")]
 transform = Transform3D(0.645, 0, 0, 0, 0.645, 0, 0, 0, 0.645, 0, 0, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D" groups=["cube_normal"]]
+transform = Transform3D(0.6449999, 0, 0, 0, 0.6449999, 0, 0, 0, 0.6449999, 0, 0, 0)
+shape = SubResource("ConvexPolygonShape3D_xd6b7")
+
+[node name="RigidBody3D2" type="RigidBody3D" parent="." groups=["cube_black"]]
+transform = Transform3D(0.9313421, 0, 0.36414543, 0, 1, 0, -0.36414543, 0, 0.9313421, -0.98672724, 0.77466464, -5.536539)
+
+[node name="cubick" parent="RigidBody3D2" instance=ExtResource("10_b7kfe")]
+transform = Transform3D(0.645, 0, 0, 0, 0.645, 0, 0, 0, 0.645, 0, 0, 0)
+
+[node name="Cube" parent="RigidBody3D2/cubick" index="0" groups=["cube_black"]]
+material_override = SubResource("StandardMaterial3D_7s7d3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D2"]
 transform = Transform3D(0.6449999, 0, 0, 0, 0.6449999, 0, 0, 0, 0.6449999, 0, 0, 0)
 shape = SubResource("ConvexPolygonShape3D_xd6b7")
 
@@ -705,7 +727,11 @@ texture = ExtResource("13_srax6")
 expand_mode = 2
 
 [node name="batton" parent="." instance=ExtResource("11_sngpb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.00546, 0.21806753, 5.2287054)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.497815, 0.21806753, 5.468755)
+
+[node name="batton2" parent="." instance=ExtResource("11_sngpb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5064573, 0.21806753, 5.598615)
+script = ExtResource("17_xd6b7")
 
 [node name="Y_corridor_part" parent="." instance=ExtResource("15_ivfha")]
 transform = Transform3D(-1.0490733e-08, 0, 0.62, 0, 0.29, 0, -0.24, 0, -2.7101061e-08, -27.676, -0.307, -0.023)
@@ -748,11 +774,26 @@ shape = SubResource("BoxShape3D_5jnx6")
 transform = Transform3D(-4.371139e-08, 1, 4.371139e-08, -8.742278e-08, 4.3711385e-08, -1, -1, -4.3711392e-08, 8.742278e-08, 3.5301285, -0.035007, -2.1581573)
 texture = ExtResource("19_83gqx")
 
+[node name="LeftIndicator" type="Label3D" parent="."]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -7.557951, 3.2008066, 1.967216)
+text = "X"
+font_size = 177
+outline_size = 32
+
+[node name="RightIndicator" type="Label3D" parent="."]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -7.557951, 3.2008066, -2.1244555)
+text = "X"
+font_size = 177
+outline_size = 32
+
 [connection signal="button_depressed" from="batton" to="door" method="_on_batton_button_depressed"]
 [connection signal="button_pressed" from="batton" to="door" method="_on_batton_button_pressed"]
+[connection signal="button_depressed" from="batton2" to="door" method="_on_batton_button_depressed"]
+[connection signal="button_pressed" from="batton2" to="door" method="_on_batton_button_pressed"]
 
 [editable path="puzzle_roo"]
 [editable path="door"]
 [editable path="RigidBody3D/cubick"]
+[editable path="RigidBody3D2/cubick"]
 [editable path="polka"]
 [editable path="BaseTrigger"]

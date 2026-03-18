@@ -33,8 +33,8 @@ func _on_body_exited(body):
 		_update_state()
 
 func _is_valid_presser(body) -> bool:
-	# Левая кнопка реагирует на игрока и на обычный куб
-	return body.is_in_group("player") or body.is_in_group("cube_normal")
+	# Правая кнопка реагирует на игрока и на чёрный куб
+	return body.is_in_group("player") or body.is_in_group("cube_black")
 
 func _update_state():
 	if press_count > 0 and not is_pressed:

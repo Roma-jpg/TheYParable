@@ -18,6 +18,12 @@ func _ready() -> void:
 	register_slide("materials", preload("res://Scenes/Overlays/how_materials_work.tscn"))
 	register_slide("buttons", preload("res://Scenes/Overlays/button_work.tscn"))
 
+# Inside your Slide/Overlay script
+func _input(event):
+	if event.is_action_pressed("ui_cancel"):
+		_on_slide_closed()
+		get_viewport().set_input_as_handled() # This tells Godot "I'm done with this event!"
+
 func register_slide(slide_name: String, slide_scene: PackedScene) -> void:
 	slide_library[slide_name] = slide_scene
 

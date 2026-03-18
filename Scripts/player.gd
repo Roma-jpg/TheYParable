@@ -151,13 +151,25 @@ func _ready():
 	add_child(footstep_player)
 
 func _input(event):
-	# Обработка нажатия Escape для возврата в редактор или открытия меню паузы
+	# We only care if the "Esc" / "Options" button was just pressed
 	if event.is_action_pressed("ui_cancel"):
+		
+		# PRIORITY 1: The Slide Overlay
+		# If the SlideManager (assuming that's your autoload name) is showing something,
+		# we stop right here. The Slide UI will handle its own closing logic.
+		if VisualisationDirector.is_showing():
+			return
+
+		# PRIORITY 2: The Editor
+		# If we aren't looking at a slide, check if we're in an editor context.
 		var editor = get_tree().get_first_node_in_group("editors")
 		if editor:
 			editor._return_to_editor()
-		else:
-			toggle_pause()
+			return # Exit the function so we don't also toggle pause
+
+		# PRIORITY 3: The Pause Menu
+		# If no slides are open and no editor is found, then we pause.
+		toggle_pause()
 
 func _unhandled_input(event):
 	if event is InputEventMouseMotion:
