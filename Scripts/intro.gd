@@ -6,40 +6,50 @@ extends Node
 	$CanvasLayer/ColorRect/Slide2,
 	$CanvasLayer/ColorRect/Slide3
 ]
-@onready var subtitle_display: Label = $CanvasLayer/SubtitleDisplay # Ensure you have this node!
+@onready var subtitle_display: Label = $CanvasLayer/SubtitleDisplay
 
+@onready var audio_player: AudioStreamPlayer2D = $AudioStreamPlayer2D
+
+# === PRELOADED AUDIO ===
+var audio_map := {
+	"0a_hello": preload("res://Assets/Audio/Monologues/0a_hello.wav"),
+	"0a_but_first_theory": preload("res://Assets/Audio/Monologues/0a_but_first_theory.wav"),
+	"0a_engine_is": preload("res://Assets/Audio/Monologues/0a_engine_is.wav"),
+	"0a_90s_graphics": preload("res://Assets/Audio/Monologues/0a_90s_graphics.wav"),
+	"0a_I_chose_godot": preload("res://Assets/Audio/Monologues/0a_I_chose_godot.wav"),
+	"0a_godot_is_simple": preload("res://Assets/Audio/Monologues/0a_godot_is_simple.wav")
+}
+
+var has_started := false
 var current_step := 0
 var is_transitioning := false
 
 func _ready() -> void:
-	# Connect the subtitle system
 	MonologueSystem.subtitle_changed.connect(_on_subtitle_changed)
 	
-	# Hide all slides initially
 	for slide in slides:
 		slide.visible = false
 		slide.modulate.a = 0.0
 
-	# Start the first step automatically after a tiny delay to ensure the scene has loaded
 	await get_tree().create_timer(0.5).timeout
+	has_started = true
 	execute_step(0)
 
 func _input(event: InputEvent) -> void:
-	# Prevent mashing the spacebar while things are fading in/out
+	if not has_started:
+		return
+		
 	if is_transitioning:
 		return
 		
-	# Check for Space, Enter, or Left Mouse Click
 	if event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		if MonologueSystem.is_playing:
-			# If they press space while talking, skip the current audio line
 			MonologueSystem.skip_monologue()
 		else:
-			# If audio is done, advance to the next step
 			current_step += 1
 			execute_step(current_step)
 
-# === THE STATE MACHINE ===
+# === STATE MACHINE ===
 func execute_step(step: int) -> void:
 	is_transitioning = true
 	
@@ -64,33 +74,33 @@ func execute_step(step: int) -> void:
 			
 	is_transitioning = false
 
-# === HELPER FUNCTIONS ===
-
-@onready var audio_player: AudioStreamPlayer2D = $AudioStreamPlayer2D
-
+# === AUDIO ===
 func play_audio(audio_name: String) -> void:
-	# 1. Construct the full path
-	var file_path = "res://Assets/Audio/Monologues/" + audio_name + ".wav"
+	var stream: AudioStream = null
 	
-	# 2. Check if the file actually exists before trying to load it
-	if FileAccess.file_exists(file_path):
-		# 3. Load the audio file from the folder
-		var stream = load(file_path)
-		
-		# 4. Assign to your node and play
-		audio_player.stream = stream
-		audio_player.play()
-		
-		# 5. Update the MonologueSystem text manually 
-		# (So the subtitles still show up!)
-		if MonologueSystem.monologues.has(audio_name):
-			MonologueSystem.subtitle_changed.emit(MonologueSystem.monologues[audio_name])
+	# 1. Try preloaded first (fast + safe for export)
+	if audio_map.has(audio_name):
+		stream = audio_map[audio_name]
 	else:
-		push_error("CRITICAL: Audio file not found at " + file_path)
+		# 2. Fallback to runtime load (just in case)
+		var file_path = "res://Assets/Audio/Monologues/" + audio_name + ".wav"
+		stream = ResourceLoader.load(file_path)
+		
+		if stream == null:
+			push_error("Failed to load " + file_path)
+			return
+	
+	audio_player.stream = stream
+	audio_player.play()
+	
+	# Subtitle sync
+	if MonologueSystem.monologues.has(audio_name):
+		MonologueSystem.subtitle_changed.emit(MonologueSystem.monologues[audio_name])
 
+# === VISUALS ===
 func fade_to_slide(index: int) -> void:
 	var tween = create_tween()
-	tween.set_parallel(true) # Run fades simultaneously
+	tween.set_parallel(true)
 	
 	for i in slides.size():
 		if i == index:
@@ -101,16 +111,15 @@ func fade_to_slide(index: int) -> void:
 			
 	await tween.finished
 	
-	# Clean up visibility for hidden slides
 	for i in slides.size():
 		if i != index:
 			slides[i].visible = false
 
+# === END ===
 func finish_presentation() -> void:
 	MonologueSystem.stop_monologue()
 	MonologueSystem.clear_queue()
 	
-	# A short pause before triggering the loading screen
 	await get_tree().create_timer(0.5).timeout
 	
 	LoadingScreen.start(4.0, "Совет: Чтобы идти вперёд, идите вперёд.")

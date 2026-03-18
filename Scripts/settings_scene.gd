@@ -132,3 +132,7 @@ func _on_ok_button_pressed() -> void:
 func _on_no_button_pressed() -> void:
 	print("no")
 	hide_exit_popup()
+
+
+func _on_exit_button_pressed() -> void:
+	exit_without_saving()

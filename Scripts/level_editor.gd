@@ -56,9 +56,9 @@ func _ready():
 	MonologueSystem.play_and_wait_monologues([
 		"somewhat_of_a_redactor_1",
 		"somewhat_of_a_redactor_2",
-		"somewhat_of_a_redactor_3",
+		#"somewhat_of_a_redactor_3",
 		"somewhat_of_a_redactor_4",
-		"somewhat_of_a_redactor_5",
+		"somewhat_of_a_redactor_5"
 	])
 
 func calculate_grid_offset():

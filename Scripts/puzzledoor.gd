@@ -105,7 +105,7 @@ func _trigger_training():
 	MonologueSystem.play_monologue("puzzle_room_well_done_1")
 	await MonologueSystem.monologue_finished
 	VisualisationDirector.show_slide("buttons")
-	await MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"])
+	await MonologueSystem.play_and_wait_monologues(["puzzle_room_well_done_2", "puzzle_room_well_done_3", "puzzle_room_well_done_4"]) # Вот здесь. Я подозреваю это как-то связано со слайдами.
 	
 	# Отключаем преграду, если она есть (путь может отличаться)
 	$"../StaticBody3D/playa_stoppa".disabled = true

@@ -35,7 +35,7 @@ var audio_config = {
 func _ready() -> void:
 	setup_audio_player()
 	load_base_monologues()
-	load_monologues_from_json("user://data/monologues.json")
+	load_monologues_from_json("res://data/monologues.json")
 
 func setup_audio_player() -> void:
 	current_audio = AudioStreamPlayer.new()
@@ -290,9 +290,12 @@ func _on_text_only_finished(key: String) -> void:
 		_play_next_in_queue()
 
 func _play_next_in_queue() -> void:
+	# Сначала ждем полсекунды
+	await get_tree().create_timer(0.5).timeout
+	if is_playing:
+		return
 	if audio_queue.size() > 0:
 		var next_key = audio_queue.pop_front()
-		await get_tree().create_timer(0.5).timeout
 		play_monologue(next_key)
 
 func play_sequence(keys: Array[String]) -> void:

@@ -415,5 +415,19 @@ custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 text = "Нет"
 
+[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -30.0
+offset_bottom = 31.0
+grow_horizontal = 0
+
+[node name="Button" type="Button" parent="CanvasLayer/Control/MarginContainer2"]
+layout_mode = 2
+text = "❌"
+
 [connection signal="pressed" from="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/OkButton" to="CanvasLayer/Control" method="_on_ok_button_pressed"]
 [connection signal="pressed" from="CanvasLayer/Control/PanelContainer/MarginContainer/VBoxContainer/HBoxContainer/NoButton" to="CanvasLayer/Control" method="_on_no_button_pressed"]
+[connection signal="pressed" from="CanvasLayer/Control/MarginContainer2/Button" to="CanvasLayer/Control" method="_on_exit_button_pressed"]

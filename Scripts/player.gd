@@ -172,8 +172,6 @@ func _input(event):
 		toggle_pause()
 
 func _unhandled_input(event):
-	if event is InputEventMouseMotion:
-		print("Mouse move detected!")
 	# Сбрасываем таймер бездействия при любом вводе
 	idle_timer = 0.0
 	current_idle_stage = 0
@@ -624,15 +622,21 @@ func pause_game():
 	# Постановка игры на паузу
 	is_paused = true
 	pause_menu.visible = true
-	lock_controls()                # Блокируем ввод игрока
+	
+	# Вместо lock_controls() просто показываем курсор для меню
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE) 
+	
 	get_tree().paused = true        # Замораживаем всё, кроме узлов с process_mode = ALWAYS
 
 func unpause_game():
 	# Снятие игры с паузы
 	is_paused = false
 	pause_menu.visible = false
-	unlock_controls()               # Возвращаем ввод игроку
 	get_tree().paused = false       # Размораживаем дерево
+	
+	# Возвращаем захват мыши ТОЛЬКО если управление не заблокировано катсценой
+	if not controls_locked:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 func _on_resume_button_pressed() -> void:
 	unpause_game()

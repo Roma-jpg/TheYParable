@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://ba14c46wb606d"]
+[gd_scene load_steps=8 format=3 uid="uid://ba14c46wb606d"]
 
 [ext_resource type="PackedScene" uid="uid://0vbbpr3ut651" path="res://Assets/3DModels/editor/finish_flag.glb" id="1_uh56p"]
-[ext_resource type="Script" uid="uid://bkxf31rox64lm" path="res://Scripts/finish_flag.gd" id="2_6fxmu"]
+[ext_resource type="Script" uid="uid://dfeyqt40iiql3" path="res://Scripts/finish_flag.gd" id="2_6fxmu"]
+[ext_resource type="Texture2D" uid="uid://dirgpf5u71guu" path="res://Assets/Pictures/qrcode.png" id="3_hc4ta"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_6fxmu"]
 size = Vector3(0.3173828, 2.2949219, 1.951416)
@@ -79,6 +80,10 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.033853278, 0.033853278, 0.033853274, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Control" index="1"]
+position = Vector2(474, 262)
+texture = ExtResource("3_hc4ta")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer" index="1"]
 libraries = {
