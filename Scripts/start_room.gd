@@ -19,6 +19,7 @@ func _ready() -> void:
 
 
 func _play_intro_sequence() -> void:
+	await get_tree().create_timer(0.5).timeout
 	_lock_player_controls()
 	LoadingScreen.fade_time = 0
 	LoadingScreen.start(3, "Совет: чтобы прыгать, прыгните")
